@@ -61,8 +61,9 @@ CI and main policy. No production deploy. Status: `DONE`.
 - W10 Publishing — DONE: encrypted credentials, idempotent attempts and `OUTCOME_UNKNOWN` investigation contracts.
 - W11 Analytics — DONE: raw/normalized snapshots, configurable collection policy and non-mutating learning insights.
 - W12 MCP — DONE: scoped hash-only API keys, MCP service boundary and HMAC n8n/outbound webhook foundation.
-- W13 AI Evals — IN_PROGRESS.
-- W14–W16 — NOT_STARTED.
+- W13 AI Evals — DONE: seeded suites, cases, prompt comparison metadata and regression contracts.
+- W14 UX — IN_PROGRESS.
+- W15–W16 — NOT_STARTED.
 
 | Wave               | Task sequence                                                           | Required outcome                                                     |
 | ------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
