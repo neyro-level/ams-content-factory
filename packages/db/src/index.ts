@@ -10,4 +10,5 @@ export { createProviderUsageRepository } from './repositories/provider-usage';
 export { createCaptionsRepository } from './repositories/captions';
 export { createPublishingRepository } from './repositories/publishing';
 export { createAnalyticsRepository } from './repositories/analytics';
+export { createMcpRepository } from './repositories/mcp';
 export * from './generated/prisma/client';

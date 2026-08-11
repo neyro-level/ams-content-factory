@@ -229,6 +229,19 @@ enum PublicationAttemptStatus {
   OUTCOME_UNKNOWN
 }
 
+enum ApiKeyScope {
+  READ
+  WRITE
+  APPROVE
+  ADMIN
+}
+
+enum WebhookDeliveryStatus {
+  PENDING
+  DELIVERED
+  FAILED
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   name          String
@@ -305,6 +318,8 @@ model Organization {
   brands      Brand[]
   auditEvents AuditLog[]
   workflowRuns WorkflowRun[]
+  apiKeys ApiKey[]
+  webhookEndpoints WebhookEndpoint[]
 
   @@map("organization")
 }
@@ -991,6 +1006,53 @@ model PerformanceInsight {
   brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
   @@index([brandId, periodEnd])
   @@map("performance_insight")
+}
+
+model ApiKey {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  name String
+  tokenHash String @unique
+  scopes ApiKeyScope[] @default([])
+  expiresAt DateTime?
+  lastUsedAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@index([organizationId, revokedAt])
+  @@map("api_key")
+}
+
+model WebhookEndpoint {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  url String
+  secretCiphertext String
+  encryptionVersion String
+  eventTypes String[] @default([])
+  disabledAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+  @@unique([organizationId, url])
+  @@index([organizationId, disabledAt])
+  @@map("webhook_endpoint")
+}
+
+model WebhookDelivery {
+  id String @id @default(uuid()) @db.Uuid
+  endpointId String @db.Uuid
+  eventType String
+  payload Json
+  status WebhookDeliveryStatus @default(PENDING)
+  attempts Int @default(0)
+  lastError String?
+  deliveredAt DateTime?
+  createdAt DateTime @default(now())
+  endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  @@index([endpointId, status, createdAt])
+  @@map("webhook_delivery")
 }
 
 model Approval {
