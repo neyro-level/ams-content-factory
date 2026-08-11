@@ -1,5 +1,12 @@
 # Worklog
 
+## 2026-08-11 — Wave 7 Media completed
+
+- Added MediaAsset, AssetUsage, VideoProduction and RenderJob persistence through migrations `20260811152452_add_media_production_foundation` and `20260811153613_add_asset_usage`.
+- Added tenant-scoped media repositories and application services with checksummed private storage, production transitions, render tracking and cross-brand rejection contracts.
+- Added local, S3-compatible and deterministic mock storage boundaries, signed download support, plus isolated FFmpeg and Remotion interfaces with no shell construction from user input.
+- Integration contracts now run deterministically in one worker against the shared local PostgreSQL; all 12 contracts pass. Wave 8 Video Providers is next.
+
 ## 2026-08-11 — Wave 6 Video Planning completed
 
 - Added VideoRecipe, Storyboard and StoryboardBeat persistence through migration `20260811145130_add_video_planning_foundation`.

@@ -1,0 +1,190 @@
+import { getPrisma } from '../client';
+import type {
+  MediaAssetStatus,
+  MediaSourceType,
+  PrismaClient,
+  RenderJobStatus,
+  VideoProductionStatus,
+} from '../generated/prisma/client';
+
+export function createMediaRepository(prisma: PrismaClient = getPrisma()) {
+  const hasBrand = (organizationId: string, brandId: string) =>
+    prisma.brand.findFirst({
+      where: { id: brandId, organizationId, deletedAt: null },
+      select: { id: true },
+    });
+  const findProduction = (input: { organizationId: string; brandId: string; id: string }) =>
+    prisma.videoProduction.findFirst({
+      where: {
+        id: input.id,
+        contentProject: { organizationId: input.organizationId, brandId: input.brandId },
+      },
+      include: { renderJobs: { orderBy: { createdAt: 'asc' } }, outputAsset: true },
+    });
+
+  return {
+    async createAsset(input: {
+      organizationId: string;
+      brandId: string;
+      type: string;
+      mimeType: string;
+      filename: string;
+      storageKey: string;
+      storageDriver: string;
+      sizeBytes: bigint;
+      checksum: string;
+      sourceType: MediaSourceType;
+      width?: number;
+      height?: number;
+      durationMs?: number;
+      sourceUrl?: string;
+      licenseMetadata?: object;
+      metadata?: object;
+      parentAssetId?: string;
+      status?: MediaAssetStatus;
+    }) {
+      if (!(await hasBrand(input.organizationId, input.brandId))) return null;
+      if (input.parentAssetId) {
+        const parent = await prisma.mediaAsset.findFirst({
+          where: {
+            id: input.parentAssetId,
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+          },
+          select: { id: true },
+        });
+        if (!parent) return null;
+      }
+      return prisma.mediaAsset.create({ data: input });
+    },
+    findAsset(input: { organizationId: string; brandId: string; id: string }) {
+      return prisma.mediaAsset.findFirst({
+        where: { id: input.id, organizationId: input.organizationId, brandId: input.brandId },
+      });
+    },
+    async createProduction(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      storyboardId: string;
+      videoRecipeId: string;
+      aspectRatio: string;
+      targetDuration?: number;
+      metadata?: object;
+    }) {
+      const project = await prisma.contentProject.findFirst({
+        where: {
+          id: input.contentProjectId,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+        },
+        select: { id: true },
+      });
+      if (!project) return null;
+      const storyboard = await prisma.storyboard.findFirst({
+        where: {
+          id: input.storyboardId,
+          contentProjectId: input.contentProjectId,
+          videoRecipeId: input.videoRecipeId,
+        },
+        select: { id: true },
+      });
+      if (!storyboard) return null;
+      return prisma.videoProduction.create({
+        data: {
+          contentProjectId: input.contentProjectId,
+          storyboardId: input.storyboardId,
+          videoRecipeId: input.videoRecipeId,
+          aspectRatio: input.aspectRatio,
+          ...(input.targetDuration !== undefined ? { targetDuration: input.targetDuration } : {}),
+          ...(input.metadata !== undefined ? { metadata: input.metadata } : {}),
+        },
+      });
+    },
+    findProduction,
+    async createRenderJob(input: {
+      organizationId: string;
+      brandId: string;
+      videoProductionId: string;
+      provider: string;
+      operation: string;
+      attempt?: number;
+      input?: object;
+      status?: RenderJobStatus;
+    }) {
+      const production = await findProduction({
+        organizationId: input.organizationId,
+        brandId: input.brandId,
+        id: input.videoProductionId,
+      });
+      if (!production) return null;
+      return prisma.renderJob.create({
+        data: {
+          videoProductionId: input.videoProductionId,
+          provider: input.provider,
+          operation: input.operation,
+          ...(input.attempt !== undefined ? { attempt: input.attempt } : {}),
+          ...(input.input !== undefined ? { input: input.input } : {}),
+          ...(input.status !== undefined ? { status: input.status } : {}),
+        },
+      });
+    },
+    async attachAssetToProduction(input: {
+      organizationId: string;
+      brandId: string;
+      mediaAssetId: string;
+      videoProductionId: string;
+      role: string;
+      metadata?: object;
+    }) {
+      const [asset, production] = await Promise.all([
+        prisma.mediaAsset.findFirst({
+          where: {
+            id: input.mediaAssetId,
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+          },
+          select: { id: true },
+        }),
+        findProduction({
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          id: input.videoProductionId,
+        }),
+      ]);
+      if (!asset || !production) return null;
+      return prisma.assetUsage.upsert({
+        where: {
+          mediaAssetId_videoProductionId_role: {
+            mediaAssetId: input.mediaAssetId,
+            videoProductionId: input.videoProductionId,
+            role: input.role,
+          },
+        },
+        create: {
+          mediaAssetId: input.mediaAssetId,
+          videoProductionId: input.videoProductionId,
+          role: input.role,
+          ...(input.metadata !== undefined ? { metadata: input.metadata } : {}),
+        },
+        update: input.metadata !== undefined ? { metadata: input.metadata } : {},
+      });
+    },
+    transitionProduction(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      from: VideoProductionStatus;
+      to: VideoProductionStatus;
+    }) {
+      return prisma.videoProduction.updateMany({
+        where: {
+          id: input.id,
+          status: input.from,
+          contentProject: { organizationId: input.organizationId, brandId: input.brandId },
+        },
+        data: { status: input.to },
+      });
+    },
+  };
+}

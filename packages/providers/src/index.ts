@@ -18,3 +18,7 @@ export type {
   SearchProvider,
   SearchResult,
 } from './research';
+export { LocalStorageProvider, MockStorageProvider, S3StorageProvider } from './storage';
+export type { S3ObjectClient, StorageProvider, StoredObject, StorageWriteInput } from './storage';
+export { MockFfmpegProvider, MockRemotionProvider } from './media-tools';
+export type { FfmpegProvider, MediaInspection, RemotionProvider } from './media-tools';
