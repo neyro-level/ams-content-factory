@@ -1,5 +1,12 @@
 # Worklog
 
+## 2026-08-11 — Wave 10 Publishing completed
+
+- Added SocialAccount, SocialCredential, Publication and PublicationAttempt persistence through migration `20260811170703_add_publishing_foundation`.
+- Added tenant-scoped publishing repository, AES-256-GCM authenticated token encryption, explicit publication state transitions, scheduled queueing and idempotent attempt recording.
+- Added provider-neutral Instagram/VK client boundaries and deterministic mock publishing. `OUTCOME_UNKNOWN` is never retried automatically: provider investigation either reconciles a published post, safely returns it to the queue, or preserves manual-review state.
+- Full gate is green: Prisma validation/deploy, lint, formatting, typecheck, 3 unit tests, 15 integration contracts, E2E and production build. Live Instagram/VK credentials remain `BLOCKED_EXTERNAL`; mock contracts are the verified path. Wave 11 Analytics is next.
+
 ## 2026-08-11 — Wave 9 Captions & QC completed
 
 - Added Transcript, CaptionTrack and QcReport persistence with cascade-safe media cleanup through migrations `20260811161224_add_captions_qc_foundation` and `20260811165933_cascade_transcript_asset`.
