@@ -11,3 +11,10 @@ export {
   OpenAiEmbeddingProvider,
 } from './embeddings';
 export type { EmbeddingProvider } from './embeddings';
+export { MockPageFetcherProvider, MockSearchProvider } from './research';
+export type {
+  FetchedResearchPage,
+  PageFetcherProvider,
+  SearchProvider,
+  SearchResult,
+} from './research';
