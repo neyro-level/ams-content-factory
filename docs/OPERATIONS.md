@@ -2,12 +2,12 @@
 
 ## Runtime services
 
-| Сервис     | Назначение                                             | Проверка                |
-| ---------- | ------------------------------------------------------ | ----------------------- |
-| `postgres` | PostgreSQL 16 + pgvector, единственный source of truth | `pg_isready`            |
-| `web`      | Next.js UI, API и health endpoints                     | HTTP `/api/health/live` |
-| `worker`   | pg-boss consumers и фоновые workflow                   | liveness PID 1          |
-| `nginx`    | reverse proxy на web                                   | HTTP `/api/health/live` |
+| Сервис        | Назначение                                                     | Проверка                             |
+| ------------- | -------------------------------------------------------------- | ------------------------------------ |
+| Timeweb DBaaS | Managed PostgreSQL 16 + pgvector, единственный source of truth | панель Timeweb и `/api/health/ready` |
+| `web`         | Next.js UI, API и health endpoints                             | HTTP `/api/health/live`              |
+| `worker`      | pg-boss consumers и фоновые workflow                           | liveness PID 1                       |
+| `nginx`       | reverse proxy на web                                           | HTTP `/api/health/live`              |
 
 ## Стандартные операции
 
@@ -24,10 +24,10 @@ sh deploy/seed.sh
 
 ## Инцидент ready=503
 
-1. Проверить статус `postgres` и его логи.
-2. Проверить, что `DATABASE_URL` в `.env` ссылается на корректный хост и базу.
+1. Проверить status, сеть доступа и TLS-параметры кластера в панели Timeweb Cloud.
+2. Проверить, что `DATABASE_URL` в `.env` ссылается на корректный внешний хост и базу.
 3. Проверить применённые миграции через `sh deploy/migrate.sh`.
-4. Не удалять volume PostgreSQL и не запускать restore без подтверждённого backup.
+4. Не менять схему вручную и не запускать restore без подтверждённого backup и maintenance window.
 
 ## Логи и секреты
 

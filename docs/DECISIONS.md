@@ -30,8 +30,8 @@
 - **Decision:** Pin the project to Node 22.13+ and below Node 23.
 - **Consequences:** The system Node 24 is not the project runtime; `fnm` supplies the compatible local version.
 
-## ADR-006 — Production packaging
+## ADR-006 — Timeweb Cloud production packaging
 
-- **Context:** Wave 16 requires a reproducible production package before any production credentials or server access exist.
-- **Decision:** Ship one pinned Node 22.13 Docker image for web, worker and migrations; compose PostgreSQL 16 + pgvector and Nginx as separate services. Install pinned pnpm through npm rather than Corepack. Use `prisma migrate deploy` only.
-- **Consequences:** The package can be built and reviewed locally without credentials. Actual server deployment, TLS choice, external database topology and live provider authorisation remain explicit external operations.
+- **Context:** The approved Master Plan requires managed PostgreSQL and the owner selected Timeweb Cloud DBaaS before the production database exists.
+- **Decision:** Timeweb Cloud DBaaS is the only production PostgreSQL + pgvector runtime. `docker-compose.prod.yml` contains web, worker, Nginx and one-shot maintenance clients only; it never creates a PostgreSQL server or persistent database volume. Local Docker PostgreSQL remains development/test-only. Install pinned pnpm through npm rather than Corepack and apply schema only with `prisma migrate deploy`.
+- **Consequences:** Timeweb operates the database runtime, availability and native backups; the application retains migrations, least-privilege database access and a tested logical backup/restore client. Cluster creation, pgvector activation, credentials, TLS settings and production release remain explicit external operations.

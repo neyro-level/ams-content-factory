@@ -1,31 +1,12 @@
 name: ams-content-factory
 
 services:
-  postgres:
-    image: pgvector/pgvector:pg16
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
-      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks: [internal]
-
   migrate:
     build:
       context: .
       dockerfile: Dockerfile
     env_file: .env
     command: ['pnpm', 'prisma:deploy']
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks: [internal]
     profiles: [maintenance]
 
@@ -35,9 +16,27 @@ services:
       dockerfile: Dockerfile
     env_file: .env
     command: ['pnpm', 'db:seed']
-    depends_on:
-      postgres:
-        condition: service_healthy
+    networks: [internal]
+    profiles: [maintenance]
+
+  backup:
+    image: postgres:16-bookworm
+    env_file: .env
+    entrypoint: ['sh', '-c']
+    command: ['exec pg_dump --format=custom --no-owner "$$DATABASE_URL"']
+    networks: [internal]
+    profiles: [maintenance]
+
+  restore:
+    image: postgres:16-bookworm
+    env_file: .env
+    entrypoint: ['sh', '-c']
+    command:
+      [
+        'exec pg_restore --clean --if-exists --no-owner --dbname "$$DATABASE_URL" /restore/input.dump',
+      ]
+    volumes:
+      - '${RESTORE_FILE:-./backups/restore-not-configured.dump}:/restore/input.dump:ro'
     networks: [internal]
     profiles: [maintenance]
 
@@ -48,9 +47,6 @@ services:
     restart: unless-stopped
     env_file: .env
     command: ['pnpm', '--filter', '@ams-content-factory/web', 'start']
-    depends_on:
-      postgres:
-        condition: service_healthy
     expose: ['3000']
     healthcheck:
       test:
@@ -73,9 +69,6 @@ services:
     restart: unless-stopped
     env_file: .env
     command: ['pnpm', '--filter', '@ams-content-factory/worker', 'start']
-    depends_on:
-      postgres:
-        condition: service_healthy
     healthcheck:
       test: ['CMD-SHELL', 'kill -0 1']
       interval: 30s
@@ -103,6 +96,3 @@ services:
 networks:
   internal:
     driver: bridge
-
-volumes:
-  postgres-data:
