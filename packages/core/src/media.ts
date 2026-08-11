@@ -93,7 +93,13 @@ export function createVideoProductionService(options: { prisma?: PrismaClient } 
     ) => repository.createProduction({ ...scoped(context), ...input }),
     queueRender: (
       context: Context,
-      input: { videoProductionId: string; provider: string; operation: string; input?: object },
+      input: {
+        videoProductionId: string;
+        provider: string;
+        operation: string;
+        idempotencyKey: string;
+        input?: object;
+      },
     ) => repository.createRenderJob({ ...scoped(context), ...input }),
     attachAsset: (
       context: Context,

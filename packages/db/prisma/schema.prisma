@@ -318,6 +318,7 @@ model Brand {
   claims Claim[]
   contentProjects ContentProject[]
   mediaAssets MediaAsset[]
+  providerUsages ProviderUsage[]
 
   @@unique([organizationId, slug])
   @@index([organizationId, status])
@@ -539,6 +540,7 @@ model ContentProject {
   comments EditorialComment[]
   storyboards Storyboard[]
   videoProductions VideoProduction[]
+  providerUsages ProviderUsage[]
   @@index([organizationId, brandId, status, createdAt])
   @@index([opportunityId])
   @@map("content_project")
@@ -618,6 +620,7 @@ model RenderJob {
   videoProductionId String @db.Uuid
   provider String
   operation String
+  idempotencyKey String @default(uuid())
   providerJobId String?
   attempt Int @default(1)
   status RenderJobStatus @default(QUEUED)
@@ -630,9 +633,50 @@ model RenderJob {
   providerUsageId String? @db.Uuid
   createdAt DateTime @default(now())
   videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  providerUsage ProviderUsage? @relation(fields: [providerUsageId], references: [id], onDelete: SetNull)
+  @@unique([videoProductionId, idempotencyKey])
   @@unique([videoProductionId, provider, operation, attempt])
   @@index([status, createdAt])
   @@map("render_job")
+}
+
+model ProviderRate {
+  id String @id @default(uuid()) @db.Uuid
+  provider String
+  operation String
+  model String
+  unit String
+  unitCost Decimal @db.Decimal(14, 4)
+  currency String
+  effectiveAt DateTime @default(now())
+  disabledAt DateTime?
+  createdAt DateTime @default(now())
+  @@unique([provider, operation, model, unit, effectiveAt])
+  @@index([provider, operation, model, unit, effectiveAt])
+  @@map("provider_rate")
+}
+
+model ProviderUsage {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  brandId String @db.Uuid
+  contentProjectId String @db.Uuid
+  provider String
+  operation String
+  model String
+  unit String
+  quantity Decimal @db.Decimal(14, 4)
+  estimatedCost Decimal @db.Decimal(14, 4)
+  actualCost Decimal? @db.Decimal(14, 4)
+  currency String
+  externalJobId String?
+  createdAt DateTime @default(now())
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  renderJobs RenderJob[]
+  @@index([organizationId, brandId, createdAt])
+  @@index([contentProjectId, createdAt])
+  @@map("provider_usage")
 }
 
 model ContentVersion {
