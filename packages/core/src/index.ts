@@ -12,3 +12,8 @@ export { contentTransitions, createContentService } from './content';
 export { initialVideoRecipes, validateVideoRecipe, videoRecipeSchema } from './video-recipes';
 export type { VideoRecipeDefinition } from './video-recipes';
 export { createStoryboardService, seedInitialVideoRecipes } from './video-planning';
+export {
+  createMediaService,
+  createVideoProductionService,
+  videoProductionTransitions,
+} from './media';

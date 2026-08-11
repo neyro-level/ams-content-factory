@@ -50,6 +50,15 @@ CI and main policy. No production deploy. Status: `DONE`.
 
 ## Subsequent Waves
 
+### Execution status
+
+- W4 Research — DONE.
+- W5 Content — DONE.
+- W6 Video planning — DONE.
+- W7 Media — DONE: private storage, media assets/usages, render state and isolated media tool contracts.
+- W8 Video providers — IN_PROGRESS.
+- W9–W16 — NOT_STARTED.
+
 | Wave               | Task sequence                                                           | Required outcome                                                     |
 | ------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | W4 Research        | Inbox → sources → extraction → reports → Claim/Evidence → opportunities | SSRF-safe research path with provenance.                             |

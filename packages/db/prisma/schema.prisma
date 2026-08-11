@@ -152,6 +152,46 @@ enum VisualJobType {
   TRANSITION
 }
 
+enum MediaAssetStatus {
+  PENDING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+enum MediaSourceType {
+  UPLOAD
+  AI_GENERATED
+  SCREENSHOT
+  SCREEN_RECORDING
+  PROVIDER
+  RESEARCH
+  DERIVED
+}
+
+enum VideoProductionStatus {
+  PLANNED
+  SCRIPT_READY
+  STORYBOARD_READY
+  WAITING_APPROVAL
+  GENERATING
+  COMPOSING
+  QC
+  READY
+  FAILED
+  CANCELLED
+}
+
+enum RenderJobStatus {
+  QUEUED
+  SUBMITTED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  OUTCOME_UNKNOWN
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   name          String
@@ -277,6 +317,7 @@ model Brand {
   contentOpportunities ContentOpportunity[]
   claims Claim[]
   contentProjects ContentProject[]
+  mediaAssets MediaAsset[]
 
   @@unique([organizationId, slug])
   @@index([organizationId, status])
@@ -497,9 +538,101 @@ model ContentProject {
   approvals Approval[]
   comments EditorialComment[]
   storyboards Storyboard[]
+  videoProductions VideoProduction[]
   @@index([organizationId, brandId, status, createdAt])
   @@index([opportunityId])
   @@map("content_project")
+}
+
+model MediaAsset {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  brandId String @db.Uuid
+  parentAssetId String? @db.Uuid
+  type String
+  mimeType String
+  filename String
+  storageKey String
+  storageDriver String
+  sizeBytes BigInt
+  width Int?
+  height Int?
+  durationMs Int?
+  checksum String
+  sourceType MediaSourceType
+  sourceUrl String?
+  licenseMetadata Json?
+  status MediaAssetStatus @default(PENDING)
+  metadata Json?
+  createdAt DateTime @default(now())
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  parentAsset MediaAsset? @relation("AssetDerivation", fields: [parentAssetId], references: [id], onDelete: SetNull)
+  derivedAssets MediaAsset[] @relation("AssetDerivation")
+  usages AssetUsage[]
+  outputFor VideoProduction[] @relation("VideoOutput")
+  @@unique([brandId, checksum])
+  @@index([organizationId, brandId, status])
+  @@map("media_asset")
+}
+
+model VideoProduction {
+  id String @id @default(uuid()) @db.Uuid
+  contentProjectId String @db.Uuid
+  storyboardId String @db.Uuid
+  videoRecipeId String @db.Uuid
+  status VideoProductionStatus @default(PLANNED)
+  aspectRatio String
+  targetDuration Int?
+  outputAssetId String? @db.Uuid
+  startedAt DateTime?
+  completedAt DateTime?
+  metadata Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  storyboard Storyboard @relation(fields: [storyboardId], references: [id], onDelete: Restrict)
+  videoRecipe VideoRecipe @relation(fields: [videoRecipeId], references: [id], onDelete: Restrict)
+  outputAsset MediaAsset? @relation("VideoOutput", fields: [outputAssetId], references: [id], onDelete: SetNull)
+  assetUsages AssetUsage[]
+  renderJobs RenderJob[]
+  @@index([contentProjectId, status])
+  @@map("video_production")
+}
+
+model AssetUsage {
+  id String @id @default(uuid()) @db.Uuid
+  mediaAssetId String @db.Uuid
+  videoProductionId String @db.Uuid
+  role String
+  metadata Json?
+  createdAt DateTime @default(now())
+  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  @@unique([mediaAssetId, videoProductionId, role])
+  @@index([videoProductionId])
+  @@map("asset_usage")
+}
+
+model RenderJob {
+  id String @id @default(uuid()) @db.Uuid
+  videoProductionId String @db.Uuid
+  provider String
+  operation String
+  providerJobId String?
+  attempt Int @default(1)
+  status RenderJobStatus @default(QUEUED)
+  input Json?
+  output Json?
+  errorCode String?
+  errorMessage String?
+  startedAt DateTime?
+  finishedAt DateTime?
+  providerUsageId String? @db.Uuid
+  createdAt DateTime @default(now())
+  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  @@unique([videoProductionId, provider, operation, attempt])
+  @@index([status, createdAt])
+  @@map("render_job")
 }
 
 model ContentVersion {
@@ -543,6 +676,7 @@ model VideoRecipe {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   storyboards Storyboard[]
+  videoProductions VideoProduction[]
   @@unique([key, version])
   @@map("video_recipe")
 }
@@ -560,6 +694,7 @@ model Storyboard {
   contentVersion ContentVersion @relation(fields: [contentVersionId], references: [id], onDelete: Cascade)
   videoRecipe VideoRecipe @relation(fields: [videoRecipeId], references: [id], onDelete: Restrict)
   beats StoryboardBeat[]
+  videoProductions VideoProduction[]
   @@unique([contentProjectId, version])
   @@map("storyboard")
 }
