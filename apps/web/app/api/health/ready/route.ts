@@ -1,7 +1,7 @@
-import { buildHealthPayload } from '@ams-content-factory/config';
+import { checkApplicationReadiness } from '@ams-content-factory/core';
 import { NextResponse } from 'next/server';
 
-export function GET() {
-  const payload = buildHealthPayload('ready');
+export async function GET() {
+  const payload = await checkApplicationReadiness();
   return NextResponse.json(payload, { status: payload.ok ? 200 : 503 });
 }

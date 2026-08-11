@@ -7,6 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@ams-content-factory/config": "workspace:*",
     "@ams-content-factory/db": "workspace:*",
     "@ams-content-factory/jobs": "workspace:*",
     "@ams-content-factory/providers": "workspace:*",
@@ -15,6 +16,10 @@
     "zod": "4.4.3"
   },
   "scripts": {
+    "seed": "tsx src/seed.ts",
     "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsx": "4.21.0"
   }
 }

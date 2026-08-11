@@ -1,4 +1,5 @@
 import { buildHealthPayload } from '../../packages/config/src/index.js';
+import { checkApplicationReadiness } from '../../packages/core/src/health.js';
 import { describe, expect, it } from 'vitest';
 
 describe('health payload', () => {
@@ -9,5 +10,13 @@ describe('health payload', () => {
       check: 'live',
       timestamp: '2026-08-11T00:00:00.000Z',
     });
+  });
+
+  it('returns not ready when the database repository fails', async () => {
+    await expect(
+      checkApplicationReadiness({
+        isReady: async () => Promise.reject(new Error('database unavailable')),
+      }),
+    ).resolves.toMatchObject({ check: 'ready', ok: false });
   });
 });

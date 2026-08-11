@@ -5,9 +5,11 @@
   "type": "module",
   "dependencies": {
     "@ams-content-factory/jobs": "workspace:*",
-    "@ams-content-factory/db": "workspace:*"
+    "@ams-content-factory/db": "workspace:*",
+    "tsx": "4.21.0"
   },
   "scripts": {
+    "start": "tsx src/main.ts",
     "typecheck": "tsc --noEmit"
   }
 }

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { GET as live } from '../../apps/web/app/api/health/live/route.js';
 import { GET as ready } from '../../apps/web/app/api/health/ready/route.js';
 import { describe, expect, it } from 'vitest';
