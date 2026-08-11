@@ -108,9 +108,11 @@ export function createMediaRepository(prisma: PrismaClient = getPrisma()) {
       videoProductionId: string;
       provider: string;
       operation: string;
+      idempotencyKey: string;
       attempt?: number;
       input?: object;
       status?: RenderJobStatus;
+      providerUsageId?: string;
     }) {
       const production = await findProduction({
         organizationId: input.organizationId,
@@ -118,14 +120,78 @@ export function createMediaRepository(prisma: PrismaClient = getPrisma()) {
         id: input.videoProductionId,
       });
       if (!production) return null;
+      if (input.providerUsageId) {
+        const usage = await prisma.providerUsage.findFirst({
+          where: {
+            id: input.providerUsageId,
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+            contentProjectId: production.contentProjectId,
+          },
+          select: { id: true },
+        });
+        if (!usage) return null;
+      }
       return prisma.renderJob.create({
         data: {
           videoProductionId: input.videoProductionId,
           provider: input.provider,
           operation: input.operation,
+          idempotencyKey: input.idempotencyKey,
           ...(input.attempt !== undefined ? { attempt: input.attempt } : {}),
           ...(input.input !== undefined ? { input: input.input } : {}),
           ...(input.status !== undefined ? { status: input.status } : {}),
+          ...(input.providerUsageId !== undefined
+            ? { providerUsageId: input.providerUsageId }
+            : {}),
+        },
+      });
+    },
+    findRenderJobByIdempotency(input: {
+      organizationId: string;
+      brandId: string;
+      videoProductionId: string;
+      idempotencyKey: string;
+    }) {
+      return prisma.renderJob.findFirst({
+        where: {
+          videoProductionId: input.videoProductionId,
+          idempotencyKey: input.idempotencyKey,
+          videoProduction: {
+            contentProject: { organizationId: input.organizationId, brandId: input.brandId },
+          },
+        },
+      });
+    },
+    async updateRenderJob(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      from: RenderJobStatus;
+      to: RenderJobStatus;
+      providerJobId?: string;
+      output?: object;
+      errorCode?: string;
+      errorMessage?: string;
+    }) {
+      return prisma.renderJob.updateMany({
+        where: {
+          id: input.id,
+          status: input.from,
+          videoProduction: {
+            contentProject: { organizationId: input.organizationId, brandId: input.brandId },
+          },
+        },
+        data: {
+          status: input.to,
+          ...(input.providerJobId !== undefined ? { providerJobId: input.providerJobId } : {}),
+          ...(input.output !== undefined ? { output: input.output } : {}),
+          ...(input.errorCode !== undefined ? { errorCode: input.errorCode } : {}),
+          ...(input.errorMessage !== undefined ? { errorMessage: input.errorMessage } : {}),
+          ...(input.to === 'SUBMITTED' ? { startedAt: new Date() } : {}),
+          ...(['COMPLETED', 'FAILED', 'CANCELLED', 'OUTCOME_UNKNOWN'].includes(input.to)
+            ? { finishedAt: new Date() }
+            : {}),
         },
       });
     },

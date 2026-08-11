@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-11 — Wave 8 Video Providers completed
+
+- Added configurable ProviderRate and tenant-scoped ProviderUsage through migrations `20260811155225_add_video_provider_usage` and `20260811160000_add_render_job_idempotency`.
+- Added neutral AvatarVideoProvider and MotionVideoProvider contracts, HeyGen and motion client boundaries, deterministic mocks, explicit polling, cost estimation/actual cost tracking and idempotent RenderJob submission.
+- Live HeyGen execution remains `BLOCKED_EXTERNAL` until credentials and an official app/CLI-backed runtime client are supplied; no secrets or raw provider HTTP calls were added. Mock provider contracts and cross-brand isolation are green.
+
 ## 2026-08-11 — Wave 7 Media completed
 
 - Added MediaAsset, AssetUsage, VideoProduction and RenderJob persistence through migrations `20260811152452_add_media_production_foundation` and `20260811153613_add_asset_usage`.

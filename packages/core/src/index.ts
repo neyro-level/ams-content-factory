@@ -17,3 +17,4 @@ export {
   createVideoProductionService,
   videoProductionTransitions,
 } from './media';
+export { createVideoProviderService } from './video-providers';

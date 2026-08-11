@@ -6,4 +6,5 @@ export { createResearchRepository } from './repositories/research';
 export { createContentRepository } from './repositories/content';
 export { createVideoPlanningRepository } from './repositories/video-planning';
 export { createMediaRepository } from './repositories/media';
+export { createProviderUsageRepository } from './repositories/provider-usage';
 export * from './generated/prisma/client';

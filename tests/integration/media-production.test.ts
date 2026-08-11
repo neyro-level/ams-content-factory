@@ -106,6 +106,7 @@ describe('media production', () => {
       videoProductionId: created!.id,
       provider: 'remotion',
       operation: 'compose',
+      idempotencyKey: `media-render-${created!.id}`,
     });
     expect(renderJob).toEqual(expect.objectContaining({ status: 'QUEUED' }));
     await expect(
