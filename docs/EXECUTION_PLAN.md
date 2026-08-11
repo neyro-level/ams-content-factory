@@ -58,8 +58,9 @@ CI and main policy. No production deploy. Status: `DONE`.
 - W7 Media — DONE: private storage, media assets/usages, render state and isolated media tool contracts.
 - W8 Video providers — DONE; live HeyGen execution is BLOCKED_EXTERNAL, mock contracts are green.
 - W9 Captions & QC — DONE.
-- W10 Publishing — IN_PROGRESS.
-- W11–W16 — NOT_STARTED.
+- W10 Publishing — DONE: encrypted credentials, idempotent attempts and `OUTCOME_UNKNOWN` investigation contracts.
+- W11 Analytics — IN_PROGRESS.
+- W12–W16 — NOT_STARTED.
 
 | Wave               | Task sequence                                                           | Required outcome                                                     |
 | ------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |

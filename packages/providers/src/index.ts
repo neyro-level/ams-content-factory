@@ -30,6 +30,20 @@ export {
 } from './video-providers';
 export { MockTranscriptionProvider } from './transcription';
 export type { TranscriptWord, TranscriptionProvider } from './transcription';
+export {
+  InstagramPublishingProvider,
+  MockPublishingProvider,
+  VkPublishingProvider,
+} from './publishing';
+export type {
+  PublicationStatusResult,
+  PublishingCredentials,
+  PublishingPlatform,
+  PublishingProvider,
+  PublishingProviderClient,
+  PublishInput,
+  PublishResult,
+} from './publishing';
 export type {
   AvatarVideoProvider,
   HeyGenVideoAgentClient,

@@ -1,0 +1,289 @@
+import { createHash } from 'node:crypto';
+import {
+  createPublishingRepository,
+  type PrismaClient,
+  type PublicationStatus,
+  type SocialPlatform,
+} from '@ams-content-factory/db';
+import type { PublishingProvider } from '@ams-content-factory/providers';
+import { AccessDeniedError, requirePermission, type Permission } from './tenant-context';
+import { createTokenEncryptor, TokenEncryptionError } from './token-encryption';
+
+type Context = { organizationId: string; brandId?: string; permissions: Set<Permission> };
+type Encryptor = ReturnType<typeof createTokenEncryptor>;
+
+export const publicationTransitions: Record<PublicationStatus, PublicationStatus[]> = {
+  DRAFT: ['QUEUED', 'CANCELLED'],
+  QUEUED: ['PREPARING', 'CANCELLED'],
+  PREPARING: ['UPLOADING', 'PUBLISHING', 'FAILED', 'CANCELLED'],
+  UPLOADING: ['PROCESSING', 'READY_TO_FINALIZE', 'FAILED', 'OUTCOME_UNKNOWN'],
+  PROCESSING: ['READY_TO_FINALIZE', 'FAILED', 'OUTCOME_UNKNOWN'],
+  READY_TO_FINALIZE: ['PUBLISHING', 'FAILED', 'CANCELLED'],
+  PUBLISHING: ['PUBLISHED', 'FAILED', 'OUTCOME_UNKNOWN'],
+  PUBLISHED: [],
+  FAILED: ['QUEUED', 'CANCELLED'],
+  OUTCOME_UNKNOWN: ['PUBLISHED', 'QUEUED'],
+  CANCELLED: [],
+};
+
+export class PublicationOutcomeUnknownError extends Error {
+  constructor() {
+    super('Publication outcome is unknown and requires provider investigation before retry.');
+    this.name = 'PublicationOutcomeUnknownError';
+  }
+}
+
+function scope(context: Context) {
+  requirePermission(context, 'content:write');
+  if (!context.brandId) throw new AccessDeniedError('Publishing requires a brand context.');
+  return { organizationId: context.organizationId, brandId: context.brandId };
+}
+
+function fingerprint(input: { text: string; mediaKeys: string[]; accountId: string }) {
+  return createHash('sha256')
+    .update(
+      JSON.stringify({ text: input.text, mediaKeys: input.mediaKeys, accountId: input.accountId }),
+    )
+    .digest('hex');
+}
+
+export function createPublishingService(options: {
+  prisma?: PrismaClient;
+  encryptor: Encryptor;
+  providers: Record<SocialPlatform, PublishingProvider>;
+}) {
+  const repository = createPublishingRepository(options.prisma);
+  const load = async (context: Context, id: string) => {
+    const publication = await repository.findPublication({ ...scope(context), id });
+    if (!publication) throw new AccessDeniedError('Publication is outside the active tenant.');
+    return publication;
+  };
+  const transition = async (
+    context: Context,
+    id: string,
+    from: PublicationStatus,
+    to: PublicationStatus,
+    fields: {
+      externalPostId?: string;
+      permalink?: string;
+      lastAttemptId?: string;
+      publishedAt?: Date;
+    } = {},
+  ) => {
+    if (!publicationTransitions[from].includes(to)) {
+      throw new Error(`Invalid publication transition: ${from} -> ${to}`);
+    }
+    const result = await repository.updatePublication({
+      ...scope(context),
+      id,
+      from,
+      to,
+      ...fields,
+    });
+    if (result.count !== 1) throw new Error('Publication transition was rejected.');
+  };
+
+  return {
+    async connectAccount(
+      context: Context,
+      input: {
+        platform: SocialPlatform;
+        externalAccountId: string;
+        name: string;
+        username?: string;
+        scopes?: string[];
+        accessToken: string;
+        refreshToken?: string;
+        expiresAt?: Date;
+      },
+    ) {
+      const activeScope = scope(context);
+      const account = await repository.createSocialAccount({ ...activeScope, ...input });
+      if (!account) throw new AccessDeniedError('Social account is outside the active tenant.');
+      const credential = await repository.upsertCredential({
+        ...activeScope,
+        socialAccountId: account.id,
+        accessTokenCiphertext: options.encryptor.encrypt(input.accessToken),
+        ...(input.refreshToken !== undefined
+          ? { refreshTokenCiphertext: options.encryptor.encrypt(input.refreshToken) }
+          : {}),
+        ...(input.expiresAt !== undefined ? { expiresAt: input.expiresAt } : {}),
+        encryptionVersion: options.encryptor.encryptionVersion,
+      });
+      if (!credential)
+        throw new AccessDeniedError('Social credentials are outside the active tenant.');
+      return account;
+    },
+    async create(
+      context: Context,
+      input: {
+        contentProjectId: string;
+        platformVariantId: string;
+        socialAccountId: string;
+        scheduledAt?: Date;
+      },
+    ) {
+      const publication = await repository.createPublication({ ...scope(context), ...input });
+      if (!publication)
+        throw new AccessDeniedError('Publication references are outside the active tenant.');
+      return publication;
+    },
+    async schedule(context: Context, id: string) {
+      const publication = await load(context, id);
+      await transition(context, id, publication.status, 'QUEUED');
+      return load(context, id);
+    },
+    async publish(
+      context: Context,
+      input: { id: string; idempotencyKey: string; text?: string; mediaKeys?: string[] },
+    ) {
+      let publication = await load(context, input.id);
+      const priorAttempt = publication.attempts.find(
+        (attempt) => attempt.idempotencyKey === input.idempotencyKey,
+      );
+      if (publication.status === 'PUBLISHED' && priorAttempt?.status === 'SUCCEEDED') {
+        return publication;
+      }
+      if (publication.status === 'OUTCOME_UNKNOWN') throw new PublicationOutcomeUnknownError();
+      if (publication.status === 'DRAFT') {
+        await transition(context, publication.id, 'DRAFT', 'QUEUED');
+        publication = await load(context, publication.id);
+      }
+      if (publication.status === 'QUEUED') {
+        await transition(context, publication.id, 'QUEUED', 'PREPARING');
+        await transition(context, publication.id, 'PREPARING', 'PUBLISHING');
+        publication = await load(context, publication.id);
+      }
+      if (publication.status !== 'PUBLISHING') {
+        throw new Error(`Publication cannot be dispatched from ${publication.status}.`);
+      }
+      const existing = publication.attempts.find(
+        (attempt) => attempt.idempotencyKey === input.idempotencyKey,
+      );
+      if (existing?.status === 'OUTCOME_UNKNOWN') throw new PublicationOutcomeUnknownError();
+      if (existing?.status === 'SUCCEEDED') return publication;
+      const text =
+        input.text ??
+        publication.platformVariant.caption ??
+        publication.platformVariant.description ??
+        '';
+      const mediaKeys = input.mediaKeys ?? [];
+      const provider = options.providers[publication.socialAccount.platform];
+      if (!provider || provider.platform !== publication.socialAccount.platform) {
+        throw new Error(
+          `No publishing provider is configured for ${publication.socialAccount.platform}.`,
+        );
+      }
+      const credential = publication.socialAccount.credential;
+      if (!credential)
+        throw new Error('Social account credentials are required before publishing.');
+      const attempt =
+        existing ??
+        (await repository.createAttempt({
+          ...scope(context),
+          publicationId: publication.id,
+          idempotencyKey: input.idempotencyKey,
+          providerOperation: `${provider.platform.toLowerCase()}:publish`,
+          requestFingerprint: fingerprint({
+            text,
+            mediaKeys,
+            accountId: publication.socialAccountId,
+          }),
+        }));
+      if (!attempt)
+        throw new AccessDeniedError('Publication attempt is outside the active tenant.');
+      try {
+        const result = await provider.publish({
+          idempotencyKey: input.idempotencyKey,
+          externalAccountId: publication.socialAccount.externalAccountId,
+          credentials: {
+            accessToken: options.encryptor.decrypt(credential.accessTokenCiphertext),
+            ...(credential.refreshTokenCiphertext !== null
+              ? { refreshToken: options.encryptor.decrypt(credential.refreshTokenCiphertext) }
+              : {}),
+            ...(credential.expiresAt !== null ? { expiresAt: credential.expiresAt } : {}),
+          },
+          text,
+          mediaKeys,
+        });
+        if (result.status === 'OUTCOME_UNKNOWN') {
+          await repository.updateAttempt({
+            publicationId: publication.id,
+            id: attempt.id,
+            status: 'OUTCOME_UNKNOWN',
+            ...(result.providerJobId !== undefined ? { providerJobId: result.providerJobId } : {}),
+            ...(result.response !== undefined ? { response: result.response } : {}),
+          });
+          await transition(context, publication.id, 'PUBLISHING', 'OUTCOME_UNKNOWN', {
+            lastAttemptId: attempt.id,
+          });
+          throw new PublicationOutcomeUnknownError();
+        }
+        await repository.updateAttempt({
+          publicationId: publication.id,
+          id: attempt.id,
+          status: 'SUCCEEDED',
+          ...(result.providerJobId !== undefined ? { providerJobId: result.providerJobId } : {}),
+          ...(result.response !== undefined ? { response: result.response } : {}),
+        });
+        await transition(context, publication.id, 'PUBLISHING', 'PUBLISHED', {
+          lastAttemptId: attempt.id,
+          ...(result.externalPostId !== undefined ? { externalPostId: result.externalPostId } : {}),
+          ...(result.permalink !== undefined ? { permalink: result.permalink } : {}),
+          publishedAt: new Date(),
+        });
+        return load(context, publication.id);
+      } catch (error) {
+        if (error instanceof PublicationOutcomeUnknownError) throw error;
+        const message = error instanceof Error ? error.message : 'Provider publishing failed.';
+        await repository.updateAttempt({
+          publicationId: publication.id,
+          id: attempt.id,
+          status: 'FAILED',
+          errorCode:
+            error instanceof TokenEncryptionError
+              ? 'TOKEN_DECRYPT_FAILED'
+              : 'PROVIDER_PUBLISH_FAILED',
+          errorMessage: message,
+        });
+        await transition(context, publication.id, 'PUBLISHING', 'FAILED', {
+          lastAttemptId: attempt.id,
+        });
+        throw error;
+      }
+    },
+    async investigate(context: Context, id: string) {
+      const publication = await load(context, id);
+      if (publication.status !== 'OUTCOME_UNKNOWN') {
+        throw new Error('Only publications with an unknown outcome can be investigated.');
+      }
+      const attempt = publication.attempts.find((item) => item.id === publication.lastAttemptId);
+      if (!attempt) throw new Error('Unknown publication has no recorded attempt.');
+      const provider = options.providers[publication.socialAccount.platform];
+      if (!provider)
+        throw new Error(
+          `No publishing provider is configured for ${publication.socialAccount.platform}.`,
+        );
+      const status = await provider.getStatus({
+        providerOperation: attempt.providerOperation,
+        ...(attempt.providerJobId !== null ? { providerJobId: attempt.providerJobId } : {}),
+      });
+      if (status.status === 'PUBLISHED') {
+        await repository.updateAttempt({
+          publicationId: publication.id,
+          id: attempt.id,
+          status: 'SUCCEEDED',
+          ...(status.response !== undefined ? { response: status.response } : {}),
+        });
+        await transition(context, publication.id, 'OUTCOME_UNKNOWN', 'PUBLISHED', {
+          ...(status.externalPostId !== undefined ? { externalPostId: status.externalPostId } : {}),
+          ...(status.permalink !== undefined ? { permalink: status.permalink } : {}),
+          publishedAt: new Date(),
+        });
+      } else if (status.status === 'NOT_FOUND') {
+        await transition(context, publication.id, 'OUTCOME_UNKNOWN', 'QUEUED');
+      }
+      return load(context, publication.id);
+    },
+  };
+}

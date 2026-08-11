@@ -25,3 +25,9 @@ export {
   toAss,
   toSrt,
 } from './captions';
+export {
+  createPublishingService,
+  publicationTransitions,
+  PublicationOutcomeUnknownError,
+} from './publishing';
+export { createTokenEncryptor, TokenEncryptionError } from './token-encryption';

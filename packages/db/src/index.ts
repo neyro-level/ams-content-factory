@@ -8,4 +8,5 @@ export { createVideoPlanningRepository } from './repositories/video-planning';
 export { createMediaRepository } from './repositories/media';
 export { createProviderUsageRepository } from './repositories/provider-usage';
 export { createCaptionsRepository } from './repositories/captions';
+export { createPublishingRepository } from './repositories/publishing';
 export * from './generated/prisma/client';
