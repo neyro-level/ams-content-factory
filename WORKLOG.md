@@ -1,5 +1,12 @@
 # Worklog
 
+## 2026-08-11 — GitHub legacy mirror created
+
+- Created private `neyro-level/ams-content-factory`, added it as `github-legacy` and copied `main`,
+  all existing `work/*` branches and tags.
+- SourceCraft remains the only canonical `origin`, merge gate and future deployment path. GitHub is
+  updated only when the owner explicitly asks for a mirror save; no production action was performed.
+
 ## 2026-08-11 — Documentation and passport audit
 
 - Verified all required root and technical documents against `main`, the Prisma schema, the runtime

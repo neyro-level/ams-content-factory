@@ -31,7 +31,9 @@ credential, платёж, домен, необратимое действие в
 
 ## Git, SourceCraft и deploy
 
-- `origin` — только `git.sourcecraft.dev/integrator-p/ams-content-factory.git`; GitHub — лишь optional legacy mirror.
+- `origin` — только `git.sourcecraft.dev/integrator-p/ams-content-factory.git`.
+- `github-legacy` — private `github.com/neyro-level/ams-content-factory.git`; это optional mirror,
+  не merge/deploy gate и обновляется только по запросу владельца.
 - Для любого изменения: `work/*` → PR → green verify → `main`. Запрещены production/deployment/backup branches.
 - Production deploy возможен только после W16, green release-gate и явного owner confirmation.
 
