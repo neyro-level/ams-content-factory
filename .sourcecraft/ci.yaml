@@ -20,7 +20,7 @@ workflows:
               - npm install --global pnpm@11.5.1
               - pnpm --version
               - pnpm install --frozen-lockfile
-              - pnpm prisma:generate
+              - DATABASE_URL=postgresql://ci:ci@localhost:5432/ams_content_factory pnpm prisma:generate
               - pnpm lint
               - pnpm format:check
               - pnpm typecheck
