@@ -55,7 +55,7 @@ export async function resolveTenantContext(
 }
 
 export function requirePermission(
-  context: Awaited<ReturnType<typeof resolveTenantContext>>,
+  context: { permissions: Set<Permission> },
   permission: Permission,
 ) {
   if (!context.permissions.has(permission)) {

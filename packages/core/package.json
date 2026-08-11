@@ -9,6 +9,7 @@
   "dependencies": {
     "@ams-content-factory/db": "workspace:*",
     "@ams-content-factory/jobs": "workspace:*",
+    "@ams-content-factory/providers": "workspace:*",
     "@better-auth/prisma-adapter": "^1.4.15",
     "better-auth": "^1.4.15"
   },

@@ -1,2 +1,6 @@
-/** Provider contracts and adapters are introduced alongside their product waves. */
-export {};
+export {
+  assertSafeKnowledgeUrl,
+  NodeKnowledgeUrlProvider,
+  UnsafeKnowledgeUrlError,
+} from './knowledge-url';
+export type { FetchedKnowledgeSource, KnowledgeUrlProvider } from './knowledge-url';

@@ -245,6 +245,7 @@ model KnowledgeDocument {
   title String
   type KnowledgeDocumentType
   sourceUrl String?
+  sourceText String?
   status KnowledgeDocumentStatus @default(PENDING)
   checksum String?
   metadata Json?
@@ -252,6 +253,7 @@ model KnowledgeDocument {
   updatedAt DateTime @updatedAt
   brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
   chunks KnowledgeChunk[]
+  @@unique([brandId, checksum])
   @@index([organizationId, brandId, status])
   @@map("knowledge_document")
 }

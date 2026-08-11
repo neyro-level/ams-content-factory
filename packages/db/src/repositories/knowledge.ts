@@ -30,6 +30,7 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
       title: string;
       type: KnowledgeDocumentType;
       sourceUrl?: string;
+      sourceText?: string;
       checksum?: string;
       metadata?: object;
     }) {
@@ -41,6 +42,11 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
 
       return prisma.knowledgeDocument.create({
         data: { ...input, status: KnowledgeDocumentStatus.PENDING },
+      });
+    },
+    findDocumentByChecksum(input: { organizationId: string; brandId: string; checksum: string }) {
+      return prisma.knowledgeDocument.findFirst({
+        where: input,
       });
     },
     async addChunk(input: {
@@ -93,6 +99,23 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
       return prisma.knowledgeDocument.updateMany({
         where: { id: documentId, organizationId, brandId },
         data: { status: KnowledgeDocumentStatus.READY },
+      });
+    },
+    transitionDocumentStatus(input: {
+      organizationId: string;
+      brandId: string;
+      documentId: string;
+      from: KnowledgeDocumentStatus;
+      to: KnowledgeDocumentStatus;
+    }) {
+      return prisma.knowledgeDocument.updateMany({
+        where: {
+          id: input.documentId,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: input.from,
+        },
+        data: { status: input.to },
       });
     },
   };
