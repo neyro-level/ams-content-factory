@@ -40,3 +40,8 @@ export { createMcpAuthService, verifyHmacSignature } from './mcp-auth';
 export type { McpScope } from './mcp-auth';
 export { createWebhookService } from './webhooks';
 export type { OutboundWebhookTransport } from './webhooks';
+export {
+  createEvaluationService,
+  initialEvaluationSuites,
+  seedInitialEvaluationSuites,
+} from './evaluations';

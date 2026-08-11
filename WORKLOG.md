@@ -1,5 +1,12 @@
 # Worklog
 
+## 2026-08-11 — Wave 13 AI Evals completed
+
+- Added EvaluationSuite, EvaluationCase, EvaluationRun and EvaluationResult through migration `20260811174210_add_ai_evaluation_foundation`.
+- Seeded the required content-quality, brand-voice, factuality, research-quality and storyboard-quality suites. Cases retain input, expected/forbidden properties, reference context and tags; runs retain compared old/new prompt metadata.
+- Added deterministic run state machine and regression contract: every suite case requires a result, and any failed case marks the run failed.
+- Full gate is green: Prisma validation/deploy, lint, formatting, typecheck, 3 unit tests, 18 integration contracts, E2E and production build. Wave 14 UX is next.
+
 ## 2026-08-11 — Wave 12 MCP & Webhooks completed
 
 - Added hash-only scoped API keys, encrypted outbound webhook endpoint secrets and auditable webhook deliveries through migration `20260811173054_add_mcp_webhook_foundation`.

@@ -242,6 +242,13 @@ enum WebhookDeliveryStatus {
   FAILED
 }
 
+enum EvaluationRunStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   name          String
@@ -1053,6 +1060,68 @@ model WebhookDelivery {
   endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
   @@index([endpointId, status, createdAt])
   @@map("webhook_delivery")
+}
+
+model EvaluationSuite {
+  id String @id @default(uuid()) @db.Uuid
+  key String @unique
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cases EvaluationCase[]
+  runs EvaluationRun[]
+  @@map("evaluation_suite")
+}
+
+model EvaluationCase {
+  id String @id @default(uuid()) @db.Uuid
+  suiteId String @db.Uuid
+  name String
+  input Json
+  expectedProperties Json
+  forbiddenProperties Json
+  referenceContext Json?
+  tags String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  suite EvaluationSuite @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  results EvaluationResult[]
+  @@unique([suiteId, name])
+  @@index([suiteId])
+  @@map("evaluation_case")
+}
+
+model EvaluationRun {
+  id String @id @default(uuid()) @db.Uuid
+  suiteId String @db.Uuid
+  status EvaluationRunStatus @default(PENDING)
+  oldPromptKey String?
+  oldPromptVersion Int?
+  newPromptKey String?
+  newPromptVersion Int?
+  startedAt DateTime?
+  finishedAt DateTime?
+  createdAt DateTime @default(now())
+  suite EvaluationSuite @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  results EvaluationResult[]
+  @@index([suiteId, status, createdAt])
+  @@map("evaluation_run")
+}
+
+model EvaluationResult {
+  id String @id @default(uuid()) @db.Uuid
+  runId String @db.Uuid
+  caseId String @db.Uuid
+  passed Boolean
+  score Float?
+  output Json?
+  failures Json?
+  createdAt DateTime @default(now())
+  run EvaluationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  evaluationCase EvaluationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  @@unique([runId, caseId])
+  @@index([caseId])
+  @@map("evaluation_result")
 }
 
 model Approval {
