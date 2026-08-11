@@ -7,7 +7,7 @@
 - **Timeweb DBaaS package verification:** Compose syntax, POSIX shell syntax for deploy/backup/restore, Prisma validation, lint, formatting, typecheck, unit, integration, E2E and production build passed on 2026-08-11. No Timeweb cluster was provisioned or contacted.
 - **Completed Waves:** Waves 0, 2, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 and 16. Wave 1 foundation is implemented; its final gate remains deferred by owner direction.
 - **Deployment package:** `Dockerfile`, Timeweb DBaaS-compatible `docker-compose.prod.yml`, Nginx configuration, idempotent migration/seed scripts, logical backup/restore clients, health endpoints and runbooks are ready. Production Compose does not contain PostgreSQL.
-- **Remote:** private SourceCraft repository `integrator-p/ams-content-factory` is canonical `origin`; protected `main` and `verify` CI are active.
+- **Remote:** private SourceCraft repository `integrator-p/ams-content-factory` is canonical `origin`; protected `main` and `verify` CI are active. Private GitHub `neyro-level/ams-content-factory` is configured as non-canonical `github-legacy` mirror.
 
 ## Production boundary
 
