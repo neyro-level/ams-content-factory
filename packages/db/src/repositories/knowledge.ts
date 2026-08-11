@@ -49,6 +49,16 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
         where: input,
       });
     },
+    findDocumentChunks(input: { organizationId: string; brandId: string; documentId: string }) {
+      return prisma.knowledgeChunk.findMany({
+        where: {
+          documentId: input.documentId,
+          brandId: input.brandId,
+          document: { organizationId: input.organizationId, brandId: input.brandId },
+        },
+        orderBy: { ordinal: 'asc' },
+      });
+    },
     async addChunk(input: {
       organizationId: string;
       brandId: string;

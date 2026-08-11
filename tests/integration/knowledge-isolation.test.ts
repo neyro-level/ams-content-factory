@@ -1,15 +1,24 @@
 import 'dotenv/config';
 import {
+  createKnowledgeRetrievalService,
+  resolveTenantContext,
+} from '../../packages/core/src/index.js';
+import {
   createKnowledgeRepository,
   createPrismaClient,
   createTenantRepository,
   KnowledgeDocumentType,
 } from '../../packages/db/src/index.js';
+import { MockEmbeddingProvider } from '../../packages/providers/src/index.js';
 import { afterAll, describe, expect, it } from 'vitest';
 
 const prisma = createPrismaClient();
 const tenants = createTenantRepository(prisma);
 const knowledge = createKnowledgeRepository(prisma);
+const retrieval = createKnowledgeRetrievalService({
+  prisma,
+  embeddingProvider: new MockEmbeddingProvider(),
+});
 const email = 'knowledge-isolation@ams-content-factory.local';
 const slug = 'knowledge-isolation-contract';
 
@@ -75,6 +84,20 @@ describe('knowledge isolation', () => {
       knowledge.markDocumentReady(organization.id, firstBrand.id, firstDocument.id),
       knowledge.markDocumentReady(organization.id, secondBrand.id, secondDocument.id),
     ]);
+    const [firstContext, secondContext] = await Promise.all([
+      resolveTenantContext(
+        { userId: user.id, organizationId: organization.id, brandId: firstBrand.id },
+        tenants,
+      ),
+      resolveTenantContext(
+        { userId: user.id, organizationId: organization.id, brandId: secondBrand.id },
+        tenants,
+      ),
+    ]);
+    await Promise.all([
+      retrieval.embedDocument({ context: firstContext, documentId: firstDocument.id }),
+      retrieval.embedDocument({ context: secondContext, documentId: secondDocument.id }),
+    ]);
 
     const chunks = await knowledge.findChunks({
       organizationId: organization.id,
@@ -83,6 +106,12 @@ describe('knowledge isolation', () => {
     });
     expect(chunks).toHaveLength(1);
     expect(chunks[0]?.content).toBe('Секрет первого бренда');
+    await expect(
+      retrieval.embedDocument({ context: firstContext, documentId: secondDocument.id }),
+    ).resolves.toBe(0);
+    await expect(retrieval.search({ context: firstContext, query: 'Секрет' })).resolves.toEqual([
+      expect.objectContaining({ documentId: firstDocument.id, content: 'Секрет первого бренда' }),
+    ]);
 
     await expect(
       knowledge.addChunk({

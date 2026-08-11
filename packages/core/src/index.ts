@@ -4,3 +4,5 @@ export type { Permission } from './tenant-context';
 export { enqueueWorkflowRun } from './workflows';
 export { createKnowledgeIngestionService, KnowledgeIngestionError } from './knowledge-ingestion';
 export type { KnowledgeSource } from './knowledge-ingestion';
+export { createKnowledgeRetrievalService } from './knowledge-retrieval';
+export type { KnowledgeRetrievalHit } from './knowledge-retrieval';

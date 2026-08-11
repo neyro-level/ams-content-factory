@@ -1,9 +1,11 @@
 import 'dotenv/config';
 import {
   createKnowledgeIngestionService,
+  createKnowledgeRetrievalService,
   resolveTenantContext,
 } from '../../packages/core/src/index.js';
 import { createPrismaClient, createTenantRepository } from '../../packages/db/src/index.js';
+import { MockEmbeddingProvider } from '../../packages/providers/src/index.js';
 import { afterAll, describe, expect, it } from 'vitest';
 
 const prisma = createPrismaClient();
@@ -40,6 +42,10 @@ describe('knowledge ingestion', () => {
       tenants,
     );
     const service = createKnowledgeIngestionService({ prisma });
+    const retrieval = createKnowledgeRetrievalService({
+      prisma,
+      embeddingProvider: new MockEmbeddingProvider(),
+    });
     const source = {
       kind: 'TEXT' as const,
       context,
@@ -59,6 +65,14 @@ describe('knowledge ingestion', () => {
     expect(document.checksum).toHaveLength(64);
     expect(chunks).toHaveLength(1);
     expect(chunks[0]?.content).toBe(source.text);
+    await expect(retrieval.embedDocument({ context, documentId: first.id })).resolves.toBe(1);
+    await expect(retrieval.search({ context, query: 'Проверяемый контент' })).resolves.toEqual([
+      expect.objectContaining({
+        chunkId: chunks[0]?.id,
+        documentId: first.id,
+        content: source.text,
+      }),
+    ]);
 
     await expect(
       service.ingest({

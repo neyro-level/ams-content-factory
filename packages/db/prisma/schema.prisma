@@ -265,6 +265,7 @@ model KnowledgeChunk {
   ordinal Int
   content String
   tokenCount Int?
+  embedding Unsupported("vector")?
   metadata Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

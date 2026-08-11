@@ -31,3 +31,11 @@ The application service accepts direct text and UTF-8 text files, creates ordere
 documents from `PENDING` to `PROCESSING` to `READY` (or `FAILED` on processing error). URL ingestion is
 performed only through the provider boundary: it rejects private/local targets, nonstandard ports,
 private DNS results, unsafe redirects, compressed/non-text responses and oversized payloads.
+
+## Applied Wave 3.4 retrieval
+
+Migration `20260811170000_add_knowledge_embeddings` adds nullable `vector(1536)` embeddings to
+`KnowledgeChunk`, an HNSW cosine index and a GIN full-text index. Prisma 7 models the vector field as
+`Unsupported("vector")`; every vector write and retrieval query uses parameterized raw SQL. Hybrid retrieval
+scores cosine similarity (70%) and full-text relevance (30%), filters documents by organization, brand,
+`READY` status and optional document type, and returns only bounded top-N chunks.

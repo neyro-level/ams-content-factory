@@ -33,20 +33,20 @@ logging and audit; `W2.5` restart/idempotency tests and green closure. Status: `
 
 ## Wave 3 — Brand Intelligence & Knowledge
 
-| Task | Цель и области                                                    | Зависимости | Проверка / DoD                                            | Статус      |
-| ---- | ----------------------------------------------------------------- | ----------- | --------------------------------------------------------- | ----------- |
-| W3.1 | BrandProfile, BrandVoice и ContentPillar.                         | W2          | Prisma migration и tenant-scoped repository.              | DONE        |
-| W3.2 | KnowledgeDocument и KnowledgeChunk.                               | W3.1        | Migration, repository и cross-brand integration contract. | DONE        |
-| W3.3 | Безопасный ingestion URL/text/file, checksum и document statuses. | W3.2        | SSRF/file safety tests, idempotency и lifecycle contract. | DONE        |
-| W3.4 | Embeddings и hybrid retrieval через pgvector.                     | W3.3        | Prisma 7 compatibility check, retrieval contracts.        | IN_PROGRESS |
-| W3.5 | Расширить brand-isolation tests.                                  | W3.4        | Cross-brand negative cases for all retrieval paths.       | NOT_STARTED |
-| W3.6 | Закрыть Wave 3.                                                   | W3.1–W3.5   | Full quality gate, docs and local green commit.           | NOT_STARTED |
+| Task | Цель и области                                                    | Зависимости | Проверка / DoD                                            | Статус |
+| ---- | ----------------------------------------------------------------- | ----------- | --------------------------------------------------------- | ------ |
+| W3.1 | BrandProfile, BrandVoice и ContentPillar.                         | W2          | Prisma migration и tenant-scoped repository.              | DONE   |
+| W3.2 | KnowledgeDocument и KnowledgeChunk.                               | W3.1        | Migration, repository и cross-brand integration contract. | DONE   |
+| W3.3 | Безопасный ingestion URL/text/file, checksum и document statuses. | W3.2        | SSRF/file safety tests, idempotency и lifecycle contract. | DONE   |
+| W3.4 | Embeddings и hybrid retrieval через pgvector.                     | W3.3        | Prisma 7 compatibility check, retrieval contracts.        | DONE   |
+| W3.5 | Расширить brand-isolation tests.                                  | W3.4        | Cross-brand negative cases for all retrieval paths.       | DONE   |
+| W3.6 | Закрыть Wave 3.                                                   | W3.1–W3.5   | Full quality gate, docs and local green commit.           | DONE   |
 
 ## Wave 3.5 — SourceCraft inception
 
 After green W3 only: verify Doppler PAT without printing it, discover the owner AMS organization,
 create private `ams-content-factory`, set it as `origin`, push local `main`, add SourceCraft verify
-CI and main policy. No production deploy. Status: `NOT_STARTED`.
+CI and main policy. No production deploy. Status: `IN_PROGRESS`.
 
 ## Subsequent Waves
 
