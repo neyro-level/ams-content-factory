@@ -6,4 +6,5 @@
 - **Source of truth:** `docs/MASTER_DEVELOPMENT_PLAN.md`.
 - **Remote:** private SourceCraft repository `integrator-p/ams-content-factory` is canonical `origin`.
 - **GitHub mirror:** private `neyro-level/ams-content-factory` as `github-legacy`; it is never a merge or deploy gate and updates only on owner request.
-- **Deploy:** Timeweb Cloud: отдельный application server/domain и отдельный managed PostgreSQL DBaaS с pgvector. Production deploy допускается только после Wave 16 и отдельного подтверждения инфраструктуры.
+- **Production domain:** `https://fabrika.ams24.ru` (DNS A-record указывает на AMS Server; выпуск TLS и запуск приложения ожидают подключения Timeweb DBaaS).
+- **Deploy:** AMS Server (`5.42.100.161`): host Nginx + systemd + immutable release; отдельный managed PostgreSQL DBaaS Timeweb Cloud с pgvector. `docker-compose.prod.yml` остаётся переносимым проверенным пакетом, но не является runtime-профилем AMS Server. Production deploy допускается только после Wave 16, готовности DBaaS и отдельного подтверждения инфраструктуры.

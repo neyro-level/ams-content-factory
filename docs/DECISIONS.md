@@ -37,3 +37,18 @@
 - **Context:** The approved Master Plan requires managed PostgreSQL and the owner selected Timeweb Cloud DBaaS before the production database exists.
 - **Decision:** Timeweb Cloud DBaaS is the only production PostgreSQL + pgvector runtime. `docker-compose.prod.yml` contains web, worker, Nginx and one-shot maintenance clients only; it never creates a PostgreSQL server or persistent database volume. Local Docker PostgreSQL remains development/test-only. Install pinned pnpm through npm rather than Corepack and apply schema only with `prisma migrate deploy`.
 - **Consequences:** Timeweb operates the database runtime, availability and native backups; the application retains migrations, least-privilege database access and a tested logical backup/restore client. Cluster creation, pgvector activation, credentials, TLS settings and production release remain explicit external operations.
+
+## ADR-007 — AMS Server runtime profile and production domain
+
+- **Context:** The owner assigned AMS Content Factory to the existing AMS Server and registered
+  `fabrika.ams24.ru`. That server already uses host Nginx, Certbot, systemd and release/current layouts
+  for Next.js services; it has a constrained resource budget and existing public services.
+- **Decision:** Use the AMS Server canonical profile: immutable application releases under
+  `/opt/ams-platform/ams-content-factory`, a systemd web service on an internally bound port, host Nginx
+  and Certbot for `fabrika.ams24.ru`, and Timeweb Cloud DBaaS as the only production PostgreSQL runtime.
+  Keep `docker-compose.prod.yml` as the tested portable/CI package, not as a second production proxy or
+  database topology on AMS Server.
+- **Consequences:** The application will not bind public ports or start a Docker Nginx container. An exact
+  SourceCraft-main artifact, server env file, verified DBaaS connection, `pgvector`, TLS certificate and
+  health smoke are mandatory before activating `current`. The initial source snapshot is staging only and
+  is not a deploy proof.

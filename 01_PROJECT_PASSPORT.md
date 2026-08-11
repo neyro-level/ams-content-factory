@@ -39,8 +39,9 @@ pg-boss. Локальная разработка и tests используют D
 
 Канонический remote — private SourceCraft `integrator-p/ams-content-factory`. Любое изменение проходит
 `work/*` → PR → green `verify` → `main`. Production deploy не выполнялся и остаётся
-`BLOCKED_EXTERNAL` до создания Timeweb-кластера, настройки TLS/backups, сервера, домена и отдельного
-подтверждения инфраструктуры владельцем.
+`BLOCKED_EXTERNAL` до передачи и проверки подключения к Timeweb DBaaS, включения `pgvector`, настройки
+TLS/backups и отдельного подтверждения инфраструктуры владельцем. Целевой production origin —
+`https://fabrika.ams24.ru`; DNS указывает на AMS Server, но публичный vhost и сертификат ещё не включены.
 
 GitHub `neyro-level/ams-content-factory` существует как private remote `github-legacy`: это полная
 резервная копия Git-истории по отдельному запросу владельца, но не источник истины, не CI gate и не
