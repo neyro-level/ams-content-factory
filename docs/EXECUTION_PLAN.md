@@ -22,8 +22,8 @@
 | ---- | ------------------------------------------------------------------ | ----------- | ---------------------------------------------------------- | ----------- |
 | W1.1 | Prisma 7 bootstrap, PostgreSQL driver adapter, pgvector migration. | W0          | Empty-DB migrate, Prisma validate, repository integration. | DONE        |
 | W1.2 | Better Auth and core identity schema.                              | W1.1        | Register/login/session tests.                              | DONE        |
-| W1.3 | Organization, Membership, Brand and BrandAccess.                   | W1.2        | Tenant-scoped repository tests.                            | IN_PROGRESS |
-| W1.4 | Tenant context, RBAC and audit base.                               | W1.3        | Cross-tenant and permission-denied tests.                  | NOT_STARTED |
+| W1.3 | Organization, Membership, Brand and BrandAccess.                   | W1.2        | Tenant-scoped repository tests.                            | DONE        |
+| W1.4 | Tenant context, RBAC and audit base.                               | W1.3        | Cross-tenant and permission-denied tests.                  | IN_PROGRESS |
 | W1.5 | Close Wave 1 with full docs and green commit.                      | W1.1–W1.4   | lint/typecheck/unit/integration/E2E/build green.           | NOT_STARTED |
 
 ## Wave 2 — Background Infrastructure

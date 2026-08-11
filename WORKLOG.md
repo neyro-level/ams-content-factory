@@ -7,6 +7,7 @@
 - Better Auth is instantiated lazily on the first authentication request, so `next build` does not require a live database connection.
 - Integration tests confirm the pgvector extension, tenant foundation tables and the Better Auth `ok` contract.
 - Registration, login and session retrieval are covered through the real Better Auth route contract; W1.2 is complete.
+- Tenant repositories and the server-only RBAC context now reject cross-organization brands and permission-denied operations; W1.3 is complete and W1.4 is in progress.
 
 ## 2026-08-11 — Wave 0 started
 
