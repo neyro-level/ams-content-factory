@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'AMS Content Factory',
-  description: 'Операционная система для полного цикла производства контента.',
+  description: 'Операционная система полного цикла производства контента.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

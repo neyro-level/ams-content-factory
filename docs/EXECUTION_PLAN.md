@@ -62,8 +62,9 @@ CI and main policy. No production deploy. Status: `DONE`.
 - W11 Analytics — DONE: raw/normalized snapshots, configurable collection policy and non-mutating learning insights.
 - W12 MCP — DONE: scoped hash-only API keys, MCP service boundary and HMAC n8n/outbound webhook foundation.
 - W13 AI Evals — DONE: seeded suites, cases, prompt comparison metadata and regression contracts.
-- W14 UX — IN_PROGRESS.
-- W15–W16 — NOT_STARTED.
+- W14 UX — DONE: accessible responsive operational shell and empty/disabled states.
+- W15 Hardening — IN_PROGRESS.
+- W16 — NOT_STARTED.
 
 | Wave               | Task sequence                                                           | Required outcome                                                     |
 | ------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
