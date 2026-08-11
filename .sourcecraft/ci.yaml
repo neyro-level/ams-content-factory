@@ -15,7 +15,7 @@ workflows:
       - name: quality-gate
         cubes:
           - name: node-verify
-            image: docker.io/library/node:22.13.0
+            image: docker.io/library/node:22
             script:
               - npm install --global pnpm@11.5.1
               - pnpm --version
