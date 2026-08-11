@@ -39,6 +39,14 @@ enum BrandAccessRole {
   VIEW
 }
 
+enum WorkflowRunStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   name          String
@@ -114,6 +122,7 @@ model Organization {
   memberships Membership[]
   brands      Brand[]
   auditEvents AuditLog[]
+  workflowRuns WorkflowRun[]
 
   @@map("organization")
 }
@@ -150,10 +159,34 @@ model Brand {
   organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   accesses       BrandAccess[]
   auditEvents    AuditLog[]
+  workflowRuns   WorkflowRun[]
 
   @@unique([organizationId, slug])
   @@index([organizationId, status])
   @@map("brand")
+}
+
+model WorkflowRun {
+  id             String            @id @default(uuid()) @db.Uuid
+  organizationId String            @db.Uuid
+  brandId        String?           @db.Uuid
+  type           String
+  status         WorkflowRunStatus @default(QUEUED)
+  idempotencyKey String
+  payload        Json?
+  result         Json?
+  error          Json?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  brand          Brand?            @relation(fields: [brandId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([organizationId, idempotencyKey])
+  @@index([organizationId, status, createdAt])
+  @@index([brandId, status])
+  @@map("workflow_run")
 }
 
 model BrandAccess {

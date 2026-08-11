@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "dependencies": {
+    "@ams-content-factory/jobs": "workspace:*",
+    "@ams-content-factory/db": "workspace:*"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit"
   }
