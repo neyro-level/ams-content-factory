@@ -1,5 +1,17 @@
 # Worklog
 
+## 2026-08-11 — Documentation and passport audit
+
+- Verified all required root and technical documents against `main`, the Prisma schema, the runtime
+  scripts and SourceCraft remote policy.
+- Expanded `01_PROJECT_PASSPORT.md` into the full product/architecture/runtime passport and completed
+  `docs/DATA_MODEL.md` through Waves 4–13 plus cross-cutting state.
+- Corrected active-document drift: SourceCraft policy is now present-state rather than a pre-W3.5
+  instruction, W14/design-system wording is consistent, and local onboarding uses the new
+  `.env.development.example` instead of the Timeweb production template.
+- Replaced the imported other-project design document with an AMS Content Factory legacy redirect and
+  expanded `03_DESIGN_SYSTEM.md` into the canonical, code-aligned operational UI baseline.
+
 ## 2026-08-11 — Production database switched to Timeweb Cloud DBaaS
 
 - Aligned the Wave 16 package with the Master Plan and owner decision: production PostgreSQL is now exclusively Timeweb Cloud DBaaS with pgvector; it is not started by `docker-compose.prod.yml` and has no application-managed database volume.

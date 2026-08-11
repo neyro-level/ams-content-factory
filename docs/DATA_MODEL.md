@@ -39,3 +39,36 @@ Migration `20260811170000_add_knowledge_embeddings` adds nullable `vector(1536)`
 `Unsupported("vector")`; every vector write and retrieval query uses parameterized raw SQL. Hybrid retrieval
 scores cosine similarity (70%) and full-text relevance (30%), filters documents by organization, brand,
 `READY` status and optional document type, and returns only bounded top-N chunks.
+
+## Applied Waves 4–5: research and content
+
+- Research: `ResearchInboxItem`, `ResearchSource`, `ResearchItem`, `ResearchReport`, `Claim`, `Evidence`
+  and `ContentOpportunity` retain provenance, classification and the evidence path to a content decision.
+- Content: `ContentProject`, immutable `ContentVersion`, `PlatformVariant`, `Approval` and
+  `EditorialComment` model the editorial state machine and human review.
+
+## Applied Waves 6–9: video and media production
+
+- Planning: `VideoRecipe`, `Storyboard` and `StoryboardBeat` describe validated reusable video plans.
+- Media: `MediaAsset`, `AssetUsage`, `VideoProduction` and `RenderJob` keep private assets,
+  production state and idempotent rendering separate.
+- Providers and quality: `ProviderRate`, `ProviderUsage`, `Transcript`, `CaptionTrack` and `QcReport`
+  retain cost, captions and technical/visual/content QC without embedding provider state in the domain.
+
+## Applied Waves 10–13: publishing, analytics and integrations
+
+- Publishing: `SocialAccount`, encrypted `SocialCredential`, `Publication` and `PublicationAttempt`
+  support idempotent publishing and explicit investigation of unknown outcomes.
+- Analytics: `MetricSnapshot` stores raw/normalised measures, while `PerformanceInsight` stores a
+  non-mutating recommendation and experiment proposal.
+- MCP/webhooks: `ApiKey`, `WebhookEndpoint` and `WebhookDelivery` store hash-only access keys,
+  encrypted endpoint secrets and signed delivery audit.
+- Evaluation: `EvaluationSuite`, `EvaluationCase`, `EvaluationRun` and `EvaluationResult` implement
+  seeded AI evaluation suites and regression results.
+
+## Cross-cutting state
+
+`WorkflowRun`, `BrandAccess` and append-only `AuditLog` provide execution visibility, explicit brand
+permissions and compliance history. Every tenant-owned relation remains constrained through the
+organization/brand context; complete model definitions, indexes and enums are canonical in
+`packages/db/prisma/schema.prisma`.

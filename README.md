@@ -6,8 +6,9 @@ AMS Content Factory — внутренняя AMS-платформа полног
 ## Быстрый старт
 
 1. Установить Node.js `22.13+` и pnpm `11.5+`.
-2. Скопировать `.env.example` в `.env.local` и не добавлять секреты в Git.
-3. Выполнить `pnpm install`, затем `pnpm db:up` и `pnpm dev`.
+2. Скопировать `.env.development.example` в `.env`; production-шаблон `.env.example` не применять
+   для local development и не добавлять `.env` в Git.
+3. Выполнить `pnpm install`, затем `pnpm db:up`, `pnpm prisma:deploy` и `pnpm dev`.
 
 ## Проверки
 
@@ -21,5 +22,4 @@ pnpm test:e2e
 pnpm build
 ```
 
-Перед работой читать `AGENTS.md`, затем `docs/MASTER_DEVELOPMENT_PLAN.md`,
-`docs/EXECUTION_PLAN.md`, `docs/BUILD_STATUS.md` и `docs/DECISIONS.md`.
+Перед работой читать `AGENTS.md`, затем `00_PROJECT_DOCUMENTS_INDEX.md`.
