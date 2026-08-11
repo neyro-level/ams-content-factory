@@ -64,20 +64,20 @@ CI and main policy. No production deploy. Status: `DONE`.
 - W13 AI Evals — DONE: seeded suites, cases, prompt comparison metadata and regression contracts.
 - W14 UX — DONE: accessible responsive operational shell and empty/disabled states.
 - W15 Hardening — DONE: security/architecture audit, repository-boundary remediation and repeat gate.
-- W16 Production — DONE: Docker/Nginx package, migration/seed, backup/restore runbooks and fresh-DB quality gate are complete; production deployment remains `BLOCKED_EXTERNAL` pending explicit infrastructure approval.
+- W16 Production — DONE: Timeweb DBaaS-compatible Docker/Nginx package, migration/seed, backup/restore runbooks and fresh-DB quality gate are complete; production deployment remains `BLOCKED_EXTERNAL` pending Timeweb cluster/TLS/backup setup and explicit infrastructure approval.
 
-| Wave               | Task sequence                                                           | Required outcome                                                     |
-| ------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| W4 Research        | Inbox → sources → extraction → reports → Claim/Evidence → opportunities | SSRF-safe research path with provenance.                             |
-| W5 Content         | project/version → generation → review → facts → approval                | Controlled content state machine.                                    |
-| W6 Video planning  | recipes → validation → storyboard → visual jobs                         | Reusable, validated production plans.                                |
-| W7 Media           | assets → storage → render/video states → FFmpeg/Remotion                | Composable media production foundation.                              |
-| W8 Video providers | contracts → HeyGen/Motion adapters → mocks → polling/costs              | Provider-neutral video generation.                                   |
-| W9 Captions & QC   | transcript → captions → burn-in → technical/visual/content QC           | Mock pipeline produces verified MP4.                                 |
-| W10 Publishing     | accounts/credentials → Publication → scheduler → Instagram/VK           | Idempotent mock social E2E and `OUTCOME_UNKNOWN`.                    |
-| W11 Analytics      | snapshots → normalized metrics → dashboard → costs/learning             | Measured feedback loop.                                              |
-| W12 MCP            | auth/scopes → tools → signed n8n and outbound webhooks                  | MCP calls application services only.                                 |
-| W13 AI Evals       | suites → cases → runs/results → regression CI                           | Prompt quality is regression-tested.                                 |
-| W14 UX             | approved design system → states → responsive/a11y cleanup               | No temporary UI remains.                                             |
-| W15 Hardening      | security audit → architecture audit → fixes → repeat audit              | No critical tenant/auth/provider/secrets debt.                       |
-| W16 Production     | Docker/Nginx → migration/backup/runbooks → manual SC deploy gate        | Deployment package ready; live deploy waits for inputs and owner OK. |
+| Wave               | Task sequence                                                                    | Required outcome                                                             |
+| ------------------ | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| W4 Research        | Inbox → sources → extraction → reports → Claim/Evidence → opportunities          | SSRF-safe research path with provenance.                                     |
+| W5 Content         | project/version → generation → review → facts → approval                         | Controlled content state machine.                                            |
+| W6 Video planning  | recipes → validation → storyboard → visual jobs                                  | Reusable, validated production plans.                                        |
+| W7 Media           | assets → storage → render/video states → FFmpeg/Remotion                         | Composable media production foundation.                                      |
+| W8 Video providers | contracts → HeyGen/Motion adapters → mocks → polling/costs                       | Provider-neutral video generation.                                           |
+| W9 Captions & QC   | transcript → captions → burn-in → technical/visual/content QC                    | Mock pipeline produces verified MP4.                                         |
+| W10 Publishing     | accounts/credentials → Publication → scheduler → Instagram/VK                    | Idempotent mock social E2E and `OUTCOME_UNKNOWN`.                            |
+| W11 Analytics      | snapshots → normalized metrics → dashboard → costs/learning                      | Measured feedback loop.                                                      |
+| W12 MCP            | auth/scopes → tools → signed n8n and outbound webhooks                           | MCP calls application services only.                                         |
+| W13 AI Evals       | suites → cases → runs/results → regression CI                                    | Prompt quality is regression-tested.                                         |
+| W14 UX             | approved design system → states → responsive/a11y cleanup                        | No temporary UI remains.                                                     |
+| W15 Hardening      | security audit → architecture audit → fixes → repeat audit                       | No critical tenant/auth/provider/secrets debt.                               |
+| W16 Production     | Timeweb DBaaS + Docker/Nginx → migration/backup/runbooks → manual SC deploy gate | Deployment package ready; live deploy waits for Timeweb inputs and owner OK. |

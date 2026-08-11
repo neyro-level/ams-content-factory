@@ -6,7 +6,7 @@
 - Brand intelligence and knowledge: profiles, voice, pillars, safe URL/text/file ingestion, checksums, pgvector hybrid retrieval and isolation contracts.
 - Research, content approval state machine, video planning, media/render abstraction, captions/QC, publishing state machine, analytics, costs, MCP/n8n foundation and AI evaluations.
 - Accessible responsive operational UI, local mock provider workflow and SourceCraft protected CI flow.
-- Wave 16 package: Docker, Compose, Nginx, liveness/readiness checks, migrations, idempotent seed, backup/restore/deploy scripts and operating runbooks.
+- Wave 16 package: Timeweb Cloud DBaaS-compatible Docker Compose for web/worker/Nginx, liveness/readiness checks, migrations, idempotent seed, logical backup/restore clients and operating runbooks.
 
 ## 2. Не реализовано как live operation
 
@@ -15,7 +15,7 @@
 ## 3. BLOCKED_EXTERNAL
 
 - Production server, network access, final domain and TLS configuration.
-- Production database and S3 parameters.
+- Timeweb Cloud PostgreSQL DBaaS cluster, enabled pgvector, TLS/connection parameters and backup policy; S3 parameters.
 - OpenAI, HeyGen, Motion, Instagram and VK production credentials/official runtime authorization.
 - Стабильный доступ Docker build к npm registry: две локальные попытки остановились на socket reset, после успешного base-image/system setup.
 
@@ -25,7 +25,7 @@ Modular monolith: Next.js UI/API → core application services → tenant-scoped
 
 ## 5. Database
 
-18 Prisma migrations apply from an empty PostgreSQL 16 + pgvector database using `prisma migrate deploy`. Production packaging never uses `prisma db push`. The idempotent seed installs six video recipes and five evaluation suites; it does not create a fake customer or publication.
+18 Prisma migrations apply from an empty PostgreSQL 16 + pgvector database using `prisma migrate deploy`. Production uses Timeweb Cloud DBaaS rather than a PostgreSQL container; the Compose package never uses `prisma db push`. The idempotent seed installs six video recipes and five evaluation suites; it does not create a fake customer or publication.
 
 ## 6. Security
 
@@ -45,7 +45,7 @@ The MCP SDK tool catalogue is an application-edge composition point: its transpo
 
 ## 10. Required production inputs
 
-Server IP/hostname, SSH user/port, OS and Docker availability; final domain/TLS; production database URL and SSL policy; S3 endpoint/bucket/credentials; social app credentials; AI/provider credentials; explicit owner confirmation of infrastructure and release window.
+Server IP/hostname, SSH user/port, OS and Docker availability; final domain/TLS; Timeweb DBaaS cluster with enabled pgvector, production database URL and TLS policy; S3 endpoint/bucket/credentials; social app credentials; AI/provider credentials; explicit owner confirmation of infrastructure and release window.
 
 ## 11. Deployment instructions
 

@@ -2,19 +2,24 @@
 
 ## Граница ответственности
 
-Пакет Wave 16 подготовлен для self-hosted production: PostgreSQL 16 с pgvector, Next.js web,
-отдельный pg-boss worker и Nginx. Фактическое развёртывание запрещено до отдельного подтверждения
-инфраструктуры владельцем.
+Production-пакет использует Timeweb Cloud DBaaS как единственный PostgreSQL 16 + pgvector runtime.
+`docker-compose.prod.yml` запускает только Next.js web, отдельный pg-boss worker, Nginx и одноразовые
+клиенты миграции/seed/backup/restore; в нём нет PostgreSQL-сервиса или database volume. Фактическое
+развёртывание запрещено до отдельного подтверждения инфраструктуры владельцем.
 
 ## Подготовка сервера
 
-1. Получить доступ к Linux-серверу с Docker Engine и Docker Compose v2.
-2. Клонировать SourceCraft `main` в каталог, доступный только оператору.
-3. Скопировать `.env.example` в `.env`, заменить все placeholder-значения и ограничить права на файл.
-4. Указать в `APP_URL` финальный HTTPS origin. Для встроенной БД URL обязан ссылаться на сервис
-   `postgres`; для внешней БД изменяется compose-конфигурация после документированного review.
-5. Настроить TLS перед Nginx на уровне согласованного reverse proxy или добавить сертификат в
-   отдельной инфраструктурной задаче. Пакет не выдаёт фиктивный TLS-сертификат.
+1. В Timeweb Cloud создать managed PostgreSQL 16 cluster и включить расширение `pgvector` для
+   нужной базы до запуска Prisma migrations.
+2. В панели Timeweb зафиксировать TLS-подключение и backup policy. Использовать private network,
+   если application server и DBaaS размещены в одном Timeweb project; иначе ограничить доступный
+   IP-адрес сервера приложения.
+3. Получить доступ к Linux-серверу с Docker Engine и Docker Compose v2, затем клонировать
+   SourceCraft `main` в каталог, доступный только оператору.
+4. Скопировать `.env.example` в `.env`, заменить все placeholder-значения и ограничить права на
+   файл. `DATABASE_URL` копируется из панели Timeweb и не может указывать на `postgres`.
+5. Указать в `APP_URL` финальный HTTPS origin и настроить TLS перед Nginx на уровне согласованного
+   reverse proxy. Пакет не выдаёт фиктивный TLS-сертификат.
 
 ## Повторяемый запуск
 
@@ -22,9 +27,10 @@
 sh deploy/deploy.sh
 ```
 
-Скрипт собирает контейнеры, применяет только Prisma migrations через `prisma migrate deploy`,
-идемпотентно заполняет глобальные video recipes и evaluation suites, затем запускает `postgres`,
-`web`, `worker` и `nginx`. Он никогда не выполняет `prisma db push`.
+Скрипт собирает контейнеры, подключается к Timeweb DBaaS через `DATABASE_URL`, применяет только
+Prisma migrations через `prisma migrate deploy`, идемпотентно заполняет глобальные video recipes и
+evaluation suites, затем запускает `web`, `worker` и `nginx`. Он никогда не выполняет
+`prisma db push` и не создаёт PostgreSQL-контейнер.
 
 ## Проверка после запуска
 

@@ -1,8 +1,15 @@
 # Worklog
 
+## 2026-08-11 — Production database switched to Timeweb Cloud DBaaS
+
+- Aligned the Wave 16 package with the Master Plan and owner decision: production PostgreSQL is now exclusively Timeweb Cloud DBaaS with pgvector; it is not started by `docker-compose.prod.yml` and has no application-managed database volume.
+- Kept Docker PostgreSQL 16 + pgvector only in `docker-compose.dev.yml` for isolated development and test work. Production Compose now runs web, worker, Nginx and one-shot migration/seed/logical-backup/restore clients.
+- Updated the environment contract, Timeweb/TLS/pgvector preparation checklist, operations, deployment and recovery runbooks. No production infrastructure was created or deployed; Timeweb cluster, connection, TLS and backup-policy setup remain `BLOCKED_EXTERNAL` until the owner provisions them.
+- Verified Compose and portable POSIX shell syntax, then passed Prisma validation, lint, formatting, typecheck, unit, integration, E2E and production build on Node 22.13.
+
 ## 2026-08-11 — Wave 16 Production package completed
 
-- Added a pinned Node 22.13 Docker image, production Compose topology (`postgres`, `web`, `worker`, `nginx`) and Nginx reverse proxy with restrictive headers.
+- Added a pinned Node 22.13 Docker image, initial production Compose topology and Nginx reverse proxy with restrictive headers. The initial self-hosted PostgreSQL topology was superseded by the Timeweb Cloud DBaaS decision above.
 - Made `/api/health/ready` verify PostgreSQL via a database repository and core application service; `/api/health/live` remains process liveness. Added a worker start command and a pnpm v11 `allowBuilds` policy that approves only reviewed `esbuild` postinstall.
 - Added idempotent migrations/seed operations, backup/restore/deploy scripts, environment contract, production checklist and runbooks. Seed initializes only global video recipes and evaluation suites, never demo tenants or social publications.
 - Applied all 18 migrations and seed to an isolated clean PostgreSQL 16 + pgvector container, then passed Prisma validation, lint, formatting, typecheck, 4 unit tests, 18 integration contracts, 2 responsive E2E contracts and production build.
