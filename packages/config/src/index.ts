@@ -7,9 +7,13 @@ export interface HealthPayload {
   readonly timestamp: string;
 }
 
-export function buildHealthPayload(check: HealthCheckKind, now = new Date()): HealthPayload {
+export function buildHealthPayload(
+  check: HealthCheckKind,
+  now = new Date(),
+  ok = true,
+): HealthPayload {
   return {
-    ok: true,
+    ok,
     service: 'ams-content-factory',
     check,
     timestamp: now.toISOString(),

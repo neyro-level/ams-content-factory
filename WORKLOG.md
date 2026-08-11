@@ -1,5 +1,13 @@
 # Worklog
 
+## 2026-08-11 — Wave 16 Production package completed
+
+- Added a pinned Node 22.13 Docker image, production Compose topology (`postgres`, `web`, `worker`, `nginx`) and Nginx reverse proxy with restrictive headers.
+- Made `/api/health/ready` verify PostgreSQL via a database repository and core application service; `/api/health/live` remains process liveness. Added a worker start command and a pnpm v11 `allowBuilds` policy that approves only reviewed `esbuild` postinstall.
+- Added idempotent migrations/seed operations, backup/restore/deploy scripts, environment contract, production checklist and runbooks. Seed initializes only global video recipes and evaluation suites, never demo tenants or social publications.
+- Applied all 18 migrations and seed to an isolated clean PostgreSQL 16 + pgvector container, then passed Prisma validation, lint, formatting, typecheck, 4 unit tests, 18 integration contracts, 2 responsive E2E contracts and production build.
+- Docker image construction was attempted twice; the only failure was npm registry socket resets inside Docker after base image and system setup. Production deploy is not attempted and is `BLOCKED_EXTERNAL` pending infrastructure inputs and explicit owner confirmation.
+
 ## 2026-08-11 — Wave 15 Hardening completed
 
 - Completed security and architecture audits in `docs/HARDENING_AUDIT.md`; production dependency audit reports zero vulnerabilities.

@@ -29,3 +29,9 @@
 - **Context:** pg-boss supports Node 22.12+, but the pinned pnpm 11.5 runtime requires Node 22.13+.
 - **Decision:** Pin the project to Node 22.13+ and below Node 23.
 - **Consequences:** The system Node 24 is not the project runtime; `fnm` supplies the compatible local version.
+
+## ADR-006 — Production packaging
+
+- **Context:** Wave 16 requires a reproducible production package before any production credentials or server access exist.
+- **Decision:** Ship one pinned Node 22.13 Docker image for web, worker and migrations; compose PostgreSQL 16 + pgvector and Nginx as separate services. Install pinned pnpm through npm rather than Corepack. Use `prisma migrate deploy` only.
+- **Consequences:** The package can be built and reviewed locally without credentials. Actual server deployment, TLS choice, external database topology and live provider authorisation remain explicit external operations.
