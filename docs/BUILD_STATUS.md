@@ -2,22 +2,11 @@
 
 ## Current verified checkpoint
 
-- **Current Wave:** 1 — Database & Identity Foundation
-- **Current Task:** W1.4 — tenant context, RBAC and audit base
-- **Completed within Wave 1:** W1.1 — Prisma 7, PostgreSQL adapter, pgvector and initial migration; W1.2 — Better Auth contracts
-- **Last verification:** typecheck, production build and database/auth integration tests passed on 2026-08-11.
-- **Next step:** complete audit contracts and close Wave 1.
-
-- **Current Wave:** 1 — Database & Identity Foundation
-- **Current Task:** W1.1 — Prisma 7 bootstrap and pgvector migration
-- **Completed Waves:** 0 — Repository & Engineering Foundation
-- **Last green commit:** `0319e32` — `wave-00: establish engineering foundation`
-- **Lint:** PASS
-- **Format check:** PASS
-- **Typecheck:** PASS
-- **Unit tests:** PASS
-- **Integration tests:** PASS (health route contract)
-- **E2E tests:** PASS (foundation screen)
-- **Build:** PASS
-- **External blockers:** None. Docker Desktop, WSL 2 and local PostgreSQL with pgvector are healthy. FFmpeg and `psql` are absent but do not block Wave 0.
-- **Next step:** Begin W1.1 Prisma 7 bootstrap and pgvector migration.
+- **Current Wave:** 3 — Brand Intelligence & Knowledge.
+- **Current Task:** W3.3 — безопасный ingestion URL/text/file, checksum и statuses.
+- **Completed Waves:** Wave 0 and Wave 2. Wave 1 foundation is implemented; its final full gate remains deferred by owner direction.
+- **Completed within Wave 3:** W3.1 BrandProfile/Voice/Pillar and W3.2 KnowledgeDocument/Chunk, including the applied migration `20260811130457_add_brand_knowledge_foundation`.
+- **Last verification:** formatting, typecheck and integration tests passed on 2026-08-11; integration suite: 7 tests.
+- **Remote:** intentionally absent; SourceCraft inception is allowed only after green W3.
+- **External blockers:** none. Docker Desktop, WSL 2 and local PostgreSQL with pgvector are healthy.
+- **Next step:** implement W3.3, then verify Prisma 7 + pgvector approach for W3.4.

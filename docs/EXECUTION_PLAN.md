@@ -23,19 +23,24 @@
 | W1.1 | Prisma 7 bootstrap, PostgreSQL driver adapter, pgvector migration. | W0          | Empty-DB migrate, Prisma validate, repository integration. | DONE        |
 | W1.2 | Better Auth and core identity schema.                              | W1.1        | Register/login/session tests.                              | DONE        |
 | W1.3 | Organization, Membership, Brand and BrandAccess.                   | W1.2        | Tenant-scoped repository tests.                            | DONE        |
-| W1.4 | Tenant context, RBAC and audit base.                               | W1.3        | Cross-tenant and permission-denied tests.                  | IN_PROGRESS |
-| W1.5 | Close Wave 1 with full docs and green commit.                      | W1.1–W1.4   | lint/typecheck/unit/integration/E2E/build green.           | NOT_STARTED |
+| W1.4 | Tenant context, RBAC and audit base.                               | W1.3        | Cross-tenant and permission-denied tests.                  | DONE        |
+| W1.5 | Close Wave 1 with full docs and green commit.                      | W1.1–W1.4   | lint/typecheck/unit/integration/E2E/build green.           | IN_PROGRESS |
 
 ## Wave 2 — Background Infrastructure
 
 `W2.1` pg-boss bootstrap; `W2.2` WorkflowRun; `W2.3` worker and job registry; `W2.4` retries,
-logging and audit; `W2.5` restart/idempotency tests and green closure. Status: `NOT_STARTED`.
+logging and audit; `W2.5` restart/idempotency tests and green closure. Status: `DONE`.
 
 ## Wave 3 — Brand Intelligence & Knowledge
 
-`W3.1` BrandProfile/Voice/Pillar; `W3.2` KnowledgeDocument/Chunk; `W3.3` URL/text/file ingestion;
-`W3.4` embeddings and hybrid retrieval; `W3.5` brand-isolation tests; `W3.6` green closure.
-All tasks: `NOT_STARTED`.
+| Task | Цель и области                                                    | Зависимости | Проверка / DoD                                            | Статус      |
+| ---- | ----------------------------------------------------------------- | ----------- | --------------------------------------------------------- | ----------- |
+| W3.1 | BrandProfile, BrandVoice и ContentPillar.                         | W2          | Prisma migration и tenant-scoped repository.              | DONE        |
+| W3.2 | KnowledgeDocument и KnowledgeChunk.                               | W3.1        | Migration, repository и cross-brand integration contract. | DONE        |
+| W3.3 | Безопасный ingestion URL/text/file, checksum и document statuses. | W3.2        | SSRF/file safety tests, idempotency и lifecycle contract. | IN_PROGRESS |
+| W3.4 | Embeddings и hybrid retrieval через pgvector.                     | W3.3        | Prisma 7 compatibility check, retrieval contracts.        | NOT_STARTED |
+| W3.5 | Расширить brand-isolation tests.                                  | W3.4        | Cross-brand negative cases for all retrieval paths.       | NOT_STARTED |
+| W3.6 | Закрыть Wave 3.                                                   | W3.1–W3.5   | Full quality gate, docs and local green commit.           | NOT_STARTED |
 
 ## Wave 3.5 — SourceCraft inception
 

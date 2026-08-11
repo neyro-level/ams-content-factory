@@ -47,6 +47,23 @@ enum WorkflowRunStatus {
   CANCELLED
 }
 
+enum KnowledgeDocumentType {
+  FILE
+  URL
+  TEXT
+  NOTE
+  CASE
+  PRODUCT
+}
+
+enum KnowledgeDocumentStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+  ARCHIVED
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   name          String
@@ -160,10 +177,100 @@ model Brand {
   accesses       BrandAccess[]
   auditEvents    AuditLog[]
   workflowRuns   WorkflowRun[]
+  profile        BrandProfile?
+  voices         BrandVoice[]
+  contentPillars ContentPillar[]
+  knowledgeDocuments KnowledgeDocument[]
+  knowledgeChunks KnowledgeChunk[]
 
   @@unique([organizationId, slug])
   @@index([organizationId, status])
   @@map("brand")
+}
+
+model BrandProfile {
+  id String @id @default(uuid()) @db.Uuid
+  brandId String @unique @db.Uuid
+  positioning Json? @default("{}")
+  targetAudience Json? @default("{}")
+  offers Json? @default("[]")
+  customerProblems Json? @default("[]")
+  differentiators Json? @default("[]")
+  proof Json? @default("[]")
+  constraints Json? @default("[]")
+  forbiddenClaims Json? @default("[]")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields:[brandId], references:[id], onDelete:Cascade)
+  @@map("brand_profile")
+}
+
+model BrandVoice {
+  id String @id @default(uuid()) @db.Uuid
+  brandId String @db.Uuid
+  language String @default("ru")
+  toneSummary String
+  styleRules Json?
+  doRules Json?
+  dontRules Json?
+  lexicon Json?
+  forbiddenWords Json?
+  exampleTexts Json?
+  ctaExamples Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  @@index([brandId, language])
+  @@map("brand_voice")
+}
+
+model ContentPillar {
+  id String @id @default(uuid()) @db.Uuid
+  brandId String @db.Uuid
+  name String
+  description String?
+  priority Int @default(0)
+  status String @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  @@unique([brandId, name])
+  @@map("content_pillar")
+}
+
+model KnowledgeDocument {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  brandId String @db.Uuid
+  title String
+  type KnowledgeDocumentType
+  sourceUrl String?
+  status KnowledgeDocumentStatus @default(PENDING)
+  checksum String?
+  metadata Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  chunks KnowledgeChunk[]
+  @@index([organizationId, brandId, status])
+  @@map("knowledge_document")
+}
+
+model KnowledgeChunk {
+  id String @id @default(uuid()) @db.Uuid
+  brandId String @db.Uuid
+  documentId String @db.Uuid
+  ordinal Int
+  content String
+  tokenCount Int?
+  metadata Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  document KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  @@unique([documentId, ordinal])
+  @@index([brandId, documentId])
+  @@map("knowledge_chunk")
 }
 
 model WorkflowRun {
