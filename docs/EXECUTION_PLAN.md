@@ -46,7 +46,7 @@ logging and audit; `W2.5` restart/idempotency tests and green closure. Status: `
 
 After green W3 only: verify Doppler PAT without printing it, discover the owner AMS organization,
 create private `ams-content-factory`, set it as `origin`, push local `main`, add SourceCraft verify
-CI and main policy. No production deploy. Status: `IN_PROGRESS`.
+CI and main policy. No production deploy. Status: `DONE`.
 
 ## Subsequent Waves
 
