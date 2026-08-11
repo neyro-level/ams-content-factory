@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@ams-content-factory/db": "workspace:*",
+    "@better-auth/prisma-adapter": "^1.4.15",
+    "better-auth": "^1.4.15"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit"
   }

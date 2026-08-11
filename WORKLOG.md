@@ -1,5 +1,13 @@
 # Worklog
 
+## 2026-08-11 — Wave 1.1 completed; Wave 1.2 started
+
+- Prisma 7 configured through `prisma.config.ts` with the PostgreSQL driver adapter; generated client remains a local build artifact.
+- Applied the initial migration `20260811105046_init_identity_foundation`: pgvector, Better Auth tables, organization/brand access foundation and audit log.
+- Better Auth is instantiated lazily on the first authentication request, so `next build` does not require a live database connection.
+- Integration tests confirm the pgvector extension, tenant foundation tables and the Better Auth `ok` contract.
+- Registration, login and session retrieval are covered through the real Better Auth route contract; W1.2 is complete.
+
 ## 2026-08-11 — Wave 0 started
 
 - Зафиксировано название продукта: **AMS Content Factory**.

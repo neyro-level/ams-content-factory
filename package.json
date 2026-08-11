@@ -20,15 +20,22 @@
     "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
     "db:up": "docker compose -f docker-compose.dev.yml up -d postgres",
     "db:down": "docker compose -f docker-compose.dev.yml down",
-    "db:logs": "docker compose -f docker-compose.dev.yml logs -f postgres"
+    "db:logs": "docker compose -f docker-compose.dev.yml logs -f postgres",
+    "prisma:validate": "prisma validate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.58.0",
     "@tailwindcss/postcss": "^4.1.13",
+    "auth": "^1.6.26",
     "@types/node": "^22.19.0",
+    "dotenv": "^16.6.1",
     "eslint": "^9.39.1",
     "prettier": "^3.6.2",
+    "prisma": "^7.9.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.1",

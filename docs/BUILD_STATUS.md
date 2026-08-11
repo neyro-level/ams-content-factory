@@ -1,5 +1,13 @@
 # Build Status
 
+## Current verified checkpoint
+
+- **Current Wave:** 1 — Database & Identity Foundation
+- **Current Task:** W1.3 — tenant access repositories
+- **Completed within Wave 1:** W1.1 — Prisma 7, PostgreSQL adapter, pgvector and initial migration; W1.2 — Better Auth contracts
+- **Last verification:** typecheck, production build and database/auth integration tests passed on 2026-08-11.
+- **Next step:** implement tenant-scoped repositories for organizations, memberships and brands.
+
 - **Current Wave:** 1 — Database & Identity Foundation
 - **Current Task:** W1.1 — Prisma 7 bootstrap and pgvector migration
 - **Completed Waves:** 0 — Repository & Engineering Foundation
