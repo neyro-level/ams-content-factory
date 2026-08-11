@@ -5,5 +5,11 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ams-content-factory/core": "workspace:*",
+    "@ams-content-factory/db": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "zod": "4.4.3"
   }
 }

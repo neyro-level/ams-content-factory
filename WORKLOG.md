@@ -1,5 +1,12 @@
 # Worklog
 
+## 2026-08-11 — Wave 12 MCP & Webhooks completed
+
+- Added hash-only scoped API keys, encrypted outbound webhook endpoint secrets and auditable webhook deliveries through migration `20260811173054_add_mcp_webhook_foundation`.
+- Added official MCP SDK server shell with the approved tool catalogue delegated to application-service handlers; no Prisma access or independent business logic lives in the MCP application.
+- Added validated HMAC-signed n8n Route Handler for research/content/events and an outbound HTTPS webhook service with HMAC delivery signatures. Plaintext API keys and endpoint secrets are never persisted.
+- Full gate is green: Prisma validation/deploy, lint, formatting, typecheck, 3 unit tests, 17 integration contracts, E2E and production build. Wave 13 AI Evals is next.
+
 ## 2026-08-11 — Wave 11 Analytics completed
 
 - Added `MetricSnapshot` and `PerformanceInsight` persistence through migration `20260811172033_add_analytics_foundation`.
