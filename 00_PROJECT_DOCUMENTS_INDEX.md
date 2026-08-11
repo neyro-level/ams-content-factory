@@ -9,6 +9,7 @@
 7. `docs/EXECUTION_PLAN.md` и `docs/BUILD_STATUS.md` — выполненные Waves и фактический статус.
 8. `docs/DECISIONS.md` — ADR; `docs/ARCHITECTURE.md`, `docs/DATA_MODEL.md`, `docs/SECURITY.md`,
    `docs/WORKFLOWS.md`, `docs/PROVIDERS.md`, `docs/TESTING.md` — технический канон.
-9. `docs/DEPLOYMENT.md`, `docs/OPERATIONS.md`, `docs/BACKUP_RESTORE.md`,
-   `docs/PRODUCTION_CHECKLIST.md`, `docs/ENVIRONMENT.md` — production package и runbooks.
+9. `docs/DEPLOYMENT.md`, `docs/AMS_SERVER_DEPLOY_RUNBOOK.md`, `docs/OPERATIONS.md`,
+   `docs/BACKUP_RESTORE.md`, `docs/PRODUCTION_CHECKLIST.md`, `docs/ENVIRONMENT.md` — production
+   package и runbooks.
 10. `WORKLOG.md` — хронология фактических изменений.

@@ -1,5 +1,24 @@
 # Worklog
 
+## 2026-08-11 — AMS Server and `fabrika.ams24.ru` production preparation
+
+- Corrected the server scope: AMS Content Factory belongs to the AMS Server, not Bastion. Bastion received
+  only an earlier read-only audit and no changes.
+- Verified the DNS A-record `fabrika.ams24.ru -> 5.42.100.161`, AMS Server SSH access, host Nginx,
+  Certbot and Node 22.22.2. HTTPS currently presents a certificate for another hostname; no public vhost
+  or service has been activated for the new domain.
+- Created the isolated AMS Server layout `/opt/ams-platform/ams-content-factory/{releases,shared}` and
+  `/var/log/ams-platform/ams-content-factory`, then transferred a checksummed SourceCraft-main
+  `ce7e9f7` source snapshot into an inactive staging release. No `current` link, systemd service, Nginx
+  configuration, migration or application process was created.
+- Verified the supplied Timeweb DBaaS connection from AMS Server through the private network. The runtime
+  user cannot enable `pgvector`, and the extension is absent; migration and activation remain
+  `BLOCKED_EXTERNAL` until it is enabled in Timeweb or an extension-capable database user is supplied.
+- Adopted the existing AMS Server canonical runtime profile: host Nginx + Certbot + systemd immutable
+  releases. The project Docker Compose package remains portable/verification-only on this server.
+- The server currently has 2 GB RAM and 5.6 GB free disk; expand resources before activating web and
+  worker.
+
 ## 2026-08-11 — GitHub legacy mirror created
 
 - Created private `neyro-level/ams-content-factory`, added it as `github-legacy` and copied `main`,
