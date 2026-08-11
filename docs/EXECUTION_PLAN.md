@@ -63,8 +63,8 @@ CI and main policy. No production deploy. Status: `DONE`.
 - W12 MCP — DONE: scoped hash-only API keys, MCP service boundary and HMAC n8n/outbound webhook foundation.
 - W13 AI Evals — DONE: seeded suites, cases, prompt comparison metadata and regression contracts.
 - W14 UX — DONE: accessible responsive operational shell and empty/disabled states.
-- W15 Hardening — IN_PROGRESS.
-- W16 — NOT_STARTED.
+- W15 Hardening — DONE: security/architecture audit, repository-boundary remediation and repeat gate.
+- W16 Production — IN_PROGRESS; production deployment waits for explicit infrastructure approval.
 
 | Wave               | Task sequence                                                           | Required outcome                                                     |
 | ------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |

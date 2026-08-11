@@ -1,5 +1,6 @@
 import {
   KnowledgeDocumentStatus,
+  Prisma,
   type KnowledgeDocumentType,
   type PrismaClient,
 } from '../generated/prisma/client';
@@ -105,6 +106,36 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
         take: input.take ?? 20,
       });
     },
+    setChunkEmbedding(input: {
+      brandId: string;
+      documentId: string;
+      chunkId: string;
+      embedding: number[];
+    }) {
+      return prisma.$executeRaw`
+        UPDATE "knowledge_chunk" SET "embedding" = ${vector(input.embedding)}::vector
+        WHERE "id" = ${input.chunkId} AND "brandId" = ${input.brandId} AND "documentId" = ${input.documentId}`;
+    },
+    hybridSearch(input: {
+      organizationId: string;
+      brandId: string;
+      query: string;
+      embedding: number[];
+      take: number;
+      documentTypes?: KnowledgeDocumentType[];
+    }) {
+      const types = input.documentTypes?.length
+        ? Prisma.sql`AND document."type" IN (${Prisma.join(input.documentTypes)})`
+        : Prisma.empty;
+      return prisma.$queryRaw<
+        { chunkId: string; documentId: string; content: string; score: number }[]
+      >(Prisma.sql`
+        SELECT chunk."id" AS "chunkId", chunk."documentId" AS "documentId", chunk."content" AS "content",
+        (0.7 * (1 - (chunk."embedding" <=> ${vector(input.embedding)}::vector)) + 0.3 * ts_rank_cd(to_tsvector('simple', chunk."content"), websearch_to_tsquery('simple', ${input.query})))::float8 AS "score"
+        FROM "knowledge_chunk" AS chunk INNER JOIN "knowledge_document" AS document ON document."id" = chunk."documentId"
+        WHERE chunk."brandId" = ${input.brandId} AND document."organizationId" = ${input.organizationId} AND document."brandId" = ${input.brandId} AND document."status" = ${KnowledgeDocumentStatus.READY} AND chunk."embedding" IS NOT NULL ${types}
+        ORDER BY "score" DESC, chunk."documentId" ASC, chunk."ordinal" ASC LIMIT ${input.take}`);
+    },
     markDocumentReady(organizationId: string, brandId: string, documentId: string) {
       return prisma.knowledgeDocument.updateMany({
         where: { id: documentId, organizationId, brandId },
@@ -136,4 +167,8 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
       select: { id: true },
     });
   }
+}
+
+function vector(value: number[]) {
+  return `[${value.join(',')}]`;
 }
