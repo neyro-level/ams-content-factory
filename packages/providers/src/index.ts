@@ -35,6 +35,20 @@ export {
   MockPublishingProvider,
   VkPublishingProvider,
 } from './publishing';
+export {
+  InstagramAnalyticsProvider,
+  MockAnalyticsProvider,
+  MockLearningProvider,
+  VkAnalyticsProvider,
+} from './analytics';
+export type {
+  AnalyticsProvider,
+  AnalyticsProviderClient,
+  AnalyticsSnapshotResult,
+  DerivedMetrics,
+  LearningProvider,
+  NormalizedMetricValues,
+} from './analytics';
 export type {
   PublicationStatusResult,
   PublishingCredentials,

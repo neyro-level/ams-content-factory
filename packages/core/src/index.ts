@@ -31,3 +31,8 @@ export {
   PublicationOutcomeUnknownError,
 } from './publishing';
 export { createTokenEncryptor, TokenEncryptionError } from './token-encryption';
+export {
+  calculateDerivedMetrics,
+  createAnalyticsService,
+  defaultAnalyticsSnapshotDelaysHours,
+} from './analytics';
