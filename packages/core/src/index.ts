@@ -9,3 +9,6 @@ export type { KnowledgeRetrievalHit } from './knowledge-retrieval';
 export { createResearchService } from './research';
 export type { ResearchInboxSource } from './research';
 export { contentTransitions, createContentService } from './content';
+export { initialVideoRecipes, validateVideoRecipe, videoRecipeSchema } from './video-recipes';
+export type { VideoRecipeDefinition } from './video-recipes';
+export { createStoryboardService, seedInitialVideoRecipes } from './video-planning';

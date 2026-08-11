@@ -132,6 +132,26 @@ enum ContentVersionAuthorType {
   SYSTEM
 }
 
+enum VideoRecipeStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum StoryboardStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  ARCHIVED
+}
+
+enum VisualJobType {
+  PROOF
+  MECHANISM
+  CONSEQUENCE
+  ACTION
+  TRANSITION
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   name          String
@@ -476,6 +496,7 @@ model ContentProject {
   variants PlatformVariant[]
   approvals Approval[]
   comments EditorialComment[]
+  storyboards Storyboard[]
   @@index([organizationId, brandId, status, createdAt])
   @@index([opportunityId])
   @@map("content_project")
@@ -496,8 +517,67 @@ model ContentVersion {
   aiExecutionId String?
   createdAt DateTime @default(now())
   contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  storyboards Storyboard[]
   @@unique([contentProjectId, version])
   @@map("content_version")
+}
+
+model VideoRecipe {
+  id String @id @default(uuid()) @db.Uuid
+  key String
+  name String
+  version Int
+  description String?
+  bestFor Json?
+  notFor Json?
+  platforms String[] @default([])
+  aspectRatios String[] @default([])
+  durationConfig Json
+  stages Json
+  providerConfig Json?
+  scriptShape Json
+  visualJobs Json
+  qcRules Json
+  deliverables Json
+  status VideoRecipeStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  storyboards Storyboard[]
+  @@unique([key, version])
+  @@map("video_recipe")
+}
+
+model Storyboard {
+  id String @id @default(uuid()) @db.Uuid
+  contentProjectId String @db.Uuid
+  contentVersionId String @db.Uuid
+  videoRecipeId String @db.Uuid
+  version Int
+  status StoryboardStatus @default(DRAFT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  contentVersion ContentVersion @relation(fields: [contentVersionId], references: [id], onDelete: Cascade)
+  videoRecipe VideoRecipe @relation(fields: [videoRecipeId], references: [id], onDelete: Restrict)
+  beats StoryboardBeat[]
+  @@unique([contentProjectId, version])
+  @@map("storyboard")
+}
+
+model StoryboardBeat {
+  id String @id @default(uuid()) @db.Uuid
+  storyboardId String @db.Uuid
+  ordinal Int
+  narration String
+  visualJob VisualJobType
+  visualInstruction String
+  evidenceId String? @db.Uuid
+  mediaAssetId String? @db.Uuid
+  durationHint Int?
+  metadata Json?
+  storyboard Storyboard @relation(fields: [storyboardId], references: [id], onDelete: Cascade)
+  @@unique([storyboardId, ordinal])
+  @@map("storyboard_beat")
 }
 
 model PlatformVariant {

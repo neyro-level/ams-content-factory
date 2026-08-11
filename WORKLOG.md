@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-11 — Wave 6 Video Planning completed
+
+- Added VideoRecipe, Storyboard and StoryboardBeat persistence through migration `20260811145130_add_video_planning_foundation`.
+- Added Zod recipe validation, six required initial recipes, idempotent recipe seed and tenant-scoped storyboard creation with semantic visual jobs.
+- Quality gate is green: lint, formatting, typecheck, unit, 11 integration contracts, E2E and production build.
+
 ## 2026-08-11 — Wave 5 Content Engine completed
 
 - Added ContentProject, immutable ContentVersion, PlatformVariant, Approval and EditorialComment through migration `20260811144317_add_content_engine_foundation`.
