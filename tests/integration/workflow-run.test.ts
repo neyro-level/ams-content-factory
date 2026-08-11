@@ -74,5 +74,20 @@ describe('workflow run repository', () => {
       'workflow_run.running',
       'workflow_run.succeeded',
     ]);
+
+    const failed = await workflowRepository.createOrGet({
+      ...input,
+      idempotencyKey: 'workflow-run-failure-contract-key',
+    });
+    const failure = await workflowRepository.markFailed(failed.id, {
+      message: 'provider unavailable',
+    });
+    const failureAudit = await prisma.auditLog.findFirst({
+      where: { entityId: failed.id, action: 'workflow_run.failed' },
+    });
+
+    expect(failure.status).toBe(WorkflowRunStatus.FAILED);
+    expect(failure.error).toEqual({ message: 'provider unavailable' });
+    expect(failureAudit).not.toBeNull();
   });
 });
