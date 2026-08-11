@@ -27,9 +27,11 @@ database backup schedule; final server resource expansion, runtime env secrets, 
 issuance, S3 endpoint/bucket/credentials, Instagram and VK app credentials, and live OpenAI/HeyGen/Motion
 credentials. Production deployment additionally requires explicit infrastructure confirmation from the owner.
 
-The supplied DBaaS endpoint and runtime user were verified from AMS Server on 2026-08-11. The `vector`
-extension is currently absent and that user is not permitted to create it, so database schema deployment
-is specifically `BLOCKED_EXTERNAL` until Timeweb enables pgvector or an extension-capable operator does.
+The supplied Fabrika DBaaS endpoint and runtime user were verified from AMS Server. `pgvector` is enabled
+in the Timeweb instance configuration and the PostgreSQL package is available, but its SQL object is not
+installed in `default_db`: the provider-controlled database owner retains that permission. The Timeweb API
+has no separate extension-install action, so database schema deployment is specifically `BLOCKED_EXTERNAL`
+until Timeweb installs `vector` or supplies an extension-capable operator connection.
 
 ## Verification note
 

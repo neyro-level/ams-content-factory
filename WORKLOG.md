@@ -19,6 +19,18 @@
 - The server currently has 2 GB RAM and 5.6 GB free disk; expand resources before activating web and
   worker.
 
+## 2026-08-12 — Timeweb pgvector provider configuration
+
+- Verified the supplied Fabrika DBaaS endpoint from AMS Server and enabled `pgvector` for its only
+  `default_db` instance through the authenticated Timeweb API. PostgreSQL now lists `vector` as an
+  available extension package.
+- The SQL object remains absent: the managed database owner is provider-controlled `root`, while the
+  application runtime user correctly receives `Must be superuser to create this extension`. The Timeweb
+  API exposes extension configuration but has no separate extension-install action.
+- No schema migration, `current` link, systemd service, Nginx vhost or TLS cutover was attempted. These
+  remain blocked until Timeweb installs `vector` in `default_db` or supplies an extension-capable
+  operator connection.
+
 ## 2026-08-11 — GitHub legacy mirror created
 
 - Created private `neyro-level/ams-content-factory`, added it as `github-legacy` and copied `main`,
