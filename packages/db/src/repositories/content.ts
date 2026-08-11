@@ -1,0 +1,135 @@
+import { getPrisma } from '../client';
+import type {
+  ContentProjectStatus,
+  ContentType,
+  ContentVersionAuthorType,
+  PrismaClient,
+} from '../generated/prisma/client';
+
+export function createContentRepository(prisma: PrismaClient = getPrisma()) {
+  const brandExists = (organizationId: string, brandId: string) =>
+    prisma.brand.findFirst({
+      where: { id: brandId, organizationId, deletedAt: null },
+      select: { id: true },
+    });
+  return {
+    async createProject(input: {
+      organizationId: string;
+      brandId: string;
+      title: string;
+      contentType: ContentType;
+      pillarId?: string;
+      opportunityId?: string;
+      goal?: string;
+      audience?: string;
+      createdBy?: string;
+    }) {
+      if (!(await brandExists(input.organizationId, input.brandId))) return null;
+      return prisma.contentProject.create({
+        data: {
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          title: input.title,
+          contentType: input.contentType,
+          ...(input.pillarId !== undefined ? { pillarId: input.pillarId } : {}),
+          ...(input.opportunityId !== undefined ? { opportunityId: input.opportunityId } : {}),
+          ...(input.goal !== undefined ? { goal: input.goal } : {}),
+          ...(input.audience !== undefined ? { audience: input.audience } : {}),
+          ...(input.createdBy !== undefined ? { createdBy: input.createdBy } : {}),
+        },
+      });
+    },
+    transition(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      from: ContentProjectStatus;
+      to: ContentProjectStatus;
+    }) {
+      return prisma.contentProject.updateMany({
+        where: {
+          id: input.id,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: input.from,
+        },
+        data: { status: input.to },
+      });
+    },
+    async appendVersion(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      createdByType: ContentVersionAuthorType;
+      createdByUserId?: string;
+      brief?: string;
+      hook?: string;
+      body?: string;
+      cta?: string;
+      script?: string;
+      notes?: string;
+    }) {
+      const project = await prisma.contentProject.findFirst({
+        where: {
+          id: input.contentProjectId,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+        },
+        select: { id: true },
+      });
+      if (!project) return null;
+      const latest = await prisma.contentVersion.aggregate({
+        where: { contentProjectId: input.contentProjectId },
+        _max: { version: true },
+      });
+      return prisma.contentVersion.create({
+        data: {
+          contentProjectId: input.contentProjectId,
+          createdByType: input.createdByType,
+          version: (latest._max.version ?? 0) + 1,
+          ...(input.createdByUserId !== undefined
+            ? { createdByUserId: input.createdByUserId }
+            : {}),
+          ...(input.brief !== undefined ? { brief: input.brief } : {}),
+          ...(input.hook !== undefined ? { hook: input.hook } : {}),
+          ...(input.body !== undefined ? { body: input.body } : {}),
+          ...(input.cta !== undefined ? { cta: input.cta } : {}),
+          ...(input.script !== undefined ? { script: input.script } : {}),
+          ...(input.notes !== undefined ? { notes: input.notes } : {}),
+        },
+      });
+    },
+    async addApproval(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      status: string;
+      reviewerUserId?: string;
+      note?: string;
+    }) {
+      const project = await prisma.contentProject.findFirst({
+        where: {
+          id: input.contentProjectId,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+        },
+        select: { id: true },
+      });
+      if (!project) return null;
+      return prisma.approval.create({
+        data: {
+          contentProjectId: input.contentProjectId,
+          status: input.status,
+          ...(input.reviewerUserId !== undefined ? { reviewerUserId: input.reviewerUserId } : {}),
+          ...(input.note !== undefined ? { note: input.note } : {}),
+        },
+      });
+    },
+    findProject(input: { organizationId: string; brandId: string; id: string }) {
+      return prisma.contentProject.findFirst({
+        where: { id: input.id, organizationId: input.organizationId, brandId: input.brandId },
+        include: { versions: { orderBy: { version: 'asc' } }, variants: true, approvals: true },
+      });
+    },
+  };
+}
