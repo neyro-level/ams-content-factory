@@ -64,6 +64,39 @@ enum KnowledgeDocumentStatus {
   ARCHIVED
 }
 
+enum ResearchInboxStatus {
+  NEW
+  PROCESSING
+  READY
+  REJECTED
+  ARCHIVED
+  FAILED
+}
+
+enum ResearchItemStatus {
+  PENDING
+  READY
+  REJECTED
+  ARCHIVED
+  FAILED
+}
+
+enum ClaimStatus {
+  UNVERIFIED
+  SUPPORTED
+  CONFLICTING
+  REJECTED
+}
+
+enum ContentOpportunityStatus {
+  NEW
+  SHORTLISTED
+  ACCEPTED
+  REJECTED
+  CONVERTED
+  ARCHIVED
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   name          String
@@ -182,6 +215,12 @@ model Brand {
   contentPillars ContentPillar[]
   knowledgeDocuments KnowledgeDocument[]
   knowledgeChunks KnowledgeChunk[]
+  researchInboxItems ResearchInboxItem[]
+  researchSources ResearchSource[]
+  researchItems ResearchItem[]
+  researchReports ResearchReport[]
+  contentOpportunities ContentOpportunity[]
+  claims Claim[]
 
   @@unique([organizationId, slug])
   @@index([organizationId, status])
@@ -274,6 +313,139 @@ model KnowledgeChunk {
   @@unique([documentId, ordinal])
   @@index([brandId, documentId])
   @@map("knowledge_chunk")
+}
+
+model ResearchInboxItem {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  brandId String @db.Uuid
+  kind String
+  title String
+  content String?
+  sourceUrl String?
+  checksum String
+  status ResearchInboxStatus @default(NEW)
+  metadata Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  @@unique([brandId, checksum])
+  @@index([organizationId, brandId, status])
+  @@map("research_inbox_item")
+}
+
+model ResearchSource {
+  id String @id @default(uuid()) @db.Uuid
+  brandId String @db.Uuid
+  canonicalUrl String
+  domain String
+  sourceType String
+  title String?
+  author String?
+  publishedAt DateTime?
+  capturedAt DateTime @default(now())
+  metadata Json?
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  items ResearchItem[]
+  @@unique([brandId, canonicalUrl])
+  @@index([brandId, domain])
+  @@map("research_source")
+}
+
+model ResearchItem {
+  id String @id @default(uuid()) @db.Uuid
+  brandId String @db.Uuid
+  sourceId String? @db.Uuid
+  title String
+  summary String?
+  rawContentStorageKey String?
+  rawContent String?
+  contentHash String
+  publishedAt DateTime?
+  capturedAt DateTime @default(now())
+  relevanceScore Float?
+  noveltyScore Float?
+  status ResearchItemStatus @default(PENDING)
+  metadata Json?
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  source ResearchSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  reports ResearchReport[]
+  evidence Evidence[]
+  @@unique([brandId, contentHash])
+  @@index([brandId, status, capturedAt])
+  @@map("research_item")
+}
+
+model ResearchReport {
+  id String @id @default(uuid()) @db.Uuid
+  brandId String @db.Uuid
+  researchItemId String @db.Uuid
+  summary String
+  classification String?
+  relevanceScore Float?
+  noveltyScore Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  researchItem ResearchItem @relation(fields: [researchItemId], references: [id], onDelete: Cascade)
+  @@unique([researchItemId])
+  @@index([brandId, createdAt])
+  @@map("research_report")
+}
+
+model ContentOpportunity {
+  id String @id @default(uuid()) @db.Uuid
+  brandId String @db.Uuid
+  pillarId String? @db.Uuid
+  title String
+  angle String
+  whyNow String?
+  audience String?
+  commercialRelevance String?
+  relevanceScore Float?
+  noveltyScore Float?
+  evidenceScore Float?
+  overallScore Float?
+  status ContentOpportunityStatus @default(NEW)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  @@index([brandId, status, overallScore])
+  @@map("content_opportunity")
+}
+
+model Claim {
+  id String @id @default(uuid()) @db.Uuid
+  brandId String @db.Uuid
+  contentProjectId String? @db.Uuid
+  text String
+  type String
+  status ClaimStatus @default(UNVERIFIED)
+  confidence Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  evidence Evidence[]
+  @@index([brandId, status])
+  @@map("claim")
+}
+
+model Evidence {
+  id String @id @default(uuid()) @db.Uuid
+  claimId String @db.Uuid
+  researchItemId String? @db.Uuid
+  sourceUrl String
+  sourceTitle String?
+  capturedAt DateTime @default(now())
+  excerpt String
+  mediaAssetId String? @db.Uuid
+  confidence Float?
+  metadata Json?
+  claim Claim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  researchItem ResearchItem? @relation(fields: [researchItemId], references: [id], onDelete: SetNull)
+  @@index([claimId])
+  @@index([researchItemId])
+  @@map("evidence")
 }
 
 model WorkflowRun {

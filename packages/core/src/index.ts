@@ -6,3 +6,5 @@ export { createKnowledgeIngestionService, KnowledgeIngestionError } from './know
 export type { KnowledgeSource } from './knowledge-ingestion';
 export { createKnowledgeRetrievalService } from './knowledge-retrieval';
 export type { KnowledgeRetrievalHit } from './knowledge-retrieval';
+export { createResearchService } from './research';
+export type { ResearchInboxSource } from './research';
