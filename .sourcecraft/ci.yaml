@@ -20,6 +20,7 @@ workflows:
               - npm install --global pnpm@11.5.1
               - pnpm --version
               - pnpm install --frozen-lockfile
+              - pnpm prisma:generate
               - pnpm lint
               - pnpm format:check
               - pnpm typecheck
