@@ -1,0 +1,26 @@
+on:
+  pull_request:
+    - workflows: [verify]
+      filter:
+        source_branches: ['**']
+        target_branches: 'main'
+  push:
+    - workflows: [verify]
+      filter:
+        branches: ['main']
+
+workflows:
+  verify:
+    tasks:
+      - name: quality-gate
+        cubes:
+          - name: node-verify
+            image: docker.io/library/node:22.13.0
+            script:
+              - corepack enable
+              - pnpm install --frozen-lockfile
+              - pnpm lint
+              - pnpm format:check
+              - pnpm typecheck
+              - pnpm test
+              - pnpm build

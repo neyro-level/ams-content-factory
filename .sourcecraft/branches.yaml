@@ -1,0 +1,12 @@
+branch_protection:
+  policies:
+    - target: default_branch
+      message: 'Direct updates to main are forbidden; create a pull request.'
+      rules:
+        - prevent_force_push
+        - prevent_non_pr_changes
+        - prevent_deletion
+
+pull_request:
+  branch_cleanup:
+    matches: ['**']
