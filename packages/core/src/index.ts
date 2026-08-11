@@ -18,3 +18,10 @@ export {
   videoProductionTransitions,
 } from './media';
 export { createVideoProviderService } from './video-providers';
+export {
+  createCaptionBurnInService,
+  createCaptionsService,
+  evaluateQc,
+  toAss,
+  toSrt,
+} from './captions';

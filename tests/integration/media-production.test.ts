@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import {
   createContentService,
+  createCaptionsService,
   createMediaService,
   createStoryboardService,
   createVideoProductionService,
@@ -109,6 +110,40 @@ describe('media production', () => {
       idempotencyKey: `media-render-${created!.id}`,
     });
     expect(renderJob).toEqual(expect.objectContaining({ status: 'QUEUED' }));
+    const captions = createCaptionsService({ prisma });
+    await expect(
+      captions.createTranscript(otherContext, {
+        videoProductionId: created!.id,
+        assetId: asset.id,
+        provider: 'mock',
+        language: 'ru',
+        text: 'Proof',
+        words: [{ word: 'Proof', startMs: 0, endMs: 500 }],
+        durationMs: 500,
+      }),
+    ).resolves.toBeNull();
+    const transcript = await captions.createTranscript(context, {
+      videoProductionId: created!.id,
+      assetId: asset.id,
+      provider: 'mock',
+      language: 'ru',
+      text: 'Proof',
+      words: [{ word: 'Proof', startMs: 0, endMs: 500 }],
+      durationMs: 500,
+    });
+    const track = await captions.createTrack(context, {
+      videoProductionId: created!.id,
+      transcriptId: transcript!.id,
+      style: { preset: 'default' },
+    });
+    const report = await captions.createQc(context, {
+      videoProductionId: created!.id,
+      technical: { passed: true },
+      visual: { passed: true },
+      content: { passed: true },
+    });
+    expect(track).toEqual(expect.objectContaining({ transcriptId: transcript!.id }));
+    expect(report).toEqual(expect.objectContaining({ status: 'PASSED' }));
     await expect(
       production.attachAsset(otherContext, {
         mediaAssetId: asset.id,
