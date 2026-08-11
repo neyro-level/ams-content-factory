@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-11 — Wave 15 Hardening completed
+
+- Completed security and architecture audits in `docs/HARDENING_AUDIT.md`; production dependency audit reports zero vulnerabilities.
+- Fixed the direct Prisma boundary violation by moving pgvector embedding writes and hybrid retrieval from core into the tenant-scoped knowledge repository.
+- Repeated all mandatory verification: Prisma deploy, lint, formatting, typecheck, 3 unit tests, 18 integration contracts, 2 responsive E2E contracts and production build.
+
 ## 2026-08-11 — Wave 14 UX completed
 
 - Replaced the temporary foundation screen with a neutral accessible operational workspace shell aligned to `DESIGN_SYSTEM_PENDING`: light canvas, white data surfaces, blue-gray accent, visible focus and semantic status presentation.
