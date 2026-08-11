@@ -3,4 +3,5 @@ export { createTenantRepository, type TenantRepository } from './repositories/te
 export { createWorkflowRunRepository } from './repositories/workflow-run';
 export { createKnowledgeRepository } from './repositories/knowledge';
 export { createResearchRepository } from './repositories/research';
+export { createContentRepository } from './repositories/content';
 export * from './generated/prisma/client';

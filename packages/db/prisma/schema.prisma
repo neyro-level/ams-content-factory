@@ -97,6 +97,41 @@ enum ContentOpportunityStatus {
   ARCHIVED
 }
 
+enum ContentProjectStatus {
+  IDEA
+  RESEARCHING
+  DRAFT
+  FACT_CHECK
+  REVIEW
+  APPROVED
+  PRODUCTION
+  QC
+  READY
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+  REJECTED
+  FAILED
+  CANCELLED
+}
+
+enum ContentType {
+  REEL
+  SHORT_VIDEO
+  SOCIAL_POST
+  CAROUSEL
+  STORY
+  ARTICLE
+  CASE
+  EXPLAINER
+}
+
+enum ContentVersionAuthorType {
+  USER
+  AI
+  SYSTEM
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   name          String
@@ -221,6 +256,7 @@ model Brand {
   researchReports ResearchReport[]
   contentOpportunities ContentOpportunity[]
   claims Claim[]
+  contentProjects ContentProject[]
 
   @@unique([organizationId, slug])
   @@index([organizationId, status])
@@ -273,6 +309,7 @@ model ContentPillar {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  contentProjects ContentProject[]
   @@unique([brandId, name])
   @@map("content_pillar")
 }
@@ -410,8 +447,99 @@ model ContentOpportunity {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  contentProjects ContentProject[]
   @@index([brandId, status, overallScore])
   @@map("content_opportunity")
+}
+
+model ContentProject {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  brandId String @db.Uuid
+  pillarId String? @db.Uuid
+  opportunityId String? @db.Uuid
+  title String
+  goal String?
+  audience String?
+  contentType ContentType
+  status ContentProjectStatus @default(IDEA)
+  priority Int @default(0)
+  recipeId String?
+  targetPublishAt DateTime?
+  createdBy String? @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  pillar ContentPillar? @relation(fields: [pillarId], references: [id], onDelete: SetNull)
+  opportunity ContentOpportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  versions ContentVersion[]
+  variants PlatformVariant[]
+  approvals Approval[]
+  comments EditorialComment[]
+  @@index([organizationId, brandId, status, createdAt])
+  @@index([opportunityId])
+  @@map("content_project")
+}
+
+model ContentVersion {
+  id String @id @default(uuid()) @db.Uuid
+  contentProjectId String @db.Uuid
+  version Int
+  brief String?
+  hook String?
+  body String?
+  cta String?
+  script String?
+  notes String?
+  createdByType ContentVersionAuthorType
+  createdByUserId String? @db.Uuid
+  aiExecutionId String?
+  createdAt DateTime @default(now())
+  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  @@unique([contentProjectId, version])
+  @@map("content_version")
+}
+
+model PlatformVariant {
+  id String @id @default(uuid()) @db.Uuid
+  contentProjectId String @db.Uuid
+  platform String
+  title String?
+  caption String?
+  description String?
+  hashtags String[] @default([])
+  cta String?
+  mediaConfiguration Json?
+  status String @default("DRAFT")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  @@unique([contentProjectId, platform])
+  @@map("platform_variant")
+}
+
+model Approval {
+  id String @id @default(uuid()) @db.Uuid
+  contentProjectId String @db.Uuid
+  status String
+  reviewerUserId String? @db.Uuid
+  note String?
+  createdAt DateTime @default(now())
+  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  @@index([contentProjectId, createdAt])
+  @@map("approval")
+}
+
+model EditorialComment {
+  id String @id @default(uuid()) @db.Uuid
+  contentProjectId String @db.Uuid
+  authorUserId String? @db.Uuid
+  body String
+  resolvedAt DateTime?
+  createdAt DateTime @default(now())
+  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  @@index([contentProjectId, createdAt])
+  @@map("editorial_comment")
 }
 
 model Claim {

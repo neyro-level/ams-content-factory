@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-11 — Wave 5 Content Engine completed
+
+- Added ContentProject, immutable ContentVersion, PlatformVariant, Approval and EditorialComment through migration `20260811144317_add_content_engine_foundation`.
+- Added a tenant-scoped content repository and transition service with an explicit state-transition matrix; illegal jumps and cross-brand access are rejected.
+- Added workflow, version and approval isolation contracts. Quality gate is green: lint, formatting, typecheck, unit, 10 integration contracts, E2E and production build.
+
 ## 2026-08-11 — Wave 4 Research Engine completed
 
 - Added tenant-scoped Research Inbox, Source, Item, Report, Claim, Evidence and ContentOpportunity persistence through migration `20260811143356_add_research_engine_foundation`.

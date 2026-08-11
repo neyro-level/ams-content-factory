@@ -8,3 +8,4 @@ export { createKnowledgeRetrievalService } from './knowledge-retrieval';
 export type { KnowledgeRetrievalHit } from './knowledge-retrieval';
 export { createResearchService } from './research';
 export type { ResearchInboxSource } from './research';
+export { contentTransitions, createContentService } from './content';
