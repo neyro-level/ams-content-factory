@@ -15,8 +15,10 @@
 ## ADR-003 — Design-system boundary
 
 - **Context:** The only present design document belongs to another product.
-- **Decision:** Do not reuse it. Maintain neutral operational UI until AMS Content Factory design system approval in W14.
-- **Consequences:** Temporary interface must remain accessible and functional, not decorative.
+- **Decision:** Do not reuse it. Maintain the neutral accessible operational UI as the current baseline
+  while the dedicated AMS Content Factory design system remains `DESIGN_SYSTEM_PENDING`.
+- **Consequences:** Wave 14 closed the responsive/a11y implementation of this baseline; future visual
+  work must update `03_DESIGN_SYSTEM.md` rather than inherit tokens or scenarios from the other product.
 
 ## ADR-004 — Local development database
 

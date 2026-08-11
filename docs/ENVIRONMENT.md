@@ -1,7 +1,8 @@
 # Environment
 
-`.env.example` содержит только имена переменных и безопасные placeholder-значения. Реальный `.env`
-не попадает в Git, SourceCraft CI, Markdown, браузерный bundle или логи.
+`.env.example` содержит production placeholder-значения для Timeweb DBaaS, а
+`.env.development.example` — безопасный local Docker contract. Реальный `.env` не попадает в Git,
+SourceCraft CI, Markdown, браузерный bundle или логи.
 
 | Группа      | Переменные                                                         | Назначение                                            |
 | ----------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
@@ -18,4 +19,5 @@ issue, PR description или чат.
 `DATABASE_URL` для production копируется из панели Timeweb Cloud DBaaS и остаётся единственным
 источником параметров подключения. Он обязан указывать на внешний кластер, включать согласованную
 TLS-политику и никогда не использовать имя Docker-сервиса `postgres`. Для local development
-используется отдельный, некоммитящийся `.env` с `localhost:54329` из `docker-compose.dev.yml`.
+скопировать `.env.development.example` в отдельный, некоммитящийся `.env`; он использует
+`localhost:54329` из `docker-compose.dev.yml`.

@@ -23,16 +23,16 @@
 ## Автономность
 
 Агент самостоятельно выполняет утверждённый Master Plan: создаёт файлы, запускает проверки,
-исправляет ошибки, делает локальные commits и подключает SourceCraft в W3.5. При сбое он
+исправляет ошибки и делает локальные commits. Wave 3.5 уже завершена: SourceCraft подключён как
+канонический remote. При сбое он
 делает минимум две безопасные содержательные попытки с разными гипотезами и фиксирует результат.
 К владельцу обращается только после двух неуспешных попыток, если нужен внешний доступ,
 credential, платёж, домен, необратимое действие вне плана или продуктовый выбор.
 
 ## Git, SourceCraft и deploy
 
-- До W3.5 допускается только локальный Git `main`; закрытый SourceCraft remote создаётся после green W3.
-- `origin` после W3.5 — только `git.sourcecraft.dev/<ams-org>/ams-content-factory.git`; GitHub — лишь optional legacy mirror.
-- После подключения SourceCraft: `work/*` → PR → green verify → `main`. Запрещены production/deployment/backup branches.
+- `origin` — только `git.sourcecraft.dev/integrator-p/ams-content-factory.git`; GitHub — лишь optional legacy mirror.
+- Для любого изменения: `work/*` → PR → green verify → `main`. Запрещены production/deployment/backup branches.
 - Production deploy возможен только после W16, green release-gate и явного owner confirmation.
 
 ## Definition of Done

@@ -78,6 +78,6 @@ CI and main policy. No production deploy. Status: `DONE`.
 | W11 Analytics      | snapshots → normalized metrics → dashboard → costs/learning                      | Measured feedback loop.                                                      |
 | W12 MCP            | auth/scopes → tools → signed n8n and outbound webhooks                           | MCP calls application services only.                                         |
 | W13 AI Evals       | suites → cases → runs/results → regression CI                                    | Prompt quality is regression-tested.                                         |
-| W14 UX             | approved design system → states → responsive/a11y cleanup                        | No temporary UI remains.                                                     |
+| W14 UX             | neutral accessible baseline → states → responsive/a11y cleanup                   | Operational UI is responsive and no temporary product UI remains.            |
 | W15 Hardening      | security audit → architecture audit → fixes → repeat audit                       | No critical tenant/auth/provider/secrets debt.                               |
 | W16 Production     | Timeweb DBaaS + Docker/Nginx → migration/backup/runbooks → manual SC deploy gate | Deployment package ready; live deploy waits for Timeweb inputs and owner OK. |
