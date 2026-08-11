@@ -192,6 +192,13 @@ enum RenderJobStatus {
   OUTCOME_UNKNOWN
 }
 
+enum QcStatus {
+  PENDING
+  PASSED
+  FAILED
+  WARNING
+}
+
 model User {
   id            String       @id @default(uuid()) @db.Uuid
   name          String
@@ -572,6 +579,9 @@ model MediaAsset {
   derivedAssets MediaAsset[] @relation("AssetDerivation")
   usages AssetUsage[]
   outputFor VideoProduction[] @relation("VideoOutput")
+  transcriptAssets Transcript[] @relation("TranscriptAsset")
+  srtCaptionTracks CaptionTrack[] @relation("CaptionSrtAsset")
+  assCaptionTracks CaptionTrack[] @relation("CaptionAssAsset")
   @@unique([brandId, checksum])
   @@index([organizationId, brandId, status])
   @@map("media_asset")
@@ -597,6 +607,9 @@ model VideoProduction {
   outputAsset MediaAsset? @relation("VideoOutput", fields: [outputAssetId], references: [id], onDelete: SetNull)
   assetUsages AssetUsage[]
   renderJobs RenderJob[]
+  transcripts Transcript[]
+  captionTracks CaptionTrack[]
+  qcReports QcReport[]
   @@index([contentProjectId, status])
   @@map("video_production")
 }
@@ -613,6 +626,56 @@ model AssetUsage {
   @@unique([mediaAssetId, videoProductionId, role])
   @@index([videoProductionId])
   @@map("asset_usage")
+}
+
+model Transcript {
+  id String @id @default(uuid()) @db.Uuid
+  videoProductionId String @db.Uuid
+  assetId String @db.Uuid
+  provider String
+  language String
+  text String
+  wordsJson Json
+  durationMs Int
+  createdAt DateTime @default(now())
+  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  asset MediaAsset @relation("TranscriptAsset", fields: [assetId], references: [id], onDelete: Cascade)
+  captionTracks CaptionTrack[]
+  @@index([videoProductionId, createdAt])
+  @@map("transcript")
+}
+
+model CaptionTrack {
+  id String @id @default(uuid()) @db.Uuid
+  videoProductionId String @db.Uuid
+  transcriptId String @db.Uuid
+  style Json
+  srtAssetId String? @db.Uuid
+  assAssetId String? @db.Uuid
+  burnedIn Boolean @default(false)
+  metadata Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  transcript Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  srtAsset MediaAsset? @relation("CaptionSrtAsset", fields: [srtAssetId], references: [id], onDelete: SetNull)
+  assAsset MediaAsset? @relation("CaptionAssAsset", fields: [assAssetId], references: [id], onDelete: SetNull)
+  @@index([videoProductionId, createdAt])
+  @@map("caption_track")
+}
+
+model QcReport {
+  id String @id @default(uuid()) @db.Uuid
+  videoProductionId String @db.Uuid
+  status QcStatus @default(PENDING)
+  technical Json?
+  visual Json?
+  content Json?
+  compliance Json?
+  createdAt DateTime @default(now())
+  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  @@index([videoProductionId, createdAt])
+  @@map("qc_report")
 }
 
 model RenderJob {

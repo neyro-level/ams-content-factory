@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-11 — Wave 9 Captions & QC completed
+
+- Added Transcript, CaptionTrack and QcReport persistence with cascade-safe media cleanup through migrations `20260811161224_add_captions_qc_foundation` and `20260811165933_cascade_transcript_asset`.
+- Added timestamp-based SRT/ASS serialization, mock transcription, isolated FFmpeg burn-in and technical/visual/content/compliance QC aggregation.
+- Full gate is green: lint, formatting, typecheck, 3 unit tests, 13 integration contracts, E2E and production build. Wave 10 Publishing is next.
+
 ## 2026-08-11 — Wave 8 Video Providers completed
 
 - Added configurable ProviderRate and tenant-scoped ProviderUsage through migrations `20260811155225_add_video_provider_usage` and `20260811160000_add_render_job_idempotency`.

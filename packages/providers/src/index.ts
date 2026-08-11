@@ -28,6 +28,8 @@ export {
   MockMotionProvider,
   MotionProvider,
 } from './video-providers';
+export { MockTranscriptionProvider } from './transcription';
+export type { TranscriptWord, TranscriptionProvider } from './transcription';
 export type {
   AvatarVideoProvider,
   HeyGenVideoAgentClient,
