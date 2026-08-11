@@ -1,0 +1,10 @@
+node_modules/
+.next/
+coverage/
+playwright-report/
+test-results/
+pnpm-lock.yaml
+AMS CONTENT OS.md
+01_DESIGN_SYSTEM.md
+docs/MASTER_DEVELOPMENT_PLAN.md
+apps/web/next-env.d.ts

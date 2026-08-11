@@ -1,0 +1,37 @@
+{
+  "name": "ams-content-factory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.5.1",
+  "engines": {
+    "node": ">=22.13.0 <23",
+    "pnpm": ">=11.5.1"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @ams-content-factory/web dev",
+    "build": "pnpm --filter @ams-content-factory/web build",
+    "lint": "eslint . --max-warnings=0",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "vitest run --config tests/vitest.config.ts",
+    "test:integration": "vitest run --config tests/vitest.integration.config.ts",
+    "test:e2e": "playwright test --config tests/playwright.config.ts",
+    "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
+    "db:up": "docker compose -f docker-compose.dev.yml up -d postgres",
+    "db:down": "docker compose -f docker-compose.dev.yml down",
+    "db:logs": "docker compose -f docker-compose.dev.yml logs -f postgres"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.58.0",
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/node": "^22.19.0",
+    "eslint": "^9.39.1",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.1",
+    "vitest": "^4.0.8"
+  }
+}
