@@ -1,5 +1,12 @@
 # Worklog
 
+## 2026-08-11 — Wave 11 Analytics completed
+
+- Added `MetricSnapshot` and `PerformanceInsight` persistence through migration `20260811172033_add_analytics_foundation`.
+- Added tenant-scoped analytics repository, Instagram/VK client boundaries and explicit mock analytics/learning providers. Raw provider metrics are retained; unavailable normalized metrics remain `null`, and derived rates are calculated separately without equating platform-specific views.
+- Added configurable 24h/72h/7d snapshot policy, `analytics.collect` and `learning.analyze` queue categories, plus isolated collection and learning-loop contracts. Insights contain recommendation and experiment only; they do not modify BrandVoice.
+- Full gate is green: Prisma validation/deploy, lint, formatting, typecheck, 3 unit tests, 16 integration contracts, E2E and production build. Wave 12 MCP is next; live Instagram/VK analytics remains `BLOCKED_EXTERNAL` pending official runtime clients and credentials.
+
 ## 2026-08-11 — Wave 10 Publishing completed
 
 - Added SocialAccount, SocialCredential, Publication and PublicationAttempt persistence through migration `20260811170703_add_publishing_foundation`.
