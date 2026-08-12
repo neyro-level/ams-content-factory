@@ -430,7 +430,15 @@ parallel request
 | PR 4.2 | `DONE` | Worker dispatches only registered handlers selected by workflow type.                              |
 | PR 4.3 | `DONE` | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                   |
 | PR 4.4 | `DONE` | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.          |
-| Next   | `W4.5` | Worker readiness signal.                                                                           |
+| PR 4.5 | `DONE` | Worker emits `worker.ready` only after queue, recovery and handler registration complete.          |
+| Next   | `W5.1` | Protected application shell.                                                                       |
+
+### W4.5 — worker readiness signal
+
+Worker startup is now an explicit bootstrap sequence. It emits a supervisor-safe `worker.ready` signal only
+after environment validation, pg-boss startup, queued-work reconciliation and registration of every current
+handler. A bootstrap failure emits no ready signal and closes an already-started queue. This is a process
+readiness signal; the external, real readiness probe remains scheduled for W18.
 
 ### W4.4 — lost queued-work reconciliation
 

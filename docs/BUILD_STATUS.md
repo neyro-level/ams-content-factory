@@ -3,8 +3,8 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W4.4 — lost queued-work reconciliation (`DONE`); next: W4.5 worker readiness.
-- **Last verification:** 2026-08-12: Prisma validation, lint, formatting, typecheck, 22 unit tests,
+- **Current task:** W4.5 — worker readiness signal (`DONE`); next: W5.1 protected application shell.
+- **Last verification:** 2026-08-12: Prisma validation, lint, formatting, typecheck, 25 unit tests,
   27 integration contracts and production build passed. The former E2E tests only cover the static shell.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
