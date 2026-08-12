@@ -94,6 +94,12 @@ describe('publishing foundation', () => {
       name: 'Account one',
       accessToken: 'sensitive-token',
     });
+    const foreignAccount = await service.connectAccount(secondContext, {
+      platform: 'VK',
+      externalAccountId: 'account-two',
+      name: 'Account two',
+      accessToken: 'sensitive-token-two',
+    });
     const credential = await prisma.socialCredential.findUnique({
       where: { socialAccountId: account.id },
     });
@@ -103,6 +109,13 @@ describe('publishing foundation', () => {
       platformVariantId: variant.id,
       socialAccountId: account.id,
     });
+    await expect(
+      service.create(firstContext, {
+        contentProjectId: project!.id,
+        platformVariantId: variant.id,
+        socialAccountId: foreignAccount.id,
+      }),
+    ).rejects.toThrow('Publication references are outside the active tenant');
     await expect(service.schedule(secondContext, publication.id)).rejects.toThrow(
       'outside the active tenant',
     );
