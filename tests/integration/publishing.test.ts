@@ -7,12 +7,17 @@ import {
   PublicationTransitionError,
   resolveTenantContext,
 } from '../../packages/core/src/index.js';
-import { createPrismaClient, createTenantRepository } from '../../packages/db/src/index.js';
+import {
+  createPrismaClient,
+  createPublishingRepository,
+  createTenantRepository,
+} from '../../packages/db/src/index.js';
 import {
   MockPublishingProvider,
   type PublishingProvider,
 } from '../../packages/providers/src/index.js';
 import { afterAll, describe, expect, it } from 'vitest';
+import { CountingPublishingProvider } from '../helpers/failure-harness.js';
 
 const prisma = createPrismaClient();
 const tenants = createTenantRepository(prisma);
@@ -186,6 +191,68 @@ describe('publishing foundation', () => {
     await expect(service.investigate(context, publication.id)).resolves.toEqual(
       expect.objectContaining({ status: 'QUEUED' }),
     );
+  });
+
+  it('reconciles a provider success when final persistence fails without a second publish', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    const brand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'first' },
+    });
+    const context = await resolveTenantContext(
+      { userId: user.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const content = createContentService({ prisma });
+    const project = await content.create(context, {
+      title: 'Persistence failure reconciliation project',
+      contentType: 'SOCIAL_POST',
+    });
+    const variant = await prisma.platformVariant.create({
+      data: { contentProjectId: project!.id, platform: 'VK', caption: 'Reconcile text' },
+    });
+    const account = await prisma.socialAccount.findFirstOrThrow({
+      where: { brandId: brand.id, platform: 'VK' },
+    });
+    const baseRepository = createPublishingRepository(prisma);
+    let failFinalPersistence = true;
+    const repository = {
+      ...baseRepository,
+      updatePublication: async (input: Parameters<typeof baseRepository.updatePublication>[0]) => {
+        if (failFinalPersistence && input.from === 'PUBLISHING' && input.to === 'PUBLISHED') {
+          failFinalPersistence = false;
+          throw new Error('Simulated database failure after provider success.');
+        }
+        return baseRepository.updatePublication(input);
+      },
+    };
+    const provider = new CountingPublishingProvider(new MockPublishingProvider('VK'));
+    const service = createPublishingService({
+      repository,
+      encryptor,
+      providers: {
+        INSTAGRAM: new MockPublishingProvider('INSTAGRAM'),
+        VK: provider,
+      },
+    });
+    const publication = await service.create(context, {
+      contentProjectId: project!.id,
+      platformVariantId: variant.id,
+      socialAccountId: account.id,
+    });
+
+    await expect(
+      service.publish(context, { id: publication.id, idempotencyKey: 'persistence-failure-one' }),
+    ).rejects.toBeInstanceOf(PublicationOutcomeUnknownError);
+    expect(provider.publishCalls).toBe(1);
+    await expect(
+      service.publish(context, { id: publication.id, idempotencyKey: 'persistence-failure-one' }),
+    ).rejects.toBeInstanceOf(PublicationOutcomeUnknownError);
+    expect(provider.publishCalls).toBe(1);
+    await expect(service.investigate(context, publication.id)).resolves.toEqual(
+      expect.objectContaining({ status: 'PUBLISHED' }),
+    );
+    expect(provider.getStatusCalls).toBe(1);
   });
 
   it('recovers an interrupted legacy preparation state without entering it for new dispatches', async () => {

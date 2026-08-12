@@ -1,5 +1,16 @@
 # Worklog
 
+## 2026-08-12 — W3.5 publishing reconciliation
+
+- A provider success followed by a persistence failure now becomes `OUTCOME_UNKNOWN`, never `FAILED`.
+  The service does not issue a second external mutation and retains the provider operation/job identity
+  required for investigation.
+- `investigate()` reconciles confirmed posts to `PUBLISHED`, records a confirmed `NOT_FOUND` outcome before
+  requeuing, and leaves an inconclusive provider result untouched. A recovery contract simulates failure of
+  the final DB persistence after provider success and proves that one external post is reconciled without a
+  second provider call. Full gate is green: Prisma validation, lint, formatting, typecheck, 19 unit tests,
+  26 integration contracts and production build.
+
 ## 2026-08-12 — W3.4 publishing state machine cleanup
 
 - Removed the unused `PREPARING` hop from the active dispatch path, so a crash cannot leave a newly

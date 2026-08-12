@@ -202,6 +202,7 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
       publicationId: string;
       id: string;
       status: PublicationAttemptStatus;
+      providerOperation?: string;
       providerJobId?: string;
       response?: object;
       errorCode?: string;
@@ -215,6 +216,9 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
         },
         data: {
           status: input.status,
+          ...(input.providerOperation !== undefined
+            ? { providerOperation: input.providerOperation }
+            : {}),
           ...(input.providerJobId !== undefined ? { providerJobId: input.providerJobId } : {}),
           ...(input.response !== undefined ? { response: input.response } : {}),
           ...(input.errorCode !== undefined ? { errorCode: input.errorCode } : {}),
