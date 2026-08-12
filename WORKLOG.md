@@ -6,7 +6,11 @@
   suspended membership denial. Publishing coverage now proves that a foreign social account cannot be
   attached to a publication in the active brand.
 - Existing integration contracts continue to cover foreign brand, content project and media resource paths;
-  all are executed by the mandatory SourceCraft pgvector gate. Next task: W2.4 — fail-fast configuration.
+  all are executed by the mandatory SourceCraft pgvector gate. Next task: W3.1 — media pipeline.
+- Added the fail-fast runtime environment contract. Web and worker startup now validate core configuration;
+  provider credential groups are checked only when configured, localhost fallback is limited to dev/test, and
+  invalid production worker configuration exits before it can start the queue. SourceCraft CI passes only
+  ephemeral, non-secret test values required by this gate.
 - Added reusable, credential-free test adapters for failing storage, publishing providers and repository
   persistence, plus delayed and call-counting publishing wrappers. The unit contracts model duplicate and
   parallel requests, provider success followed by persistence failure, timeout, and worker crashes without

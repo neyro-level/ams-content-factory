@@ -1,5 +1,8 @@
 export type HealthCheckKind = 'live' | 'ready';
 
+export { assertRuntimeEnvironment, EnvironmentValidationError, readRuntimeConfig } from './env';
+export type { RuntimeConfig, RuntimeNodeEnv } from './env';
+
 export interface HealthPayload {
   readonly ok: boolean;
   readonly service: 'ams-content-factory';
