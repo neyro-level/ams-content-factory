@@ -415,7 +415,8 @@ parallel request
 | PR 1.4 | `DONE` | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                  |
 | PR 2.1 | `DONE` | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                    |
 | PR 2.2 | `DONE` | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.   |
-| Next   | `W2.3` | Reusable concurrency/failure harness.                                                           |
+| PR 2.3 | `DONE` | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.       |
+| Next   | `W2.4` | Fail-fast configuration.                                                                        |
 
 ---
 
