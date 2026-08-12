@@ -30,7 +30,12 @@ export default async function OrganizationsPage() {
                     <h3>{organization.name}</h3>
                     <p className="muted">{organization.slug}</p>
                   </div>
-                  <span className="badge">{role}</span>
+                  <div className="organization-item-actions">
+                    <span className="badge">{role}</span>
+                    <a className="text-link" href={`/app/organizations/${organization.id}/brands`}>
+                      Бренды
+                    </a>
+                  </div>
                 </li>
               ))}
             </ul>

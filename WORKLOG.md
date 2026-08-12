@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W5.3 brands UI
+
+- Added brand list/create pages nested under a verified organization route. Both the page and server action
+  rebuild the session tenant context; brand creation requires `brand:manage` and gives the creator an
+  explicit `MANAGE` brand access record.
+- Added cross-organization/editor negative coverage, duplicate-slug recovery and browser E2E creation.
+  Full gate is green: Prisma validation, lint, formatting, typecheck, 26 unit tests, 29 integration
+  contracts, 6 browser E2E flows and production build. Next: W5.4 application navigation.
+
 ## 2026-08-12 — W5.2 organizations UI
 
 - Added the real authenticated organizations entry point at `/app/organizations`: active organizations are
