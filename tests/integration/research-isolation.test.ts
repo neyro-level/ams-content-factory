@@ -1,6 +1,16 @@
 import 'dotenv/config';
-import { createResearchService, resolveTenantContext } from '../../packages/core/src/index.js';
-import { createPrismaClient, createTenantRepository } from '../../packages/db/src/index.js';
+import {
+  createResearchService,
+  ResearchInProgressError,
+  resolveTenantContext,
+} from '../../packages/core/src/index.js';
+import {
+  createPrismaClient,
+  createResearchRepository,
+  createTenantRepository,
+  ResearchInboxStatus,
+} from '../../packages/db/src/index.js';
+import { createHash } from 'node:crypto';
 import { afterAll, describe, expect, it } from 'vitest';
 
 const prisma = createPrismaClient();
@@ -64,5 +74,120 @@ describe('research isolation', () => {
         id: firstItem?.id,
       }),
     ]);
+  });
+
+  it('rejects concurrent processing and retries a failed persistence path in a controlled transition', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug: suffix } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: `${suffix}@local` } });
+    const brand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'first' },
+    });
+    const context = await resolveTenantContext(
+      { userId: user.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const repository = createResearchRepository(prisma);
+    const blockedContent = 'A source being processed by another worker.';
+    const blockedChecksum = createHash('sha256').update(`TEXT\0\0${blockedContent}`).digest('hex');
+    const blocked = await repository.createInboxItem({
+      organizationId: organization.id,
+      brandId: brand.id,
+      kind: 'TEXT',
+      title: 'Processing source',
+      content: blockedContent,
+      checksum: blockedChecksum,
+    });
+    await repository.transitionInboxStatus({
+      organizationId: organization.id,
+      brandId: brand.id,
+      id: blocked!.id,
+      from: ResearchInboxStatus.NEW,
+      to: ResearchInboxStatus.PROCESSING,
+    });
+    await expect(
+      createResearchService({ prisma }).ingest({
+        kind: 'TEXT',
+        context,
+        title: 'Processing source',
+        content: blockedContent,
+      }),
+    ).rejects.toBeInstanceOf(ResearchInProgressError);
+
+    let failOnce = true;
+    const retryService = createResearchService({
+      prisma,
+      repository: {
+        ...repository,
+        async createItem(input) {
+          if (failOnce) {
+            failOnce = false;
+            throw new Error('Simulated research persistence failure.');
+          }
+          return repository.createItem(input);
+        },
+      },
+    });
+    const retryInput = {
+      kind: 'TEXT' as const,
+      context,
+      title: 'Retry source',
+      content: 'A source that succeeds after controlled retry.',
+    };
+    await expect(retryService.ingest(retryInput)).rejects.toThrow(
+      'Simulated research persistence failure',
+    );
+    const failedInbox = await prisma.researchInboxItem.findFirstOrThrow({
+      where: { organizationId: organization.id, brandId: brand.id, title: retryInput.title },
+    });
+    expect(failedInbox.status).toBe(ResearchInboxStatus.FAILED);
+    await expect(retryService.ingest(retryInput)).resolves.toEqual(
+      expect.objectContaining({ title: retryInput.title }),
+    );
+    await expect(
+      prisma.researchInboxItem.findUnique({ where: { id: failedInbox.id } }),
+    ).resolves.toEqual(expect.objectContaining({ status: ResearchInboxStatus.READY }));
+  });
+
+  it('allows only one live parallel request to process a source', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug: suffix } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: `${suffix}@local` } });
+    const brand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'first' },
+    });
+    const context = await resolveTenantContext(
+      { userId: user.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const repository = createResearchRepository(prisma);
+    let releasePersistence: (() => void) | undefined;
+    const persistenceStarted = new Promise<void>((resolve) => {
+      releasePersistence = resolve;
+    });
+    let signalStarted: (() => void) | undefined;
+    const started = new Promise<void>((resolve) => {
+      signalStarted = resolve;
+    });
+    const service = createResearchService({
+      prisma,
+      repository: {
+        ...repository,
+        async createItem(input) {
+          signalStarted!();
+          await persistenceStarted;
+          return repository.createItem(input);
+        },
+      },
+    });
+    const input = {
+      kind: 'TEXT' as const,
+      context,
+      title: 'Parallel source',
+      content: 'Only one request can process this source at a time.',
+    };
+    const first = service.ingest(input);
+    await started;
+    await expect(service.ingest(input)).rejects.toBeInstanceOf(ResearchInProgressError);
+    releasePersistence!();
+    await expect(first).resolves.toEqual(expect.objectContaining({ title: input.title }));
   });
 });
