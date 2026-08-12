@@ -327,6 +327,7 @@ model Organization {
   workflowRuns WorkflowRun[]
   apiKeys ApiKey[]
   webhookEndpoints WebhookEndpoint[]
+  inboundWebhookCredentials InboundWebhookCredential[]
 
   @@map("organization")
 }
@@ -1060,6 +1061,20 @@ model WebhookDelivery {
   endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
   @@index([endpointId, status, createdAt])
   @@map("webhook_delivery")
+}
+
+model InboundWebhookCredential {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @db.Uuid
+  keyId String @unique
+  secretCiphertext String
+  encryptionVersion String
+  disabledAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  @@index([organizationId, disabledAt])
+  @@map("inbound_webhook_credential")
 }
 
 model EvaluationSuite {

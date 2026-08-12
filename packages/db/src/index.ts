@@ -11,6 +11,7 @@ export { createCaptionsRepository } from './repositories/captions';
 export { createPublishingRepository } from './repositories/publishing';
 export { createAnalyticsRepository } from './repositories/analytics';
 export { createMcpRepository } from './repositories/mcp';
+export { createInboundWebhookRepository } from './repositories/inbound-webhook';
 export { createEvaluationsRepository } from './repositories/evaluations';
 export { createHealthRepository, type HealthRepository } from './repositories/health';
 export * from './generated/prisma/client';

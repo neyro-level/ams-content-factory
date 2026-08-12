@@ -3,12 +3,12 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W1.2 — suspended organization authorization (`DONE`); next: W1.3 secure n8n tenant binding.
-- **Last verification:** 2026-08-12: Prisma validation, lint, formatting, typecheck, 4 unit tests,
-  18 integration contracts and production build passed. The former E2E tests only cover the static shell.
+- **Current task:** W1.3 — secure n8n tenant binding (`DONE`); next: W1.4 tenant-scope repository cleanup.
+- **Last verification:** 2026-08-12: Prisma validation, lint, formatting, typecheck, 9 unit tests,
+  19 integration contracts and production build passed. The former E2E tests only cover the static shell.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
-  health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence and suspended-
-  organization denial in tenant-context resolution exist.
+  health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
+  organization denial and server-bound n8n webhook credentials exist.
 - **NOT_IMPLEMENTED:** protected UI, real web/worker workflows, live provider runtime, durable scheduling,
   end-to-end content operations and release-gate proof.
 - **Remote:** private SourceCraft repository `integrator-p/ams-content-factory` is canonical `origin`;

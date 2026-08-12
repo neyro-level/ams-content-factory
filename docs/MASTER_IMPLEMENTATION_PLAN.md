@@ -405,13 +405,14 @@ parallel request
 
 ## Статус исполнения
 
-| Задача | Статус | Результат                                                                                     |
-| ------ | ------ | --------------------------------------------------------------------------------------------- |
-| PR 0.1 | `DONE` | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                   |
-| PR 0.2 | `DONE` | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`. |
-| PR 1.1 | `DONE` | QC fail-closed: типизированные секции и вычисляемый persisted status.                         |
-| PR 1.2 | `DONE` | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                     |
-| Next   | `W1.3` | Secure n8n tenant binding.                                                                    |
+| Задача | Статус | Результат                                                                                       |
+| ------ | ------ | ----------------------------------------------------------------------------------------------- |
+| PR 0.1 | `DONE` | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                     |
+| PR 0.2 | `DONE` | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`.   |
+| PR 1.1 | `DONE` | QC fail-closed: типизированные секции и вычисляемый persisted status.                           |
+| PR 1.2 | `DONE` | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                       |
+| PR 1.3 | `DONE` | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields. |
+| Next   | `W1.4` | Tenant-scope repository cleanup.                                                                |
 
 ---
 
@@ -772,7 +773,7 @@ TOKEN_ENCRYPTION_KEY
 Feature-specific:
 
 ```text
-N8N_WEBHOOK_SECRET / inbound webhook config
+inbound webhook credentials
 S3*
 VK*
 INSTAGRAM*
