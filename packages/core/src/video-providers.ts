@@ -13,6 +13,15 @@ import { AccessDeniedError, requirePermission, type Permission } from './tenant-
 
 type Context = { organizationId: string; brandId?: string; permissions: Set<Permission> };
 type ProviderKind = 'avatar' | 'motion';
+type MediaRepository = ReturnType<typeof createMediaRepository>;
+type ProviderUsageRepository = ReturnType<typeof createProviderUsageRepository>;
+
+export class VideoProviderOutcomeUnknownError extends Error {
+  constructor() {
+    super('Video provider outcome is unknown and requires reconciliation before retry.');
+    this.name = 'VideoProviderOutcomeUnknownError';
+  }
+}
 
 function scoped(context: Context) {
   requirePermission(context, 'content:write');
@@ -26,11 +35,13 @@ function renderStatus(status: VideoProviderJobStatus): RenderJobStatus {
 
 export function createVideoProviderService(options: {
   prisma?: PrismaClient;
+  mediaRepository?: MediaRepository;
+  usageRepository?: ProviderUsageRepository;
   avatarProvider: AvatarVideoProvider;
   motionProvider: MotionVideoProvider;
 }) {
-  const media = createMediaRepository(options.prisma);
-  const usage = createProviderUsageRepository(options.prisma);
+  const media = options.mediaRepository ?? createMediaRepository(options.prisma);
+  const usage = options.usageRepository ?? createProviderUsageRepository(options.prisma);
   const providerFor = (kind: ProviderKind) =>
     kind === 'avatar' ? options.avatarProvider : options.motionProvider;
 
@@ -110,8 +121,9 @@ export function createVideoProviderService(options: {
         input: { model: input.model, unit: input.unit, quantity: input.quantity },
       });
       if (!render) throw new AccessDeniedError('Render job is outside the active tenant.');
+      let providerJob: Awaited<ReturnType<AvatarVideoProvider['create']>> | undefined;
       try {
-        const providerJob = await providerFor(input.kind).create({
+        providerJob = await providerFor(input.kind).create({
           idempotencyKey: input.idempotencyKey,
           script: input.script,
           aspectRatio: input.aspectRatio,
@@ -132,6 +144,30 @@ export function createVideoProviderService(options: {
         });
         return { renderId: render.id, providerUsageId: trackedUsage.id, providerJob };
       } catch (error) {
+        if (providerJob) {
+          try {
+            await usage.updateUsage({
+              ...scope,
+              id: trackedUsage.id,
+              externalJobId: providerJob.externalJobId,
+            });
+            await media.updateRenderJob({
+              ...scope,
+              id: render.id,
+              from: 'QUEUED',
+              to: 'OUTCOME_UNKNOWN',
+              providerJobId: providerJob.externalJobId,
+              errorCode: 'PERSISTENCE_AFTER_PROVIDER_SUCCESS_FAILED',
+              errorMessage:
+                error instanceof Error ? error.message : 'Could not persist video provider result.',
+            });
+          } catch {
+            // Do not convert a completed external job into FAILED when the
+            // recovery write itself is unavailable. A later operator/worker
+            // reconciliation can still use the provider idempotency key.
+          }
+          throw new VideoProviderOutcomeUnknownError();
+        }
         await media.updateRenderJob({
           ...scope,
           id: render.id,

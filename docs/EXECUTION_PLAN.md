@@ -3,7 +3,7 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W3.6 atomic publication attempts — `DONE`; next W3.7 video provider reconciliation.
+> Latest current-plan record: W3.7 video provider reconciliation — `DONE`; next W3.8 resource graph validation.
 
 ## Protocol
 

@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-12 — W3.7 video provider reconciliation
+
+- A successful provider video-job creation followed by a database persistence failure is now represented as
+  `OUTCOME_UNKNOWN`, never as a local `FAILED` job. The recovery write preserves the external job ID and
+  the attempted provider usage identity.
+- `poll()` is the reconciliation path: it queries the known external video job and moves the local render
+  job forward without a second provider `create()` call. The integration contract injects final-persistence
+  failure after provider success and proves recovery to `PROCESSING`. Full gate is green: Prisma validation,
+  lint, formatting, typecheck, 19 unit tests, 27 integration contracts and production build.
+
 ## 2026-08-12 — W3.6 atomic publication attempts
 
 - Replaced the read/max/insert attempt race with an atomic tenant-scoped acquisition transaction. It locks

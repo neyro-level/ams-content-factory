@@ -23,7 +23,7 @@ export {
   createVideoProductionService,
   videoProductionTransitions,
 } from './media';
-export { createVideoProviderService } from './video-providers';
+export { createVideoProviderService, VideoProviderOutcomeUnknownError } from './video-providers';
 export {
   createCaptionBurnInService,
   createCaptionsService,
