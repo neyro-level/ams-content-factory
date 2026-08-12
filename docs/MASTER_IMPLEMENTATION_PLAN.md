@@ -432,7 +432,16 @@ parallel request
 | PR 4.4 | `DONE` | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.          |
 | PR 4.5 | `DONE` | Worker emits `worker.ready` only after queue, recovery and handler registration complete.          |
 | PR 5.1 | `DONE` | Better Auth login and server-protected `/app` shell are live with a browser E2E flow.              |
-| Next   | `W5.2` | Organizations UI.                                                                                  |
+| PR 5.2 | `DONE` | Authenticated users can list and create their active owner organizations in `/app/organizations`.  |
+| Next   | `W5.3` | Brands UI.                                                                                         |
+
+### W5.2 — organizations UI
+
+The authenticated organization entry point is now real: a server component lists only ACTIVE memberships in
+ACTIVE organizations for the current session user, and a server action creates an organization with that user
+as `OWNER`. No client component touches Prisma. Slug allocation is collision-safe, invalid names are
+rejected, and integration/E2E contracts prove owner creation, isolation from another user and revoked-access
+exclusion.
 
 ### W5.1 — protected application shell
 

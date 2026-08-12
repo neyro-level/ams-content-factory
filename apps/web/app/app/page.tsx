@@ -6,11 +6,13 @@ export default function AppHomePage() {
           <p className="eyebrow">Рабочее пространство</p>
           <h1 id="app-title">Доступ к приложению подтверждён</h1>
           <p>
-            Следующий шаг — создать или выбрать организацию. Управление организациями и брендами
-            будет подключено отдельными задачами W5.2–W5.3.
+            Создайте или выберите организацию, чтобы продолжить настройку брендов и
+            контент-процессов.
           </p>
         </div>
-        <span className="badge">FOUNDATION</span>
+        <a className="button" href="/app/organizations">
+          Перейти к организациям
+        </a>
       </section>
     </main>
   );
