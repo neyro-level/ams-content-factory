@@ -13,13 +13,12 @@
     "@ams-content-factory/providers": "workspace:*",
     "@better-auth/prisma-adapter": "^1.4.15",
     "better-auth": "^1.4.15",
+    "dotenv": "^16.6.1",
+    "tsx": "4.21.0",
     "zod": "4.4.3"
   },
   "scripts": {
     "seed": "tsx src/seed.ts",
     "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "tsx": "4.21.0"
   }
 }

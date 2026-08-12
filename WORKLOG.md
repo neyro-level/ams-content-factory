@@ -1,5 +1,23 @@
 # Worklog
 
+## 2026-08-12 — AMS Server immutable artifact path
+
+- Added the production-only Next standalone output plus an explicitly bundled Node 22 worker; `pnpm build`
+  verifies both processes. The worker bundler is a direct locked development dependency rather than a
+  transitive tool, and the duplicate `pg-boss` package declaration was removed.
+- Added `deploy/ams-server/Dockerfile`: it builds an exact Linux release from a supplied full Git SHA,
+  includes static assets, Prisma CLI/schema/migrations and creates `release.json`. Docker is used only on
+  the trusted builder; AMS Server continues to run host Nginx and systemd.
+- Added guarded artifact extraction, pre-activation migration/seed and atomic `current` switch helpers,
+  plus inactive systemd and ACME/HTTPS Nginx templates for `fabrika.ams24.ru`. No files on AMS Server,
+  database schema, service, vhost or certificate were changed by this repository work.
+- Verified a deliberately non-activatable Linux test artifact. Development tools are pruned from its payload;
+  its current size is about 861 MB before archive compression, so capacity for current and rollback releases
+  remains an explicit AMS Server release-gate check.
+- The new path remains `BLOCKED_EXTERNAL` for production activation: Timeweb must install the `vector` SQL
+  object in the Fabrika database before migrations can run. It does not weaken main protection or enable a
+  deploy from this feature branch.
+
 ## 2026-08-11 — AMS Server and `fabrika.ams24.ru` production preparation
 
 - Corrected the server scope: AMS Content Factory belongs to the AMS Server, not Bastion. Bastion received

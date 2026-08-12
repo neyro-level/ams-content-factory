@@ -52,3 +52,14 @@
   SourceCraft-main artifact, server env file, verified DBaaS connection, `pgvector`, TLS certificate and
   health smoke are mandatory before activating `current`. The initial source snapshot is staging only and
   is not a deploy proof.
+
+## ADR-008 - Linux artifact is built with Docker, not run with Docker on AMS Server
+
+- **Context:** The AMS Server profile uses host Nginx and systemd, but Next standalone and the worker need
+  Linux-compatible dependencies, Prisma CLI/migrations and a verifiable commit identity.
+- **Decision:** Build a Node 22.13 Docker artifact from the exact SourceCraft-main SHA, extract its
+  `/release` payload on a trusted builder and transfer it to the immutable server release directory. Use
+  systemd for web and worker processes; Docker is not installed or exposed as a second production proxy.
+- **Consequences:** The release contains the Next standalone server, copied static assets, bundled worker,
+  Prisma migration/seed tooling and `release.json`. Migrations and seed run against the new release before
+  the atomic `current` switch. Feature-branch artifacts are test-only and cannot be activated.
