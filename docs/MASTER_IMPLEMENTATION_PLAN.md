@@ -405,36 +405,45 @@ parallel request
 
 ## Статус исполнения
 
-| Задача | Статус | Результат                                                                                          |
-| ------ | ------ | -------------------------------------------------------------------------------------------------- |
-| PR 0.1 | `DONE` | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                        |
-| PR 0.2 | `DONE` | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`.      |
-| PR 1.1 | `DONE` | QC fail-closed: типизированные секции и вычисляемый persisted status.                              |
-| PR 1.2 | `DONE` | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                          |
-| PR 1.3 | `DONE` | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields.    |
-| PR 1.4 | `DONE` | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                     |
-| PR 2.1 | `DONE` | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                       |
-| PR 2.2 | `DONE` | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.      |
-| PR 2.3 | `DONE` | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.          |
-| PR 2.4 | `DONE` | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.          |
-| PR 3.1 | `DONE` | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.              |
-| PR 3.2 | `DONE` | Research ingestion has explicit duplicate, processing and failed-retry transitions.                |
-| PR 3.3 | `DONE` | Knowledge ingestion has retry-safe document and chunk persistence.                                 |
-| PR 3.4 | `DONE` | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery. |
-| PR 3.5 | `DONE` | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.           |
-| PR 3.6 | `DONE` | Publication attempts are atomically acquired per idempotency key under parallel dispatch.          |
-| PR 3.7 | `DONE` | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.     |
-| PR 3.8 | `DONE` | Content-project pillar and opportunity links are validated against the active brand graph.         |
-| PR 3.9 | `DONE` | Storyboard creation is bound to verified tenant context and `content:write`.                       |
-| PR 4.1 | `DONE` | Worker fails unsupported workflow types instead of recording false success.                        |
-| PR 4.2 | `DONE` | Worker dispatches only registered handlers selected by workflow type.                              |
-| PR 4.3 | `DONE` | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                   |
-| PR 4.4 | `DONE` | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.          |
-| PR 4.5 | `DONE` | Worker emits `worker.ready` only after queue, recovery and handler registration complete.          |
-| PR 5.1 | `DONE` | Better Auth login and server-protected `/app` shell are live with a browser E2E flow.              |
-| PR 5.2 | `DONE` | Authenticated users can list and create their active owner organizations in `/app/organizations`.  |
-| PR 5.3 | `DONE` | Brand list/create is scoped to a verified organization context with owner MANAGE access.           |
-| Next   | `W5.4` | Application navigation.                                                                            |
+| Задача | Статус | Результат                                                                                             |
+| ------ | ------ | ----------------------------------------------------------------------------------------------------- |
+| PR 0.1 | `DONE` | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                           |
+| PR 0.2 | `DONE` | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`.         |
+| PR 1.1 | `DONE` | QC fail-closed: типизированные секции и вычисляемый persisted status.                                 |
+| PR 1.2 | `DONE` | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                             |
+| PR 1.3 | `DONE` | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields.       |
+| PR 1.4 | `DONE` | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                        |
+| PR 2.1 | `DONE` | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                          |
+| PR 2.2 | `DONE` | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.         |
+| PR 2.3 | `DONE` | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.             |
+| PR 2.4 | `DONE` | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.             |
+| PR 3.1 | `DONE` | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.                 |
+| PR 3.2 | `DONE` | Research ingestion has explicit duplicate, processing and failed-retry transitions.                   |
+| PR 3.3 | `DONE` | Knowledge ingestion has retry-safe document and chunk persistence.                                    |
+| PR 3.4 | `DONE` | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery.    |
+| PR 3.5 | `DONE` | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.              |
+| PR 3.6 | `DONE` | Publication attempts are atomically acquired per idempotency key under parallel dispatch.             |
+| PR 3.7 | `DONE` | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.        |
+| PR 3.8 | `DONE` | Content-project pillar and opportunity links are validated against the active brand graph.            |
+| PR 3.9 | `DONE` | Storyboard creation is bound to verified tenant context and `content:write`.                          |
+| PR 4.1 | `DONE` | Worker fails unsupported workflow types instead of recording false success.                           |
+| PR 4.2 | `DONE` | Worker dispatches only registered handlers selected by workflow type.                                 |
+| PR 4.3 | `DONE` | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                      |
+| PR 4.4 | `DONE` | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.             |
+| PR 4.5 | `DONE` | Worker emits `worker.ready` only after queue, recovery and handler registration complete.             |
+| PR 5.1 | `DONE` | Better Auth login and server-protected `/app` shell are live with a browser E2E flow.                 |
+| PR 5.2 | `DONE` | Authenticated users can list and create their active owner organizations in `/app/organizations`.     |
+| PR 5.3 | `DONE` | Brand list/create is scoped to a verified organization context with owner MANAGE access.              |
+| PR 5.4 | `DONE` | Route-aware application navigation and Better Auth session exit are available in the protected shell. |
+| Next   | `W5.5` | First real end-to-end application flow.                                                               |
+
+### W5.4 — application navigation
+
+The protected application shell exposes only the entry points that are actually implemented: workspace and
+organizations. Navigation uses Next.js links, marks the current route accessibly and retains no tenant data
+in the client. A small Better Auth client component performs a real session sign-out, redirects to login
+only after the provider confirms success and reports an accessible error on failure. Browser coverage proves
+navigation, current-route indication, logout and subsequent anonymous denial of `/app`.
 
 ### W5.3 — brands UI
 

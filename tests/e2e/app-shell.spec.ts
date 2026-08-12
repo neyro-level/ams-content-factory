@@ -36,4 +36,19 @@ test('signs in through Better Auth and opens the protected application shell', a
     page.getByRole('heading', { name: 'Доступ к приложению подтверждён' }),
   ).toBeVisible();
   await expect(page.getByText(email)).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Навигация приложения' })).toBeVisible();
+  await page.getByRole('link', { name: 'Организации' }).click();
+  await expect(page).toHaveURL(/\/app\/organizations$/);
+  await expect(page.getByRole('link', { name: 'Организации' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+
+  await page.getByRole('link', { name: 'Рабочее пространство' }).click();
+  await expect(page).toHaveURL(/\/app$/);
+  await page.getByRole('button', { name: 'Выйти' }).click();
+  await expect(page).toHaveURL(/\/login$/);
+
+  await page.goto('/app');
+  await expect(page).toHaveURL(/\/login\?next=\/app$/);
 });

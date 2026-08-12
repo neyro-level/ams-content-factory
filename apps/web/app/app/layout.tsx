@@ -1,6 +1,7 @@
 import { getAuth } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { AppNavigation } from '../../components/app-navigation';
 
 export default async function ProtectedAppLayout({
   children,
@@ -15,7 +16,10 @@ export default async function ProtectedAppLayout({
           <p className="eyebrow">AMS CONTENT FACTORY</p>
           <p className="app-user">{session.user.email}</p>
         </div>
-        <span className="badge">Доступ подтверждён</span>
+        <div className="app-header__actions">
+          <span className="badge">Доступ подтверждён</span>
+          <AppNavigation />
+        </div>
       </header>
       {children}
     </div>
