@@ -3,6 +3,11 @@ import { getPrisma } from '../client';
 
 export function createWorkflowRunRepository(prisma: PrismaClient = getPrisma()) {
   return {
+    find(input: { organizationId: string; id: string }) {
+      return prisma.workflowRun.findFirst({
+        where: { id: input.id, organizationId: input.organizationId },
+      });
+    },
     async createOrGet(input: {
       organizationId: string;
       brandId?: string;

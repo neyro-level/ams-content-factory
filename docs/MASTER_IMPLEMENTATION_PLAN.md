@@ -426,7 +426,14 @@ parallel request
 | PR 3.7 | `DONE` | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.     |
 | PR 3.8 | `DONE` | Content-project pillar and opportunity links are validated against the active brand graph.         |
 | PR 3.9 | `DONE` | Storyboard creation is bound to verified tenant context and `content:write`.                       |
-| Next   | `W4.1` | Remove worker false-success paths.                                                                 |
+| PR 4.1 | `DONE` | Worker fails unsupported workflow types instead of recording false success.                        |
+| Next   | `W4.2` | Explicit workflow dispatcher.                                                                      |
+
+### W4.1 — worker fail-closed contract
+
+Before W4.2 registers actual workflow handlers, a queued workflow is never reported as successful merely
+because a worker dequeued it. The worker records `FAILED` with `UNSUPPORTED_WORKFLOW_TYPE` and rethrows a
+typed error; this preserves retry/audit visibility without fabricating business completion.
 
 ### W3.4 — executable publication-state contract
 
