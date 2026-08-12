@@ -11,6 +11,12 @@ export default defineConfig({
   webServer: {
     command: `pnpm --filter @ams-content-factory/web exec next dev --port ${port}`,
     port,
+    env: {
+      ...process.env,
+      APP_URL: `http://127.0.0.1:${port}`,
+      BETTER_AUTH_SECRET: 'e2e-only-auth-secret-that-is-at-least-32-characters',
+      TOKEN_ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+    },
     reuseExistingServer: !process.env.CI,
   },
 });

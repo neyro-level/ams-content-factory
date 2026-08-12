@@ -4,10 +4,11 @@ test('shows the truthful AMS Content Factory foundation status', async ({ page }
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Технический фундамент' })).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: 'Рабочее пространство ещё не реализовано' }),
+    page.getByRole('heading', { name: 'Защищённое рабочее пространство запущено' }),
   ).toBeVisible();
   await expect(page.getByText('0 из 4 пользовательских модулей реализовано')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Выбрать бренд' })).toBeDisabled();
+  await expect(page.getByRole('link', { name: 'Открыть рабочее пространство' })).toBeVisible();
 });
 
 test('fits the workspace shell on a mobile viewport', async ({ page }) => {
