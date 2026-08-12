@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W5.4 application navigation
+
+- Added route-aware workspace and organization navigation to the authenticated shell. It intentionally
+  exposes no unimplemented product modules and marks the active route for assistive technology.
+- Added a real Better Auth session exit with pending/error states. Browser coverage now proves navigation,
+  successful logout and that the protected shell denies access after logout.
+- Full gate is green: Prisma validation, lint, formatting, typecheck, 26 unit tests, 29 integration
+  contracts, 6 browser E2E flows and production build. Next: W5.5 first real end-to-end application flow.
+
 ## 2026-08-12 — W5.3 brands UI
 
 - Added brand list/create pages nested under a verified organization route. Both the page and server action

@@ -195,6 +195,48 @@ h2 {
 .app-user {
   color: var(--muted);
 }
+.app-header__actions,
+.app-navigation-wrap,
+.app-navigation,
+.app-session-actions {
+  display: flex;
+  align-items: center;
+}
+.app-header__actions,
+.app-navigation-wrap {
+  gap: 12px;
+}
+.app-navigation {
+  gap: 4px;
+}
+.app-navigation__link {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.app-navigation__link:hover {
+  background: #eef4f8;
+  color: var(--ink);
+}
+.app-navigation__link--current {
+  background: #e9f3fa;
+  color: #155c86;
+}
+.app-session-actions {
+  gap: 8px;
+}
+.button-compact {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.9rem;
+}
+.app-session-error {
+  max-width: 220px;
+  font-size: 0.85rem;
+}
 .app-content {
   width: min(100% - 32px, 1120px);
   margin: 0 auto;
@@ -312,6 +354,17 @@ h2 {
     flex-direction: column;
   }
   .organization-item-actions {
+    justify-content: space-between;
+  }
+  .app-header__actions,
+  .app-navigation-wrap {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .app-navigation {
+    flex-wrap: wrap;
+  }
+  .app-session-actions {
     justify-content: space-between;
   }
 }
