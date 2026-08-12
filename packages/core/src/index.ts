@@ -6,7 +6,7 @@ export { createKnowledgeIngestionService, KnowledgeIngestionError } from './know
 export type { KnowledgeSource } from './knowledge-ingestion';
 export { createKnowledgeRetrievalService } from './knowledge-retrieval';
 export type { KnowledgeRetrievalHit } from './knowledge-retrieval';
-export { createResearchService } from './research';
+export { createResearchService, ResearchInProgressError, ResearchIntegrityError } from './research';
 export type { ResearchInboxSource } from './research';
 export { contentTransitions, createContentService } from './content';
 export { initialVideoRecipes, validateVideoRecipe, videoRecipeSchema } from './video-recipes';

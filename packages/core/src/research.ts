@@ -12,10 +12,28 @@ export type ResearchInboxSource =
   | { kind: 'TEXT' | 'IDEA' | 'NOTE'; title: string; content: string; context: Context }
   | { kind: 'URL'; title: string; sourceUrl: string; context: Context };
 
+export class ResearchInProgressError extends Error {
+  public constructor() {
+    super('Research ingestion is already processing for this source.');
+    this.name = 'ResearchInProgressError';
+  }
+}
+
+export class ResearchIntegrityError extends Error {
+  public constructor(message: string) {
+    super(message);
+    this.name = 'ResearchIntegrityError';
+  }
+}
+
 export function createResearchService(
-  options: { prisma?: PrismaClient; pageFetcher?: PageFetcherProvider } = {},
+  options: {
+    prisma?: PrismaClient;
+    pageFetcher?: PageFetcherProvider;
+    repository?: ReturnType<typeof createResearchRepository>;
+  } = {},
 ) {
-  const repository = createResearchRepository(options.prisma);
+  const repository = options.repository ?? createResearchRepository(options.prisma);
   return {
     async ingest(source: ResearchInboxSource) {
       requirePermission(source.context, 'content:write');
@@ -39,15 +57,33 @@ export function createResearchService(
         ...(prepared.sourceUrl ? { sourceUrl: prepared.sourceUrl } : {}),
       });
       if (!inbox) throw new AccessDeniedError('Brand is outside the active organization.');
+      if (inbox.status === ResearchInboxStatus.READY) {
+        const existing = await repository.findItemByContentHash({
+          organizationId,
+          brandId,
+          contentHash,
+        });
+        if (!existing) {
+          throw new ResearchIntegrityError(
+            'A READY research inbox item has no matching research item.',
+          );
+        }
+        return existing;
+      }
+      if (inbox.status === ResearchInboxStatus.PROCESSING) throw new ResearchInProgressError();
+      if (inbox.status !== ResearchInboxStatus.NEW && inbox.status !== ResearchInboxStatus.FAILED) {
+        throw new ResearchIntegrityError(
+          `Research inbox cannot be processed from ${inbox.status}.`,
+        );
+      }
       const started = await repository.transitionInboxStatus({
         organizationId,
         brandId,
         id: inbox.id,
-        from: ResearchInboxStatus.NEW,
+        from: inbox.status,
         to: ResearchInboxStatus.PROCESSING,
       });
-      if (started.count === 0)
-        return repository.findItemByContentHash({ organizationId, brandId, contentHash });
+      if (started.count !== 1) throw new ResearchInProgressError();
       try {
         let sourceId: string | undefined;
         if (prepared.sourceUrl) {
@@ -71,22 +107,29 @@ export function createResearchService(
           summary: summarize(prepared.content),
           ...(sourceId ? { sourceId } : {}),
         });
-        await repository.transitionInboxStatus({
+        if (!item) throw new ResearchIntegrityError('Research item persistence was rejected.');
+        const completed = await repository.transitionInboxStatus({
           organizationId,
           brandId,
           id: inbox.id,
           from: ResearchInboxStatus.PROCESSING,
           to: ResearchInboxStatus.READY,
         });
+        if (completed.count !== 1) {
+          throw new ResearchIntegrityError('Research inbox READY transition was rejected.');
+        }
         return item;
       } catch (error) {
-        await repository.transitionInboxStatus({
+        const failed = await repository.transitionInboxStatus({
           organizationId,
           brandId,
           id: inbox.id,
           from: ResearchInboxStatus.PROCESSING,
           to: ResearchInboxStatus.FAILED,
         });
+        if (failed.count !== 1 && !(error instanceof ResearchIntegrityError)) {
+          throw new ResearchIntegrityError('Research inbox FAILED transition was rejected.');
+        }
         throw error;
       }
     },

@@ -26,6 +26,15 @@ export function createResearchRepository(prisma: PrismaClient = getPrisma()) {
         update: {},
       });
     },
+    findInboxItem(input: { organizationId: string; brandId: string; checksum: string }) {
+      return prisma.researchInboxItem.findFirst({
+        where: {
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          checksum: input.checksum,
+        },
+      });
+    },
     transitionInboxStatus(input: {
       organizationId: string;
       brandId: string;

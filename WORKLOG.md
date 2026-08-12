@@ -6,7 +6,11 @@
   suspended membership denial. Publishing coverage now proves that a foreign social account cannot be
   attached to a publication in the active brand.
 - Existing integration contracts continue to cover foreign brand, content project and media resource paths;
-  all are executed by the mandatory SourceCraft pgvector gate. Next task: W3.2 — research concurrency/retry.
+  all are executed by the mandatory SourceCraft pgvector gate. Next task: W3.3 — knowledge retry.
+- Made research ingestion stateful and retry-safe. `READY` returns its verified persisted item, `PROCESSING`
+  returns `ResearchInProgressError`, `FAILED` re-enters only through a controlled transition, and every
+  impossible repository state raises an integrity error rather than returning `null`. Integration contracts
+  cover a live parallel request, controlled failure/retry, and cross-brand isolation.
 - Rebuilt media storage into a fail-closed pipeline: server-side deterministic keys, `PENDING` intent,
   storage write, byte-signature detection and controlled `READY` transition. Unsupported content, storage
   failure and persistence failure reconcile to `FAILED` and attempt object cleanup. Contracts prove no write
