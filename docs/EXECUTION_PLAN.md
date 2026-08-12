@@ -3,7 +3,7 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W3.3 knowledge retry — `DONE`; next W3.4 publishing state machine cleanup.
+> Latest current-plan record: W3.4 publishing state machine cleanup — `DONE`; next W3.5 publishing reconciliation.
 
 ## Protocol
 

@@ -1,5 +1,17 @@
 # Worklog
 
+## 2026-08-12 — W3.4 publishing state machine cleanup
+
+- Removed the unused `PREPARING` hop from the active dispatch path, so a crash cannot leave a newly
+  dispatched publication permanently in that state. The guarded `QUEUED → PUBLISHING` transition now
+  occurs immediately before the provider mutation.
+- Defined every publication status in the current master plan. Historical intermediate states are never
+  newly written and can only recover explicitly to `QUEUED`.
+- `OUTCOME_UNKNOWN` cannot be moved back to `QUEUED` by ordinary scheduling; only provider investigation
+  may reconcile it. Integration coverage proves terminal-state denial, uncertain-outcome denial and
+  legacy-state recovery. Full gate is green: Prisma validation, lint, formatting, typecheck, 19 unit tests,
+  25 integration contracts and production build. Next task: W3.5 — publishing reconciliation.
+
 ## 2026-08-12 — Wave 2.2: negative security contracts
 
 - Extended content workflow coverage with foreign organization, insufficient `content:write` permission and

@@ -34,6 +34,8 @@ export {
 export {
   createPublishingService,
   publicationTransitions,
+  PublicationTransitionConflictError,
+  PublicationTransitionError,
   PublicationOutcomeUnknownError,
 } from './publishing';
 export { createTokenEncryptor, TokenEncryptionError } from './token-encryption';
