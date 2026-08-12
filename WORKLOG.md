@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-12 — Wave 0.1: reset source of truth
+
+- Added `docs/MASTER_IMPLEMENTATION_PLAN.md` from the owner-approved Master Plan #2. It is the single
+  current implementation plan: code, not previous implementation reports, determines whether a module is
+  ready.
+- Marked `docs/MASTER_DEVELOPMENT_PLAN.md` as historical/reference and repointed the project routers and
+  passport to the new plan. No application code, schema, migration, infrastructure or production runtime
+  changed in this task.
+- Next task: W0.2, remove false ready claims from public/project status documents and the static home shell.
+
 ## 2026-08-12 — AMS Server immutable artifact path
 
 - Added the production-only Next standalone output plus an explicitly bundled Node 22 worker; `pnpm build`

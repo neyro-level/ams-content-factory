@@ -4,9 +4,8 @@
 
 AMS Content Factory — внутренняя multi-tenant платформа полного цикла для работы с контентом брендов:
 она хранит контекст и знания бренда, собирает research, создаёт и согласует контент, планирует и
-производит видео, публикует материалы, собирает метрики и формирует learning loop. Каноническое
-продуктовое описание — `docs/MASTER_DEVELOPMENT_PLAN.md`; фактическая готовность —
-`docs/BUILD_STATUS.md`.
+производит видео, публикует материалы, собирает метрики и формирует learning loop. Канонический план
+реализации — `docs/MASTER_IMPLEMENTATION_PLAN.md`; фактическая готовность — `docs/BUILD_STATUS.md`.
 
 ## Реализованный контур
 
@@ -38,9 +37,9 @@ pg-boss. Локальная разработка и tests используют D
 к внешнему кластеру только через `DATABASE_URL` с TLS.
 
 Канонический remote — private SourceCraft `integrator-p/ams-content-factory`. Любое изменение проходит
-`work/*` → PR → green `verify` → `main`. Production deploy не выполнялся и остаётся
-`BLOCKED_EXTERNAL` до передачи и проверки подключения к Timeweb DBaaS, включения `pgvector`, настройки
-TLS/backups и отдельного подтверждения инфраструктуры владельцем. Целевой production origin —
+`work/*` → PR → green `verify` → `main`. Production deploy не выполнялся и запрещён до Wave 19 и
+полного release gate; затем он остаётся `BLOCKED_EXTERNAL` до передачи и проверки подключения к Timeweb
+DBaaS, включения `pgvector`, настройки TLS/backups и отдельного подтверждения инфраструктуры владельцем. Целевой production origin —
 `https://fabrika.ams24.ru`; DNS указывает на AMS Server, но публичный vhost и сертификат ещё не включены.
 
 GitHub `neyro-level/ams-content-factory` существует как private remote `github-legacy`: это полная

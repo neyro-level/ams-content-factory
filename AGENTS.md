@@ -2,13 +2,13 @@
 
 ## Источники истины
 
-1. `docs/MASTER_DEVELOPMENT_PLAN.md` — утверждённая продуктовая и архитектурная цель.
+1. `docs/MASTER_IMPLEMENTATION_PLAN.md` — единственный текущий план реализации, инварианты, очередность задач и release gate.
 2. `docs/EXECUTION_PLAN.md` — порядок исполнения по Wave и task.
 3. `docs/BUILD_STATUS.md` — фактическое операционное состояние.
 4. `docs/DECISIONS.md` — архитектурные решения и отклонения.
 5. `03_DESIGN_SYSTEM.md` — UI source of truth; до утверждения действует `DESIGN_SYSTEM_PENDING`.
 
-Перед новой Wave перечитывать эти документы и проверять текущий код.
+`docs/MASTER_DEVELOPMENT_PLAN.md` — historical/reference и не определяет текущий статус. Перед новой Wave перечитывать текущий план и проверять фактический код.
 
 ## Архитектурные инварианты
 
@@ -35,7 +35,7 @@ credential, платёж, домен, необратимое действие в
 - `github-legacy` — private `github.com/neyro-level/ams-content-factory.git`; это optional mirror,
   не merge/deploy gate и обновляется только по запросу владельца.
 - Для любого изменения: `work/*` → PR → green verify → `main`. Запрещены production/deployment/backup branches.
-- Production deploy возможен только после W16, green release-gate и явного owner confirmation.
+- Production deploy возможен только после W19, полного green release-gate и явного owner confirmation.
 
 ## Definition of Done
 

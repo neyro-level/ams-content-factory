@@ -1,7 +1,11 @@
-# AMS CONTENT OS
+# AMS CONTENT OS — historical/reference
 ## Master Development Plan
 
-**Статус:** APPROVED  
+> **Статус:** historical/reference. Текущий единственный план реализации —
+> [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Этот документ сохраняется для
+> истории продуктовых решений и не используется для определения готовности модулей или очередности PR.
+
+**Прежний статус:** APPROVED
 **Назначение:** единый source of truth для автономной разработки  
 **Основной исполнитель:** OpenAI Codex  
 **Рекомендуемый режим первого прохода:** GPT-5.6 Terra / High reasoning  
