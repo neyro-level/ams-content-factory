@@ -25,7 +25,7 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
         update: input.data,
       });
     },
-    async createDocument(input: {
+    async createOrGetDocument(input: {
       organizationId: string;
       brandId: string;
       title: string;
@@ -41,6 +41,43 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
         return null;
       }
 
+      try {
+        return {
+          document: await prisma.knowledgeDocument.create({
+            data: { ...input, status: KnowledgeDocumentStatus.PENDING },
+          }),
+          created: true,
+        };
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002' &&
+          input.checksum
+        ) {
+          const document = await prisma.knowledgeDocument.findFirst({
+            where: {
+              organizationId: input.organizationId,
+              brandId: input.brandId,
+              checksum: input.checksum,
+            },
+          });
+          return document ? { document, created: false } : null;
+        }
+        throw error;
+      }
+    },
+    async createDocument(input: {
+      organizationId: string;
+      brandId: string;
+      title: string;
+      type: KnowledgeDocumentType;
+      sourceUrl?: string;
+      sourceText?: string;
+      checksum?: string;
+      metadata?: object;
+    }) {
+      const brand = await findBrand(input.organizationId, input.brandId);
+      if (!brand) return null;
       return prisma.knowledgeDocument.create({
         data: { ...input, status: KnowledgeDocumentStatus.PENDING },
       });
@@ -81,11 +118,16 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
         return null;
       }
 
-      return prisma.knowledgeChunk.create({
-        data: {
+      return prisma.knowledgeChunk.upsert({
+        where: { documentId_ordinal: { documentId: input.documentId, ordinal: input.ordinal } },
+        create: {
           brandId: input.brandId,
           documentId: input.documentId,
           ordinal: input.ordinal,
+          content: input.content,
+          ...(input.tokenCount ? { tokenCount: input.tokenCount } : {}),
+        },
+        update: {
           content: input.content,
           ...(input.tokenCount ? { tokenCount: input.tokenCount } : {}),
         },

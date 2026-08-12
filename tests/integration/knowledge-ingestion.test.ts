@@ -2,9 +2,16 @@ import 'dotenv/config';
 import {
   createKnowledgeIngestionService,
   createKnowledgeRetrievalService,
+  KnowledgeInProgressError,
   resolveTenantContext,
 } from '../../packages/core/src/index.js';
-import { createPrismaClient, createTenantRepository } from '../../packages/db/src/index.js';
+import {
+  createKnowledgeRepository,
+  createPrismaClient,
+  createTenantRepository,
+  KnowledgeDocumentStatus,
+} from '../../packages/db/src/index.js';
+import { createHash } from 'node:crypto';
 import { MockEmbeddingProvider } from '../../packages/providers/src/index.js';
 import { afterAll, describe, expect, it } from 'vitest';
 
@@ -91,5 +98,76 @@ describe('knowledge ingestion', () => {
         sourceUrl: 'http://127.0.0.1/private',
       }),
     ).rejects.toThrow('must not target a private network');
+  });
+
+  it('rejects concurrent work and retries a failed document without duplicating chunks', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    const brand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id },
+    });
+    const context = await resolveTenantContext(
+      { userId: user.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const repository = createKnowledgeRepository(prisma);
+    const blockedText = 'Knowledge source currently processed by another worker.';
+    const blockedChecksum = createHash('sha256')
+      .update(`TEXT\0text\0${blockedText}`, 'utf8')
+      .digest('hex');
+    const blocked = await repository.createOrGetDocument({
+      organizationId: organization.id,
+      brandId: brand.id,
+      title: 'Blocked knowledge',
+      type: 'TEXT',
+      sourceText: blockedText,
+      checksum: blockedChecksum,
+    });
+    await repository.transitionDocumentStatus({
+      organizationId: organization.id,
+      brandId: brand.id,
+      documentId: blocked!.document.id,
+      from: KnowledgeDocumentStatus.PENDING,
+      to: KnowledgeDocumentStatus.PROCESSING,
+    });
+    await expect(
+      createKnowledgeIngestionService({ prisma }).ingest({
+        kind: 'TEXT',
+        context,
+        title: 'Blocked knowledge',
+        text: blockedText,
+      }),
+    ).rejects.toBeInstanceOf(KnowledgeInProgressError);
+
+    let failOnce = true;
+    const retryService = createKnowledgeIngestionService({
+      prisma,
+      repository: {
+        ...repository,
+        async addChunk(input) {
+          if (failOnce) {
+            failOnce = false;
+            throw new Error('Simulated chunk persistence failure.');
+          }
+          return repository.addChunk(input);
+        },
+      },
+    });
+    const retry = {
+      kind: 'TEXT' as const,
+      context,
+      title: 'Retry knowledge',
+      text: 'Knowledge source can complete after controlled retry.',
+    };
+    await expect(retryService.ingest(retry)).rejects.toThrow('Simulated chunk persistence failure');
+    const failed = await prisma.knowledgeDocument.findFirstOrThrow({
+      where: { organizationId: organization.id, brandId: brand.id, title: retry.title },
+    });
+    expect(failed.status).toBe(KnowledgeDocumentStatus.FAILED);
+    const completed = await retryService.ingest(retry);
+    expect(completed.status).toBe(KnowledgeDocumentStatus.READY);
+    await expect(
+      prisma.knowledgeChunk.count({ where: { documentId: completed.id } }),
+    ).resolves.toBe(1);
   });
 });

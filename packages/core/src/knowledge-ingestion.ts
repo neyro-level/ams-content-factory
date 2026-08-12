@@ -40,13 +40,28 @@ export class KnowledgeIngestionError extends Error {
   }
 }
 
+export class KnowledgeInProgressError extends KnowledgeIngestionError {
+  constructor() {
+    super('Knowledge document ingestion is already processing for this source.');
+    this.name = 'KnowledgeInProgressError';
+  }
+}
+
+export class KnowledgeIntegrityError extends KnowledgeIngestionError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'KnowledgeIntegrityError';
+  }
+}
+
 export function createKnowledgeIngestionService(
   options: {
     prisma?: PrismaClient;
     urlProvider?: KnowledgeUrlProvider;
+    repository?: ReturnType<typeof createKnowledgeRepository>;
   } = {},
 ) {
-  const repository = createKnowledgeRepository(options.prisma);
+  const repository = options.repository ?? createKnowledgeRepository(options.prisma);
   const urlProvider = options.urlProvider ?? new NodeKnowledgeUrlProvider();
 
   return {
@@ -54,17 +69,7 @@ export function createKnowledgeIngestionService(
       const { organizationId, brandId } = requireWriteContext(source.context);
       const extracted = await extractSource(source, urlProvider);
       const checksum = createChecksum(source.kind, extracted.identity, extracted.text);
-      const existing = await repository.findDocumentByChecksum({
-        organizationId,
-        brandId,
-        checksum,
-      });
-
-      if (existing) {
-        return existing;
-      }
-
-      const document = await repository.createDocument({
+      const created = await repository.createOrGetDocument({
         organizationId,
         brandId,
         title: source.title.trim(),
@@ -74,15 +79,28 @@ export function createKnowledgeIngestionService(
         metadata: extracted.metadata,
         ...(extracted.sourceUrl ? { sourceUrl: extracted.sourceUrl } : {}),
       });
-      if (!document) {
+      if (!created) {
         throw new AccessDeniedError('Brand is outside the active organization.');
+      }
+
+      const document = created.document;
+      if (document.status === KnowledgeDocumentStatus.READY) return document;
+      if (document.status === KnowledgeDocumentStatus.PROCESSING)
+        throw new KnowledgeInProgressError();
+      if (
+        document.status !== KnowledgeDocumentStatus.PENDING &&
+        document.status !== KnowledgeDocumentStatus.FAILED
+      ) {
+        throw new KnowledgeIntegrityError(
+          `Knowledge document cannot be processed from ${document.status}.`,
+        );
       }
 
       await transition({
         organizationId,
         brandId,
         documentId: document.id,
-        from: 'PENDING',
+        from: document.status === KnowledgeDocumentStatus.FAILED ? 'FAILED' : 'PENDING',
         to: 'PROCESSING',
       });
       try {
@@ -104,7 +122,15 @@ export function createKnowledgeIngestionService(
           from: 'PROCESSING',
           to: 'READY',
         });
-        return (await repository.findDocumentByChecksum({ organizationId, brandId, checksum }))!;
+        const ready = await repository.findDocumentByChecksum({
+          organizationId,
+          brandId,
+          checksum,
+        });
+        if (!ready || ready.status !== KnowledgeDocumentStatus.READY) {
+          throw new KnowledgeIntegrityError('READY knowledge document could not be reloaded.');
+        }
+        return ready;
       } catch (error) {
         await transition({
           organizationId,
