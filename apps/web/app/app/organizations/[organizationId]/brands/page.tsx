@@ -46,7 +46,15 @@ export default async function BrandsPage({
                     <h3>{brand.name}</h3>
                     <p className="muted">{brand.slug}</p>
                   </div>
-                  <span className="badge">{brand.locale}</span>
+                  <div className="organization-item-actions">
+                    <span className="badge">{brand.locale}</span>
+                    <Link
+                      className="text-link"
+                      href={`/app/organizations/${organizationId}/brands/${brand.id}/knowledge`}
+                    >
+                      База знаний
+                    </Link>
+                  </div>
                 </li>
               ))}
             </ul>

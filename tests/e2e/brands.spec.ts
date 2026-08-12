@@ -39,4 +39,7 @@ test('creates a brand inside the current authenticated organization', async ({ p
   await expect(page.getByRole('status')).toContainText('создан');
   await expect(page.getByRole('heading', { name: brandName })).toBeVisible();
   await expect(page.getByText('ru-RU')).toBeVisible();
+  await page.getByRole('link', { name: 'База знаний' }).click();
+  await expect(page.getByRole('heading', { name: 'Документы бренда' })).toBeVisible();
+  await expect(page.getByText('У этого бренда пока нет документов базы знаний.')).toBeVisible();
 });
