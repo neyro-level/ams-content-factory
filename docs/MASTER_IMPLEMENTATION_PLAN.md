@@ -419,7 +419,8 @@ parallel request
 | PR 2.4 | `DONE` | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.       |
 | PR 3.1 | `DONE` | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.           |
 | PR 3.2 | `DONE` | Research ingestion has explicit duplicate, processing and failed-retry transitions.             |
-| Next   | `W3.3` | Knowledge retry.                                                                                |
+| PR 3.3 | `DONE` | Knowledge ingestion has retry-safe document and chunk persistence.                              |
+| Next   | `W3.4` | Publishing state machine cleanup.                                                               |
 
 ---
 
