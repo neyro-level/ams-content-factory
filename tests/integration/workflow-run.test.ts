@@ -58,12 +58,13 @@ describe('workflow run repository', () => {
       idempotencyKey: 'workflow-run-contract-key',
       payload: { source: 'integration-test' },
     };
-    const [first, second] = await Promise.all([
-      workflowRepository.createOrGet(input),
-      workflowRepository.createOrGet(input),
-    ]);
+    const runs = await Promise.all(
+      Array.from({ length: 8 }, () => workflowRepository.createOrGet(input)),
+    );
+    const [first, second] = runs;
 
     expect(first.id).toBe(second.id);
+    expect(new Set(runs.map((run) => run.id)).size).toBe(1);
     expect(first.status).toBe(WorkflowRunStatus.QUEUED);
 
     await expect(

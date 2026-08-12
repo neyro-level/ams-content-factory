@@ -3,23 +3,38 @@ import { getPrisma } from '../client';
 
 export function createWorkflowRunRepository(prisma: PrismaClient = getPrisma()) {
   return {
-    createOrGet(input: {
+    async createOrGet(input: {
       organizationId: string;
       brandId?: string;
       type: string;
       idempotencyKey: string;
       payload?: object;
     }) {
-      return prisma.workflowRun.upsert({
-        where: {
-          organizationId_idempotencyKey: {
-            organizationId: input.organizationId,
-            idempotencyKey: input.idempotencyKey,
+      try {
+        return await prisma.workflowRun.upsert({
+          where: {
+            organizationId_idempotencyKey: {
+              organizationId: input.organizationId,
+              idempotencyKey: input.idempotencyKey,
+            },
           },
-        },
-        create: { ...input, status: WorkflowRunStatus.QUEUED },
-        update: {},
-      });
+          create: { ...input, status: WorkflowRunStatus.QUEUED },
+          update: {},
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+          const existing = await prisma.workflowRun.findUnique({
+            where: {
+              organizationId_idempotencyKey: {
+                organizationId: input.organizationId,
+                idempotencyKey: input.idempotencyKey,
+              },
+            },
+          });
+          if (existing) return existing;
+        }
+        throw error;
+      }
     },
     markRunning(input: { organizationId: string; id: string }) {
       return transition(input, WorkflowRunStatus.RUNNING, {
