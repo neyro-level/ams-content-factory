@@ -9,6 +9,9 @@
   topic, keyId, brandId, idempotency key и hash body до поиска бренда и постановки workflow в очередь.
 - Public tenant-owned repository write methods принимают organization ID, brand ID (когда применимо) и
   resource ID вместе; передача одного resource ID не может изменить чужую запись.
+- Integration security contracts explicitly cover foreign organization/brand/content/media/social-account
+  references, revoked or suspended membership and insufficient `content:write` permission. Они запускаются
+  в обязательном SourceCraft pgvector integration gate.
 - Secrets только в environment/Doppler; логи редактируют секретные поля.
 - SSRF, upload validation, webhook signatures, OAuth token encryption и rate limits появляются
   до соответствующих внешних entrypoints, а не в конце проекта.
