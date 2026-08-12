@@ -1,5 +1,13 @@
 # Worklog
 
+## 2026-08-12 — W6.2 knowledge intake
+
+- Connected text, URL and UTF-8 textual-file forms to tenant-bound Server Actions and the existing safe
+  knowledge ingestion service. URL and file validation remain in the core/provider layer, not React.
+- Browser coverage performs real text ingestion from the form into a READY document. Full quality gate is
+  green: Prisma validation, lint, formatting, typecheck, 26 unit tests, 30 integration contracts, 7 browser
+  E2E flows and production build. Next: W6.3 controlled document retry.
+
 ## 2026-08-12 — W6.1 knowledge document list
 
 - Added the protected, brand-scoped Knowledge entry point and a tenant-scoped document listing application

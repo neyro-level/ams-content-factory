@@ -437,7 +437,16 @@ parallel request
 | PR 5.4 | `DONE` | Route-aware application navigation and Better Auth session exit are available in the protected shell. |
 | PR 5.5 | `DONE` | Browser-to-PostgreSQL owner/brand lifecycle is covered as one real authenticated flow.                |
 | PR 6.1 | `DONE` | Brand-scoped knowledge document list has a protected application entry point.                         |
-| Next   | `W6.2` | Knowledge intake for text, URL and UTF-8 text files.                                                  |
+| PR 6.2 | `DONE` | Safe text, URL and UTF-8 text-file intake is connected to the protected Knowledge UI.                 |
+| Next   | `W6.3` | Controlled retry of failed knowledge documents.                                                       |
+
+### W6.2 — knowledge intake
+
+The Knowledge page accepts text, URL and UTF-8 textual file sources through individual Server Actions. Each
+action reconstructs the Better Auth actor and organization/brand context before it delegates to the existing
+ingestion application service; no client or action issues Prisma queries. URL intake continues to use its
+fail-closed SSRF-safe provider path, while file intake preserves the core extension, MIME, byte-size and
+UTF-8 validation. A browser test performs actual text ingestion and sees the READY document rendered.
 
 ### W6.1 — knowledge document list
 

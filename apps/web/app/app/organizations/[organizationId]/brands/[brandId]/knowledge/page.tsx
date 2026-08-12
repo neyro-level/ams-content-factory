@@ -6,6 +6,7 @@ import {
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
+import { KnowledgeIntakeForms } from '../../../../../../../components/knowledge-intake-forms';
 
 export default async function KnowledgePage({
   params,
@@ -44,26 +45,31 @@ export default async function KnowledgePage({
           К брендам
         </Link>
       </section>
-      <section className="panel" aria-labelledby="knowledge-list-title">
-        <h2 id="knowledge-list-title">Документы</h2>
-        {documents.length ? (
-          <ul className="organization-list">
-            {documents.map((document) => (
-              <li key={document.id}>
-                <div>
-                  <h3>{document.title}</h3>
-                  <p className="muted">
-                    {document.type} · {document._count.chunks} фрагм.
-                  </p>
-                </div>
-                <span className="badge">{document.status}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="empty-copy">У этого бренда пока нет документов базы знаний.</p>
-        )}
-      </section>
+      <div className="organization-layout">
+        <section className="panel" aria-labelledby="knowledge-list-title">
+          <h2 id="knowledge-list-title">Документы</h2>
+          {documents.length ? (
+            <ul className="organization-list">
+              {documents.map((document) => (
+                <li key={document.id}>
+                  <div>
+                    <h3>{document.title}</h3>
+                    <p className="muted">
+                      {document.type} · {document._count.chunks} фрагм.
+                    </p>
+                  </div>
+                  <span className="badge">{document.status}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="empty-copy">У этого бренда пока нет документов базы знаний.</p>
+          )}
+        </section>
+        <section className="panel">
+          <KnowledgeIntakeForms organizationId={organizationId} brandId={brandId} />
+        </section>
+      </div>
     </main>
   );
 }

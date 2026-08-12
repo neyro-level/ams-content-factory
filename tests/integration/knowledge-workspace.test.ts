@@ -52,12 +52,13 @@ describe('knowledge workspace application service', () => {
       slug: 'foreign',
     });
     await tenants.grantBrandAccess({ brandId: firstBrand.id, userId: user.id, role: 'MANAGE' });
-    await knowledge.createDocument({
-      organizationId: organization.id,
-      brandId: firstBrand.id,
-      title: 'First document',
-      type: KnowledgeDocumentType.TEXT,
-    });
+    await workspace.ingestText(
+      { userId: user.id, organizationId: organization.id, brandId: firstBrand.id },
+      {
+        title: 'First document',
+        text: 'Knowledge workspace source text.',
+      },
+    );
     await knowledge.createDocument({
       organizationId: organization.id,
       brandId: secondBrand.id,

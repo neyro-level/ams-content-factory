@@ -3,15 +3,15 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W6.1 — knowledge document list (`DONE`); next: W6.2 text/URL/file intake.
+- **Current task:** W6.2 — safe text/URL/file intake (`DONE`); next: W6.3 controlled document retry.
 - **Last verification:** 2026-08-12: Prisma validation, lint, formatting, typecheck, 26 unit tests,
   30 integration contracts, 7 browser E2E flows and production build passed.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a
   PostgreSQL + pgvector integration gate in SourceCraft CI exist.
-- **NOT_IMPLEMENTED:** knowledge intake, retry and hybrid search UI; real product workflows, live provider
-  runtime, durable scheduling, end-to-end content operations and release-gate proof.
+- **NOT_IMPLEMENTED:** knowledge retry and hybrid search UI; real product workflows, live provider runtime,
+  durable scheduling, end-to-end content operations and release-gate proof.
 - **Remote:** private SourceCraft repository `integrator-p/ams-content-factory` is canonical `origin`;
   protected `main` and `verify` CI are active. GitHub is a non-canonical legacy mirror.
 

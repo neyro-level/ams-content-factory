@@ -3,7 +3,7 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W6.1 knowledge document list — `DONE`; next W6.2 text/URL/file intake.
+> Latest current-plan record: W6.2 safe text/URL/file intake — `DONE`; next W6.3 controlled document retry.
 
 ## Protocol
 
