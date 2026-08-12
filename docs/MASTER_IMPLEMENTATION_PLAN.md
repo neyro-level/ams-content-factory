@@ -417,7 +417,8 @@ parallel request
 | PR 2.2 | `DONE` | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.   |
 | PR 2.3 | `DONE` | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.       |
 | PR 2.4 | `DONE` | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.       |
-| Next   | `W3.1` | Media pipeline.                                                                                 |
+| PR 3.1 | `DONE` | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.           |
+| Next   | `W3.2` | Research concurrency/retry.                                                                     |
 
 ---
 

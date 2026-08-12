@@ -16,6 +16,7 @@ export type StoredObject = {
 export interface StorageProvider {
   put(input: StorageWriteInput): Promise<StoredObject>;
   get(key: string): Promise<Uint8Array | null>;
+  delete(key: string): Promise<void>;
   getSignedDownloadUrl(key: string, expiresInSeconds: number): Promise<string | null>;
 }
 
@@ -59,6 +60,16 @@ export class LocalStorageProvider implements StorageProvider {
     }
   }
 
+  async delete(key: string): Promise<void> {
+    const target = this.resolveKey(key);
+    try {
+      const { unlink } = await import('node:fs/promises');
+      await unlink(target);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
+  }
+
   async getSignedDownloadUrl(key: string, expiresInSeconds: number): Promise<string | null> {
     this.resolveKey(key);
     if (!Number.isInteger(expiresInSeconds) || expiresInSeconds <= 0) {
@@ -71,6 +82,7 @@ export class LocalStorageProvider implements StorageProvider {
 export interface S3ObjectClient {
   putObject(input: StorageWriteInput): Promise<void>;
   getObject(key: string): Promise<Uint8Array | null>;
+  deleteObject(key: string): Promise<void>;
   getSignedDownloadUrl(key: string, expiresInSeconds: number): Promise<string>;
 }
 
@@ -87,6 +99,11 @@ export class S3StorageProvider implements StorageProvider {
   get(key: string) {
     assertSafeStorageKey(key);
     return this.client.getObject(key);
+  }
+
+  delete(key: string) {
+    assertSafeStorageKey(key);
+    return this.client.deleteObject(key);
   }
 
   getSignedDownloadUrl(key: string, expiresInSeconds: number) {
@@ -113,6 +130,11 @@ export class MockStorageProvider implements StorageProvider {
     assertSafeStorageKey(key);
     const content = this.objects.get(key);
     return content?.slice() ?? null;
+  }
+
+  async delete(key: string): Promise<void> {
+    assertSafeStorageKey(key);
+    this.objects.delete(key);
   }
 
   async getSignedDownloadUrl(key: string, expiresInSeconds: number): Promise<string | null> {

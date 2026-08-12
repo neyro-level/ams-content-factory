@@ -1,3 +1,4 @@
+import { Prisma } from '../generated/prisma/client';
 import { getPrisma } from '../client';
 import type {
   MediaAssetStatus,
@@ -56,6 +57,69 @@ export function createMediaRepository(prisma: PrismaClient = getPrisma()) {
         if (!parent) return null;
       }
       return prisma.mediaAsset.create({ data: input });
+    },
+    async createOrGetPendingAsset(input: {
+      organizationId: string;
+      brandId: string;
+      type: string;
+      mimeType: string;
+      filename: string;
+      storageKey: string;
+      storageDriver: string;
+      sizeBytes: bigint;
+      checksum: string;
+      sourceType: MediaSourceType;
+      sourceUrl?: string;
+      metadata?: object;
+    }) {
+      if (!(await hasBrand(input.organizationId, input.brandId))) return null;
+      try {
+        return {
+          asset: await prisma.mediaAsset.create({ data: { ...input, status: 'PENDING' } }),
+          created: true,
+        };
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+          const asset = await prisma.mediaAsset.findFirst({
+            where: {
+              organizationId: input.organizationId,
+              brandId: input.brandId,
+              checksum: input.checksum,
+            },
+          });
+          return asset ? { asset, created: false } : null;
+        }
+        throw error;
+      }
+    },
+    updateAssetStatus(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      from: MediaAssetStatus;
+      to: MediaAssetStatus;
+      mimeType?: string;
+      width?: number;
+      height?: number;
+      durationMs?: number;
+      metadata?: object;
+    }) {
+      return prisma.mediaAsset.updateMany({
+        where: {
+          id: input.id,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: input.from,
+        },
+        data: {
+          status: input.to,
+          ...(input.mimeType !== undefined ? { mimeType: input.mimeType } : {}),
+          ...(input.width !== undefined ? { width: input.width } : {}),
+          ...(input.height !== undefined ? { height: input.height } : {}),
+          ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+          ...(input.metadata !== undefined ? { metadata: input.metadata } : {}),
+        },
+      });
     },
     findAsset(input: { organizationId: string; brandId: string; id: string }) {
       return prisma.mediaAsset.findFirst({
