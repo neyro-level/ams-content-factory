@@ -431,7 +431,15 @@ parallel request
 | PR 4.3 | `DONE` | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                   |
 | PR 4.4 | `DONE` | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.          |
 | PR 4.5 | `DONE` | Worker emits `worker.ready` only after queue, recovery and handler registration complete.          |
-| Next   | `W5.1` | Protected application shell.                                                                       |
+| PR 5.1 | `DONE` | Better Auth login and server-protected `/app` shell are live with a browser E2E flow.              |
+| Next   | `W5.2` | Organizations UI.                                                                                  |
+
+### W5.1 — protected application shell
+
+`/app` now enforces a Better Auth session in its server layout before rendering any workspace UI; anonymous
+requests are redirected to `/login?next=/app`. The login form uses the Better Auth client and only permits
+safe local `/app` return paths. A real Playwright flow proves anonymous denial, credential sign-in and the
+authenticated shell. Organization and brand selection deliberately remain separate W5 tasks.
 
 ### W4.5 — worker readiness signal
 

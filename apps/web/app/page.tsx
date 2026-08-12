@@ -78,15 +78,15 @@ export default function HomePage() {
       <section className="empty-state" aria-labelledby="empty-title">
         <div>
           <p className="eyebrow">Следующее действие</p>
-          <h2 id="empty-title">Рабочее пространство ещё не реализовано</h2>
+          <h2 id="empty-title">Защищённое рабочее пространство запущено</h2>
           <p>
-            Следующая продуктовая задача — закрыть security invariants, затем подключить защищённый
-            application shell и реальные операции бренда.
+            Вход и server-side защита `/app` уже работают. Следующая продуктовая задача — подключить
+            организации, бренды и реальные операции контента.
           </p>
         </div>
-        <button className="button" type="button" disabled>
-          Недоступно до W5
-        </button>
+        <a className="button" href="/app">
+          Открыть рабочее пространство
+        </a>
       </section>
       <section className="notice" aria-labelledby="security-title">
         <h2 id="security-title">Безопасный режим</h2>

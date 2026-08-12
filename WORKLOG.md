@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W5.1 protected application shell
+
+- Added a Better Auth email/password login form and a server-protected `/app` layout. Anonymous requests are
+  redirected before workspace rendering; return paths are constrained to local `/app` locations, preventing
+  an open redirect.
+- Added a real Playwright flow for anonymous denial and credential login to `/app`. Full gate is green:
+  Prisma validation, lint, formatting, typecheck, 26 unit tests, 27 integration contracts, 4 browser E2E
+  flows and production build. Next: W5.2 organizations UI.
+
 ## 2026-08-12 — W4.5 worker readiness signal
 
 - Refactored worker startup into a testable bootstrap sequence. A safe `worker.ready` signal is emitted only
