@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import {
   createContentService,
+  VideoProviderOutcomeUnknownError,
   createStoryboardService,
   createVideoProductionService,
   createVideoProviderService,
@@ -9,6 +10,7 @@ import {
 } from '../../packages/core/src/index.js';
 import {
   createPrismaClient,
+  createMediaRepository,
   createProviderUsageRepository,
   createTenantRepository,
 } from '../../packages/db/src/index.js';
@@ -160,5 +162,60 @@ describe('video providers', () => {
       where: { id: submitted.providerUsageId },
     });
     expect(Number(completedUsage!.actualCost)).toBe(0);
+
+    // The present RenderJob schema assigns attempt=1 by default; keep this
+    // recovery contract focused on persistence-after-provider-success rather
+    // than the separately planned render-attempt allocation work.
+    await prisma.renderJob.deleteMany({ where: { videoProductionId: created!.id } });
+
+    const baseMedia = createMediaRepository(prisma);
+    let failFinalPersistence = true;
+    const mediaRepository = {
+      ...baseMedia,
+      updateRenderJob: async (update: Parameters<typeof baseMedia.updateRenderJob>[0]) => {
+        if (failFinalPersistence && update.to === 'SUBMITTED') {
+          failFinalPersistence = false;
+          throw new Error('Simulated database failure after video provider success.');
+        }
+        return baseMedia.updateRenderJob(update);
+      },
+    };
+    const reconciliationService = createVideoProviderService({
+      mediaRepository,
+      avatarProvider: new MockAvatarVideoProvider(),
+      motionProvider: new MockMotionProvider(),
+    });
+    const uncertainInput = {
+      ...input,
+      idempotencyKey: `video-provider-uncertain-${created!.id}`,
+      outputKey: 'output/uncertain.mp4',
+    };
+    await expect(reconciliationService.submit(context, uncertainInput)).rejects.toBeInstanceOf(
+      VideoProviderOutcomeUnknownError,
+    );
+    const uncertain = await baseMedia.findRenderJobByIdempotency({
+      organizationId: organization.id,
+      brandId: one.id,
+      videoProductionId: created!.id,
+      idempotencyKey: uncertainInput.idempotencyKey,
+    });
+    expect(uncertain).toEqual(
+      expect.objectContaining({ status: 'OUTCOME_UNKNOWN', providerJobId: expect.any(String) }),
+    );
+    await expect(
+      reconciliationService.poll(context, {
+        kind: 'motion',
+        videoProductionId: created!.id,
+        renderJobId: uncertain!.id,
+      }),
+    ).resolves.toEqual(expect.objectContaining({ status: 'PROCESSING' }));
+    await expect(
+      baseMedia.findRenderJobByIdempotency({
+        organizationId: organization.id,
+        brandId: one.id,
+        videoProductionId: created!.id,
+        idempotencyKey: uncertainInput.idempotencyKey,
+      }),
+    ).resolves.toEqual(expect.objectContaining({ status: 'PROCESSING' }));
   });
 });

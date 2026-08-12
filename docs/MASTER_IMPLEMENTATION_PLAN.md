@@ -423,7 +423,8 @@ parallel request
 | PR 3.4 | `DONE` | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery. |
 | PR 3.5 | `DONE` | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.           |
 | PR 3.6 | `DONE` | Publication attempts are atomically acquired per idempotency key under parallel dispatch.          |
-| Next   | `W3.7` | Video provider reconciliation.                                                                     |
+| PR 3.7 | `DONE` | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.     |
+| Next   | `W3.8` | Resource graph validation.                                                                         |
 
 ### W3.4 — executable publication-state contract
 
@@ -459,6 +460,13 @@ a database transaction. It returns the existing logical attempt for the same ide
 next attempt number exactly once; the external provider call is never made while the lock is held. Parallel
 dispatches observing an in-progress attempt receive a typed in-progress result rather than issuing another
 provider mutation.
+
+### W3.7 — video provider reconciliation
+
+The video generation intent is persisted before the provider call. If provider `create()` succeeds but
+external-job persistence fails, the render job is marked `OUTCOME_UNKNOWN` with the provider job identity
+instead of `FAILED`. `poll()` is the reconciliation path: it queries that provider job and writes its later
+status without resubmitting a video generation request.
 
 ---
 
