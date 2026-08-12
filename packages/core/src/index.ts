@@ -39,6 +39,12 @@ export {
 } from './analytics';
 export { createMcpAuthService, verifyHmacSignature } from './mcp-auth';
 export type { McpScope } from './mcp-auth';
+export {
+  createInboundWebhookService,
+  createInboundWebhookSignaturePayload,
+  InboundWebhookError,
+  signInboundWebhookRequest,
+} from './inbound-webhooks';
 export { createWebhookService } from './webhooks';
 export type { OutboundWebhookTransport } from './webhooks';
 export {

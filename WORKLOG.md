@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — Wave 1.3: secure n8n tenant binding
+
+- Replaced the global inbound webhook secret and caller-supplied organization header with encrypted
+  `InboundWebhookCredential`: an active `keyId` determines its organization server-side.
+- Added canonical HMAC signing for method, topic, key ID, brand ID, idempotency key and body hash. Brand
+  UUID, active organization ownership and duplicate workflow creation are all verified before enqueueing.
+- Added integration coverage for unknown key, wrong secret, malformed UUID, foreign/tampered brand and
+  duplicate delivery; next task: W1.4 — tenant-scope repository cleanup.
+
 ## 2026-08-12 — Wave 1.2: suspended organization deny
 
 - Added an explicit active-organization check at the server-side tenant-context boundary. A user with an
