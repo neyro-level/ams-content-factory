@@ -422,7 +422,8 @@ parallel request
 | PR 3.3 | `DONE` | Knowledge ingestion has retry-safe document and chunk persistence.                                 |
 | PR 3.4 | `DONE` | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery. |
 | PR 3.5 | `DONE` | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.           |
-| Next   | `W3.6` | Atomic publication attempts under parallel dispatch.                                               |
+| PR 3.6 | `DONE` | Publication attempts are atomically acquired per idempotency key under parallel dispatch.          |
+| Next   | `W3.7` | Video provider reconciliation.                                                                     |
 
 ### W3.4 — executable publication-state contract
 
@@ -450,6 +451,14 @@ After a provider mutation returns success, any failure that prevents final local
 another dispatch and exposes `investigate()`. Provider-confirmed `PUBLISHED` completes the local state;
 provider-confirmed `NOT_FOUND` records the failed attempt and requeues it. An inconclusive provider result
 remains `OUTCOME_UNKNOWN`.
+
+### W3.6 — atomic publication attempts
+
+`createOrGetAttempt()` serializes only the intent persistence by locking the owning publication row inside
+a database transaction. It returns the existing logical attempt for the same idempotency key or creates the
+next attempt number exactly once; the external provider call is never made while the lock is held. Parallel
+dispatches observing an in-progress attempt receive a typed in-progress result rather than issuing another
+provider mutation.
 
 ---
 

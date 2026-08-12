@@ -34,6 +34,7 @@ export {
 export {
   createPublishingService,
   publicationTransitions,
+  PublicationDispatchInProgressError,
   PublicationTransitionConflictError,
   PublicationTransitionError,
   PublicationOutcomeUnknownError,

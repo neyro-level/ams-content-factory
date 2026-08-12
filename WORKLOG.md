@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-12 — W3.6 atomic publication attempts
+
+- Replaced the read/max/insert attempt race with an atomic tenant-scoped acquisition transaction. It locks
+  the publication only while assigning the next attempt and reuses the existing logical attempt for the
+  same idempotency key; provider calls remain outside the transaction.
+- A 20-request parallel integration contract proves one logical attempt, one provider mutation and no
+  leaked unique-constraint violation. Concurrent callers receive a typed in-progress result until the
+  owning dispatch completes. Full gate is green: Prisma validation, lint, formatting, typecheck, 19 unit
+  tests, 27 integration contracts and production build.
+
 ## 2026-08-12 — W3.5 publishing reconciliation
 
 - A provider success followed by a persistence failure now becomes `OUTCOME_UNKNOWN`, never `FAILED`.
