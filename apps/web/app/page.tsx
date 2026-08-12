@@ -1,8 +1,24 @@
 const stages = [
-  ['Исследование', 'Inbox и проверенные источники', 'Готово'],
-  ['Контент', 'Проекты, версии и согласование', 'Готово'],
-  ['Публикации', 'Календарь и социальные аккаунты', 'Готово'],
-  ['Аналитика', 'Метрики, затраты и инсайты', 'Готово'],
+  [
+    'Исследование',
+    'Есть foundation-код; пользовательское рабочее пространство не реализовано.',
+    'NOT_IMPLEMENTED',
+  ],
+  [
+    'Контент',
+    'Есть domain/service foundation; сквозной редакционный flow не реализован.',
+    'NOT_IMPLEMENTED',
+  ],
+  [
+    'Публикации',
+    'Есть contracts и state foundation; календарь и dispatch не реализованы.',
+    'NOT_IMPLEMENTED',
+  ],
+  [
+    'Аналитика',
+    'Есть data/provider foundation; сбор и интерфейс метрик не реализованы.',
+    'NOT_IMPLEMENTED',
+  ],
 ] as const;
 
 export default function HomePage() {
@@ -28,15 +44,15 @@ export default function HomePage() {
       <section className="intro" aria-labelledby="workspace-title">
         <div>
           <p className="eyebrow">Рабочее пространство</p>
-          <h2 id="workspace-title">Контур готов к настройке</h2>
+          <h2 id="workspace-title">Технический фундамент</h2>
           <p>
-            Подключите первый бренд, чтобы собирать знания, планировать контент, выпускать
-            публикации и получать измеримые рекомендации.
+            Продуктовый интерфейс ещё не подключён к рабочим операциям. Разработка идёт по Master
+            Implementation Plan с проверяемыми безопасными этапами.
           </p>
         </div>
         <div className="status-card" role="status">
           <span className="status-dot" aria-hidden="true" />
-          Локальная инфраструктура доступна
+          FOUNDATION
         </div>
       </section>
       <section aria-labelledby="modules-title">
@@ -45,7 +61,7 @@ export default function HomePage() {
             <p className="eyebrow">Контур продукта</p>
             <h2 id="modules-title">Модули</h2>
           </div>
-          <span className="muted">4 из 4 доступны</span>
+          <span className="muted">0 из 4 пользовательских модулей реализовано</span>
         </div>
         <div className="module-grid">
           {stages.map(([title, description, status]) => (
@@ -62,14 +78,14 @@ export default function HomePage() {
       <section className="empty-state" aria-labelledby="empty-title">
         <div>
           <p className="eyebrow">Следующее действие</p>
-          <h2 id="empty-title">Нет активного бренда</h2>
+          <h2 id="empty-title">Рабочее пространство ещё не реализовано</h2>
           <p>
-            После авторизации выберите бренд. Здесь появятся задачи, статусы публикаций и последние
-            метрики.
+            Следующая продуктовая задача — закрыть security invariants, затем подключить защищённый
+            application shell и реальные операции бренда.
           </p>
         </div>
         <button className="button" type="button" disabled>
-          Создать контент-проект
+          Недоступно до W5
         </button>
       </section>
       <section className="notice" aria-labelledby="security-title">

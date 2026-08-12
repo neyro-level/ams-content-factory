@@ -1,5 +1,16 @@
 # Worklog
 
+## 2026-08-12 — Wave 0.2: truthful status reset
+
+- Reclassified project status to `FOUNDATION`, `NOT_IMPLEMENTED` and `BLOCKED_EXTERNAL` in the README,
+  implementation report, build status and historical execution record. Removed claims that contract-only
+  modules or the static shell are ready.
+- Replaced the root screen's four false ready badges with explicit `NOT_IMPLEMENTED` module states. The
+  screen remains a static foundation/status shell; it is not a product workspace.
+- Made Playwright's web server port configurable through `E2E_PORT`; this keeps the proof isolated when
+  another local application already owns port 3000.
+- Next task: W1.1, make QC fail closed and prove every QC outcome with unit and integration tests.
+
 ## 2026-08-12 — Wave 0.1: reset source of truth
 
 - Added `docs/MASTER_IMPLEMENTATION_PLAN.md` from the owner-approved Master Plan #2. It is the single

@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-test('opens the accessible AMS Content Factory workspace shell', async ({ page }) => {
+test('shows the truthful AMS Content Factory foundation status', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Операционная система контента' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Нет активного бренда' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Технический фундамент' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Рабочее пространство ещё не реализовано' }),
+  ).toBeVisible();
+  await expect(page.getByText('0 из 4 пользовательских модулей реализовано')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Выбрать бренд' })).toBeDisabled();
 });
 

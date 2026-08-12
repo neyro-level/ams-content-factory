@@ -1,7 +1,20 @@
 # AMS Content Factory
 
-AMS Content Factory — внутренняя AMS-платформа полного цикла: знания бренда, research,
+AMS Content Factory — внутренняя AMS-платформа для будущего полного цикла: знания бренда, research,
 производство контента и видео, согласования, публикация, аналитика и learning loop.
+
+## Фактический статус
+
+- `FOUNDATION`: multi-tenant data model, repositories, application services, provider contracts, worker
+  foundation, health endpoints и CI.
+- `NOT_IMPLEMENTED`: защищённый пользовательский shell и сквозные UI/worker flows для knowledge,
+  research, AI-генерации, редакционного согласования, видео, публикаций и аналитики.
+- `BLOCKED_EXTERNAL`: production DBaaS `vector` SQL object, runtime credentials и production release
+  prerequisites.
+
+Текущий порядок работ и критерии готовности —
+[`docs/MASTER_IMPLEMENTATION_PLAN.md`](docs/MASTER_IMPLEMENTATION_PLAN.md). Наличие Prisma model,
+repository, provider contract, mock или теста не означает готовность пользовательской функции.
 
 ## Быстрый старт
 
