@@ -14,15 +14,45 @@ workflows:
     tasks:
       - name: quality-gate
         cubes:
-          - name: node-verify
-            image: docker.io/library/node:22
+          - name: integration-quality-gate
             script:
-              - npm install --global pnpm@11.5.1
-              - pnpm --version
-              - pnpm install --frozen-lockfile
-              - DATABASE_URL=postgresql://ci:ci@localhost:5432/ams_content_factory pnpm prisma:generate
-              - pnpm lint
-              - pnpm format:check
-              - pnpm typecheck
-              - pnpm test
-              - pnpm build
+              - |
+                set -euo pipefail
+                database_container=ams-content-factory-ci-postgres
+                cleanup() { docker rm -f "$database_container" >/dev/null 2>&1 || true; }
+                trap cleanup EXIT
+                cleanup
+                docker run --detach --name "$database_container" \
+                  --env POSTGRES_DB=ams_content_factory \
+                  --env POSTGRES_USER=ci \
+                  --env POSTGRES_PASSWORD=ci \
+                  --publish 5432:5432 \
+                  pgvector/pgvector:pg16 >/dev/null
+                for attempt in $(seq 1 30); do
+                  if docker exec "$database_container" pg_isready --username=ci --dbname=ams_content_factory >/dev/null 2>&1; then
+                    break
+                  fi
+                  sleep 1
+                done
+                docker exec "$database_container" pg_isready --username=ci --dbname=ams_content_factory >/dev/null
+                docker run --rm --network host --volume "$PWD:/workspace" --workdir /workspace \
+                  --env DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ams_content_factory \
+                  --env NODE_ENV=production \
+                  docker.io/library/node:22 bash -lc '
+                    set -euo pipefail
+                    export PNPM_HOME=/tmp/pnpm
+                    export PATH="$PNPM_HOME:$PATH"
+                    npm install --global pnpm@11.5.1
+                    pnpm config set store-dir /tmp/pnpm-store
+                    pnpm --version
+                    pnpm install --frozen-lockfile
+                    pnpm prisma:generate
+                    pnpm prisma:deploy
+                    pnpm db:seed
+                    pnpm lint
+                    pnpm format:check
+                    pnpm typecheck
+                    pnpm test
+                    pnpm test:integration
+                    pnpm build
+                  '

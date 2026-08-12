@@ -1,5 +1,12 @@
 # Worklog
 
+## 2026-08-12 — Wave 2.1: SourceCraft integration gate
+
+- Replaced the CI-only static quality gate with a disposable `pgvector/pgvector:pg16` database on the
+  SourceCraft compute runner. The Node 22 verification container now runs Prisma generation, migration
+  deploy, seed, lint, format, typecheck, unit tests, integration tests and build against that database.
+- Next task: W2.2 — negative security tests for core write paths.
+
 ## 2026-08-12 — Wave 1.4: tenant-scope repository cleanup
 
 - Removed ID-only tenant-owned write APIs for workflow runs, social accounts, publication attempts, API-key
