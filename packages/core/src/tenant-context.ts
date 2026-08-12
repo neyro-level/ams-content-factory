@@ -33,6 +33,10 @@ export async function resolveTenantContext(
   input: { userId: string; organizationId: string; brandId?: string },
   repository: TenantRepository = createTenantRepository(),
 ) {
+  if (!(await repository.isOrganizationActive(input.organizationId))) {
+    throw new AccessDeniedError('An active organization is required.');
+  }
+
   const membership = await repository.findActiveMembership(input.organizationId, input.userId);
   if (!membership) throw new AccessDeniedError('Active organization membership is required.');
 

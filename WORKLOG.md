@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-12 — Wave 1.2: suspended organization deny
+
+- Added an explicit active-organization check at the server-side tenant-context boundary. A user with an
+  otherwise active OWNER or ADMIN membership cannot receive a context while the organization is
+  `SUSPENDED`.
+- Extended the integration contract to cover suspended organization, suspended membership, archived brand
+  and soft-deleted brand denial. The first new case failed before the change and all 18 integration
+  contracts pass after it.
+- Next task: W1.3 — secure n8n tenant binding.
+
 ## 2026-08-12 — Wave 1.1: QC fail-closed
 
 - Replaced the hard-coded `PASSED` write in `createQc()` with typed technical/visual/content (and optional
