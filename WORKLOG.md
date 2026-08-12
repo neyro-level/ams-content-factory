@@ -8,6 +8,8 @@
 - Existing integration contracts continue to cover foreign brand, content project and media resource paths;
   all are executed by the mandatory SourceCraft pgvector gate. Next task: W2.3 — reusable concurrency and
   failure harness.
+- Made the research isolation contract independent of external DNS by using a text source; URL/SSRF safety
+  remains covered by the dedicated knowledge ingestion contract.
 
 ## 2026-08-12 — Wave 2.1: SourceCraft integration gate
 

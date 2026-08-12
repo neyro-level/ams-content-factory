@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import { createResearchService, resolveTenantContext } from '../../packages/core/src/index.js';
 import { createPrismaClient, createTenantRepository } from '../../packages/db/src/index.js';
-import { MockPageFetcherProvider } from '../../packages/providers/src/index.js';
 import { afterAll, describe, expect, it } from 'vitest';
 
 const prisma = createPrismaClient();
@@ -45,34 +44,24 @@ describe('research isolation', () => {
       { userId: user.id, organizationId: organization.id, brandId: second.id },
       tenants,
     );
-    const service = createResearchService({
-      prisma,
-      pageFetcher: new MockPageFetcherProvider({
-        'https://example.com/a': {
-          title: 'Source',
-          finalUrl: 'https://example.com/a',
-          content: 'Verified research source.',
-        },
-      }),
-    });
+    const service = createResearchService({ prisma });
     const firstItem = await service.ingest({
-      kind: 'URL',
+      kind: 'TEXT',
       context: firstContext,
       title: 'Source',
-      sourceUrl: 'https://example.com/a',
+      content: 'Verified research source.',
     });
     const repeated = await service.ingest({
-      kind: 'URL',
+      kind: 'TEXT',
       context: firstContext,
       title: 'Source',
-      sourceUrl: 'https://example.com/a',
+      content: 'Verified research source.',
     });
     expect(repeated?.id).toBe(firstItem?.id);
     expect(await service.list(secondContext)).toEqual([]);
     expect(await service.list(firstContext)).toEqual([
       expect.objectContaining({
         id: firstItem?.id,
-        source: expect.objectContaining({ canonicalUrl: 'https://example.com/a' }),
       }),
     ]);
   });
