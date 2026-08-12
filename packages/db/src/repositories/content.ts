@@ -24,7 +24,25 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
       audience?: string;
       createdBy?: string;
     }) {
-      if (!(await brandExists(input.organizationId, input.brandId))) return null;
+      const [brand, pillar, opportunity] = await Promise.all([
+        brandExists(input.organizationId, input.brandId),
+        input.pillarId
+          ? prisma.contentPillar.findFirst({
+              where: { id: input.pillarId, brandId: input.brandId },
+              select: { id: true },
+            })
+          : Promise.resolve({ id: null }),
+        input.opportunityId
+          ? prisma.contentOpportunity.findFirst({
+              where: { id: input.opportunityId, brandId: input.brandId },
+              select: { id: true, pillarId: true },
+            })
+          : Promise.resolve({ id: null, pillarId: null }),
+      ]);
+      if (!brand || (input.pillarId && !pillar) || (input.opportunityId && !opportunity))
+        return null;
+      if (input.pillarId && opportunity?.pillarId && opportunity.pillarId !== input.pillarId)
+        return null;
       return prisma.contentProject.create({
         data: {
           organizationId: input.organizationId,
