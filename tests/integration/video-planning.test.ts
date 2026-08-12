@@ -45,6 +45,10 @@ describe('video planning', () => {
       { userId: user.id, organizationId: organization.id, brandId: one.id },
       tenants,
     );
+    const otherContext = await resolveTenantContext(
+      { userId: user.id, organizationId: organization.id, brandId: two.id },
+      tenants,
+    );
     const recipes = await seedInitialVideoRecipes(prisma);
     await seedInitialVideoRecipes(prisma);
     expect(await prisma.videoRecipe.count()).toBe(6);
@@ -56,9 +60,7 @@ describe('video planning', () => {
     });
     const storyboard = createStoryboardService({ prisma });
     await expect(
-      storyboard.create({
-        organizationId: organization.id,
-        brandId: two.id,
+      storyboard.create(otherContext, {
         contentProjectId: project!.id,
         contentVersionId: version!.id,
         videoRecipeId: recipes[0]!.id,
@@ -68,9 +70,7 @@ describe('video planning', () => {
       }),
     ).resolves.toBeNull();
     await expect(
-      storyboard.create({
-        organizationId: organization.id,
-        brandId: one.id,
+      storyboard.create(context, {
         contentProjectId: project!.id,
         contentVersionId: version!.id,
         videoRecipeId: recipes[0]!.id,

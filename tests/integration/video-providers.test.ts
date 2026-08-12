@@ -68,9 +68,7 @@ describe('video providers', () => {
       createdByType: 'USER',
       script: 'Provider script',
     });
-    const storyboard = await createStoryboardService({ prisma }).create({
-      organizationId: organization.id,
-      brandId: one.id,
+    const storyboard = await createStoryboardService({ prisma }).create(context, {
       contentProjectId: project!.id,
       contentVersionId: version!.id,
       videoRecipeId: recipes[0]!.id,

@@ -3,7 +3,7 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W3.8 resource graph validation — `DONE`; next W3.9 storyboard authorization boundary.
+> Latest current-plan record: W3.9 storyboard authorization boundary — `DONE`; next W4.1 worker false-success removal.
 
 ## Protocol
 

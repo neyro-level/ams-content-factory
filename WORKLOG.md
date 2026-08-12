@@ -1,5 +1,13 @@
 # Worklog
 
+## 2026-08-12 — W3.9 storyboard authorization boundary
+
+- Storyboard creation now accepts a verified `TenantContext` and derives organization/brand only from it;
+  direct caller-supplied tenant identity has been removed from the service API. `content:write` and active
+  brand context are mandatory before repository access.
+- Updated every service caller and cross-brand integration contract. Full gate is green: Prisma validation,
+  lint, formatting, typecheck, 19 unit tests, 27 integration contracts and production build. Next: W4.1.
+
 ## 2026-08-12 — W3.8 resource graph validation
 
 - `ContentProject` now validates `pillarId` and `opportunityId` against the active brand before writing;
