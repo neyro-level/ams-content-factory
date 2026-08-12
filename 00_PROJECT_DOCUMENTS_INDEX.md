@@ -5,8 +5,8 @@
 3. `01_PROJECT_PASSPORT.md` — полный продуктовый и технический паспорт.
 4. `02_SITE_ARCHITECTURE.md` — текущие и целевые маршруты приложения.
 5. `03_DESIGN_SYSTEM.md` — единственный UI source of truth.
-6. `docs/MASTER_DEVELOPMENT_PLAN.md` — утверждённая продуктовая и архитектурная цель.
-7. `docs/EXECUTION_PLAN.md` и `docs/BUILD_STATUS.md` — выполненные Waves и фактический статус.
+6. `docs/MASTER_IMPLEMENTATION_PLAN.md` — единственный текущий план реализации, инварианты и release gate.
+7. `docs/MASTER_DEVELOPMENT_PLAN.md` — historical/reference; `docs/EXECUTION_PLAN.md` и `docs/BUILD_STATUS.md` — фактический статус исполнения.
 8. `docs/DECISIONS.md` — ADR; `docs/ARCHITECTURE.md`, `docs/DATA_MODEL.md`, `docs/SECURITY.md`,
    `docs/WORKFLOWS.md`, `docs/PROVIDERS.md`, `docs/TESTING.md` — технический канон.
 9. `docs/DEPLOYMENT.md`, `docs/AMS_SERVER_DEPLOY_RUNBOOK.md`, `docs/OPERATIONS.md`,
