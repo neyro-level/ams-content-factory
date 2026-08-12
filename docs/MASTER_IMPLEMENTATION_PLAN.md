@@ -435,7 +435,17 @@ parallel request
 | PR 5.2 | `DONE` | Authenticated users can list and create their active owner organizations in `/app/organizations`.     |
 | PR 5.3 | `DONE` | Brand list/create is scoped to a verified organization context with owner MANAGE access.              |
 | PR 5.4 | `DONE` | Route-aware application navigation and Better Auth session exit are available in the protected shell. |
-| Next   | `W5.5` | First real end-to-end application flow.                                                               |
+| PR 5.5 | `DONE` | Browser-to-PostgreSQL owner/brand lifecycle is covered as one real authenticated flow.                |
+| Next   | `W6`   | Knowledge UI: list, intake, retry and scoped search.                                                  |
+
+### W5.5 — first real end-to-end application flow
+
+One Playwright scenario now traverses the available product path using the real Better Auth route, browser
+login, organization and brand forms, application services and PostgreSQL. It verifies that the visible
+result has persisted as an ACTIVE organization with the session user as ACTIVE OWNER and an ACTIVE brand
+with that user granted MANAGE. It then signs out and proves the nested brand route is denied again. The
+scenario uses no provider mock or direct test fixture for its product records; the only setup is the
+official Better Auth sign-up route required to obtain an account.
 
 ### W5.4 — application navigation
 
