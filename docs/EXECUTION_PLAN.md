@@ -3,7 +3,7 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W5.2 organizations UI — `DONE`; next W5.3 brands UI.
+> Latest current-plan record: W5.3 brands UI — `DONE`; next W5.4 application navigation.
 
 ## Protocol
 

@@ -18,6 +18,13 @@ export class OrganizationSlugConflictError extends Error {
   }
 }
 
+export class BrandSlugConflictError extends Error {
+  constructor() {
+    super('Brand slug already exists in this organization.');
+    this.name = 'BrandSlugConflictError';
+  }
+}
+
 export function createTenantRepository(prisma: PrismaClient = getPrisma()) {
   return {
     async createOrganizationWithOwner(input: { ownerUserId: string; name: string; slug: string }) {
@@ -64,18 +71,39 @@ export function createTenantRepository(prisma: PrismaClient = getPrisma()) {
       organizationId: string;
       name: string;
       slug: string;
+      ownerUserId?: string;
       timezone?: string;
       locale?: string;
     }) {
-      return prisma.brand.create({
-        data: {
-          organizationId: input.organizationId,
-          name: input.name,
-          slug: input.slug,
-          ...(input.timezone ? { timezone: input.timezone } : {}),
-          ...(input.locale ? { locale: input.locale } : {}),
-          status: BrandStatus.ACTIVE,
-        },
+      try {
+        return await prisma.brand.create({
+          data: {
+            organizationId: input.organizationId,
+            name: input.name,
+            slug: input.slug,
+            ...(input.timezone ? { timezone: input.timezone } : {}),
+            ...(input.locale ? { locale: input.locale } : {}),
+            status: BrandStatus.ACTIVE,
+            ...(input.ownerUserId
+              ? {
+                  accesses: { create: { userId: input.ownerUserId, role: BrandAccessRole.MANAGE } },
+                }
+              : {}),
+          },
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+          throw new BrandSlugConflictError();
+        }
+        throw error;
+      }
+    },
+
+    listActiveBrandsInOrganization(organizationId: string) {
+      return prisma.brand.findMany({
+        where: { organizationId, status: BrandStatus.ACTIVE, deletedAt: null },
+        select: { id: true, name: true, slug: true, timezone: true, locale: true, createdAt: true },
+        orderBy: { createdAt: 'asc' },
       });
     },
 

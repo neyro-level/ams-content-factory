@@ -1,6 +1,7 @@
 export { createPrismaClient, getPrisma } from './client';
 export {
   createTenantRepository,
+  BrandSlugConflictError,
   OrganizationSlugConflictError,
   type TenantRepository,
 } from './repositories/tenant';

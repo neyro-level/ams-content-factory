@@ -433,7 +433,16 @@ parallel request
 | PR 4.5 | `DONE` | Worker emits `worker.ready` only after queue, recovery and handler registration complete.          |
 | PR 5.1 | `DONE` | Better Auth login and server-protected `/app` shell are live with a browser E2E flow.              |
 | PR 5.2 | `DONE` | Authenticated users can list and create their active owner organizations in `/app/organizations`.  |
-| Next   | `W5.3` | Brands UI.                                                                                         |
+| PR 5.3 | `DONE` | Brand list/create is scoped to a verified organization context with owner MANAGE access.           |
+| Next   | `W5.4` | Application navigation.                                                                            |
+
+### W5.3 — brands UI
+
+Brand UI is nested beneath an organization route and never treats that route id as authorization. The server
+resolves the current user's tenant context for every list/create operation; list requires `brand:read` and
+creation requires `brand:manage`. A brand is created with an explicit `MANAGE` BrandAccess for its creator.
+Integration and browser contracts prove same-tenant success, cross-organization denial, editor denial and
+safe same-name slug allocation.
 
 ### W5.2 — organizations UI
 

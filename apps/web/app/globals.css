@@ -240,6 +240,11 @@ h2 {
 .organization-list h3 {
   font-size: 1rem;
 }
+.organization-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .organization-list .muted {
   margin-top: 4px;
 }
@@ -305,5 +310,8 @@ h2 {
   .organization-list li {
     align-items: stretch;
     flex-direction: column;
+  }
+  .organization-item-actions {
+    justify-content: space-between;
   }
 }
