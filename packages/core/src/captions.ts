@@ -2,6 +2,7 @@ import { createCaptionsRepository, type PrismaClient } from '@ams-content-factor
 import type { FfmpegProvider } from '@ams-content-factory/providers';
 import { AccessDeniedError, requirePermission, type Permission } from './tenant-context';
 export type CaptionWord = { word: string; startMs: number; endMs: number };
+export type QcSection = { passed: boolean; issues: string[] };
 type Context = { organizationId: string; brandId?: string; permissions: Set<Permission> };
 const scoped = (c: Context) => {
   requirePermission(c, 'content:write');
@@ -61,12 +62,15 @@ export function createCaptionsService(options: { prisma?: PrismaClient } = {}) {
       c: Context,
       input: {
         videoProductionId: string;
-        technical?: object;
-        visual?: object;
-        content?: object;
-        compliance?: object;
+        technical: QcSection;
+        visual: QcSection;
+        content: QcSection;
+        compliance?: QcSection;
       },
-    ) => repo.createQcReport({ ...scoped(c), ...input, status: 'PASSED' }),
+    ) => {
+      const result = evaluateQc(input);
+      return repo.createQcReport({ ...scoped(c), ...input, status: result.status });
+    },
   };
 }
 
@@ -83,13 +87,13 @@ export function createCaptionBurnInService(options: { ffmpeg: FfmpegProvider }) 
 }
 
 export function evaluateQc(input: {
-  technical: { passed: boolean; issues: string[] };
-  visual: { passed: boolean; issues: string[] };
-  content: { passed: boolean; issues: string[] };
-  compliance?: { passed: boolean; issues: string[] };
+  technical: QcSection;
+  visual: QcSection;
+  content: QcSection;
+  compliance?: QcSection;
 }) {
   const sections = [input.technical, input.visual, input.content, input.compliance].filter(
-    (value): value is { passed: boolean; issues: string[] } => value !== undefined,
+    (value): value is QcSection => value !== undefined,
   );
   const issues = sections.flatMap((section) => section.issues);
   return {

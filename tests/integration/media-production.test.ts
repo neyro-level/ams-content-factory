@@ -138,12 +138,12 @@ describe('media production', () => {
     });
     const report = await captions.createQc(context, {
       videoProductionId: created!.id,
-      technical: { passed: true },
-      visual: { passed: true },
-      content: { passed: true },
+      technical: { passed: true, issues: [] },
+      visual: { passed: false, issues: ['caption-safe-zone'] },
+      content: { passed: true, issues: [] },
     });
     expect(track).toEqual(expect.objectContaining({ transcriptId: transcript!.id }));
-    expect(report).toEqual(expect.objectContaining({ status: 'PASSED' }));
+    expect(report).toEqual(expect.objectContaining({ status: 'FAILED' }));
     await expect(
       production.attachAsset(otherContext, {
         mediaAssetId: asset.id,

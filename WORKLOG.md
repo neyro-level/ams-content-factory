@@ -1,5 +1,16 @@
 # Worklog
 
+## 2026-08-12 — Wave 1.1: QC fail-closed
+
+- Replaced the hard-coded `PASSED` write in `createQc()` with typed technical/visual/content (and optional
+  compliance) sections plus a persisted result from `evaluateQc()`.
+- Added the complete status contract: each required-section failure and compliance failure yields `FAILED`,
+  issues without a failure yield `WARNING`, and only a clean all-pass result yields `PASSED`.
+- Proved the prior defect fail-first: a visual failure was persisted as `PASSED`; the integration contract
+  now proves it is persisted as `FAILED`. No schema migration was needed because `QcStatus.WARNING` already
+  exists.
+- Next task: W1.2 — deny suspended organizations in tenant context resolution.
+
 ## 2026-08-12 — Wave 0.2: truthful status reset
 
 - Reclassified project status to `FOUNDATION`, `NOT_IMPLEMENTED` and `BLOCKED_EXTERNAL` in the README,

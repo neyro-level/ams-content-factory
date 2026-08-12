@@ -409,7 +409,8 @@ parallel request
 | ------ | ------ | --------------------------------------------------------------------------------------------- |
 | PR 0.1 | `DONE` | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                   |
 | PR 0.2 | `DONE` | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`. |
-| Next   | `W1.1` | QC fail-closed.                                                                               |
+| PR 1.1 | `DONE` | QC fail-closed: типизированные секции и вычисляемый persisted status.                         |
+| Next   | `W1.2` | Suspended organization authorization.                                                         |
 
 ---
 
