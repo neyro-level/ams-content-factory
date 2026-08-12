@@ -4,29 +4,59 @@ import {
   MembershipRole,
   MembershipStatus,
   OrganizationStatus,
+  Prisma,
   type PrismaClient,
 } from '../generated/prisma/client';
 import { getPrisma } from '../client';
 
 export type TenantRepository = ReturnType<typeof createTenantRepository>;
 
+export class OrganizationSlugConflictError extends Error {
+  constructor() {
+    super('Organization slug already exists.');
+    this.name = 'OrganizationSlugConflictError';
+  }
+}
+
 export function createTenantRepository(prisma: PrismaClient = getPrisma()) {
   return {
     async createOrganizationWithOwner(input: { ownerUserId: string; name: string; slug: string }) {
-      return prisma.organization.create({
-        data: {
-          name: input.name,
-          slug: input.slug,
-          status: OrganizationStatus.ACTIVE,
-          memberships: {
-            create: {
-              userId: input.ownerUserId,
-              role: MembershipRole.OWNER,
-              status: MembershipStatus.ACTIVE,
+      try {
+        return await prisma.organization.create({
+          data: {
+            name: input.name,
+            slug: input.slug,
+            status: OrganizationStatus.ACTIVE,
+            memberships: {
+              create: {
+                userId: input.ownerUserId,
+                role: MembershipRole.OWNER,
+                status: MembershipStatus.ACTIVE,
+              },
             },
           },
+          include: { memberships: true },
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+          throw new OrganizationSlugConflictError();
+        }
+        throw error;
+      }
+    },
+
+    listActiveOrganizationsForUser(userId: string) {
+      return prisma.membership.findMany({
+        where: {
+          userId,
+          status: MembershipStatus.ACTIVE,
+          organization: { status: OrganizationStatus.ACTIVE },
         },
-        include: { memberships: true },
+        select: {
+          role: true,
+          organization: { select: { id: true, name: true, slug: true, createdAt: true } },
+        },
+        orderBy: { organization: { createdAt: 'asc' } },
       });
     },
 

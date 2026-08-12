@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W5.2 organizations UI
+
+- Added the real authenticated organizations entry point at `/app/organizations`: active organizations are
+  listed only through the current session user's active memberships, and the server action creates the user
+  as `OWNER` with collision-safe slug allocation.
+- Added integration coverage for owner creation, cross-user isolation and revoked membership plus browser
+  E2E creation. Full gate is green: Prisma validation, lint, formatting, typecheck, 26 unit tests, 28
+  integration contracts, 5 browser E2E flows and production build. Next: W5.3 brands UI.
+
 ## 2026-08-12 — W5.1 protected application shell
 
 - Added a Better Auth email/password login form and a server-protected `/app` layout. Anonymous requests are

@@ -1,4 +1,5 @@
 export { getAuth } from './auth';
+export { createOrganizationService, OrganizationInputError } from './organizations';
 export { AccessDeniedError, requirePermission, resolveTenantContext } from './tenant-context';
 export type { Permission } from './tenant-context';
 export { createWorkflowEnqueuer, enqueueWorkflowRun } from './workflows';
