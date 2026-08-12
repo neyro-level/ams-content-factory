@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W5.5 first real end-to-end application flow
+
+- Added one browser-to-database contract for the available product path: Better Auth account, browser login,
+  organization creation, brand creation, persisted ACTIVE/OWNER/MANAGE access records, logout and renewed
+  denial of the nested protected route.
+- No product fixture or mock provider creates the organization or brand; the only setup is Better Auth's
+  official account route. Full gate is green: Prisma validation, lint, formatting, typecheck, 26 unit tests,
+  29 integration contracts, 7 browser E2E flows and production build. Next: W6 Knowledge UI.
+
 ## 2026-08-12 — W5.4 application navigation
 
 - Added route-aware workspace and organization navigation to the authenticated shell. It intentionally
