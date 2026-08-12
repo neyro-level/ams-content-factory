@@ -421,7 +421,8 @@ parallel request
 | PR 3.2 | `DONE` | Research ingestion has explicit duplicate, processing and failed-retry transitions.                |
 | PR 3.3 | `DONE` | Knowledge ingestion has retry-safe document and chunk persistence.                                 |
 | PR 3.4 | `DONE` | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery. |
-| Next   | `W3.5` | Publishing reconciliation for uncertain external outcomes.                                         |
+| PR 3.5 | `DONE` | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.           |
+| Next   | `W3.6` | Atomic publication attempts under parallel dispatch.                                               |
 
 ### W3.4 — executable publication-state contract
 
@@ -440,8 +441,15 @@ parallel request
 | `CANCELLED`         | Cancellation before a terminal external result.                      | None.                                         | Terminal.                                                       |
 
 `PREPARING`, `UPLOADING`, `PROCESSING` and `READY_TO_FINALIZE` remain in the database enum for safe
-recovery of historical rows but have no new write path until their durable steps are implemented. W3.5
-owns the provider reconciliation semantics for `OUTCOME_UNKNOWN`.
+recovery of historical rows but have no new write path until their durable steps are implemented.
+
+### W3.5 — provider-result reconciliation
+
+After a provider mutation returns success, any failure that prevents final local persistence is treated as
+`OUTCOME_UNKNOWN`, never as `FAILED`. The service preserves the provider operation/job identity, blocks
+another dispatch and exposes `investigate()`. Provider-confirmed `PUBLISHED` completes the local state;
+provider-confirmed `NOT_FOUND` records the failed attempt and requeues it. An inconclusive provider result
+remains `OUTCOME_UNKNOWN`.
 
 ---
 

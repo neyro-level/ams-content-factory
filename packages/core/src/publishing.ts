@@ -11,6 +11,7 @@ import { createTokenEncryptor, TokenEncryptionError } from './token-encryption';
 
 type Context = { organizationId: string; brandId?: string; permissions: Set<Permission> };
 type Encryptor = ReturnType<typeof createTokenEncryptor>;
+type PublishingRepository = ReturnType<typeof createPublishingRepository>;
 
 /**
  * Transitions that may be requested by normal application operations.
@@ -38,6 +39,7 @@ export const publicationTransitions: Record<PublicationStatus, readonly Publicat
 const reconciliationTransitions: Partial<Record<PublicationStatus, readonly PublicationStatus[]>> =
   {
     OUTCOME_UNKNOWN: ['PUBLISHED', 'QUEUED'],
+    PUBLISHING: ['PUBLISHED', 'QUEUED'],
   };
 
 const legacyRecoveryStates: readonly PublicationStatus[] = [
@@ -84,10 +86,11 @@ function fingerprint(input: { text: string; mediaKeys: string[]; accountId: stri
 
 export function createPublishingService(options: {
   prisma?: PrismaClient;
+  repository?: PublishingRepository;
   encryptor: Encryptor;
   providers: Record<SocialPlatform, PublishingProvider>;
 }) {
-  const repository = createPublishingRepository(options.prisma);
+  const repository = options.repository ?? createPublishingRepository(options.prisma);
   const load = async (context: Context, id: string) => {
     const publication = await repository.findPublication({ ...scope(context), id });
     if (!publication) throw new AccessDeniedError('Publication is outside the active tenant.');
@@ -120,6 +123,25 @@ export function createPublishingService(options: {
       ...fields,
     });
     if (result.count !== 1) throw new PublicationTransitionConflictError();
+  };
+  const markOutcomeUnknown = async (context: Context, publicationId: string, attemptId: string) => {
+    const publication = await load(context, publicationId);
+    if (publication.status === 'PUBLISHED' || publication.status === 'OUTCOME_UNKNOWN') {
+      return publication;
+    }
+    if (publication.status !== 'PUBLISHING') {
+      throw new PublicationTransitionError(publication.status, 'OUTCOME_UNKNOWN');
+    }
+    await repository.updateAttempt({
+      ...scope(context),
+      publicationId,
+      id: attemptId,
+      status: 'OUTCOME_UNKNOWN',
+    });
+    await transition(context, publicationId, 'PUBLISHING', 'OUTCOME_UNKNOWN', {
+      lastAttemptId: attemptId,
+    });
+    return load(context, publicationId);
   };
 
   return {
@@ -238,6 +260,7 @@ export function createPublishingService(options: {
         }));
       if (!attempt)
         throw new AccessDeniedError('Publication attempt is outside the active tenant.');
+      let providerMutationCompleted = false;
       try {
         const result = await provider.publish({
           idempotencyKey: input.idempotencyKey,
@@ -252,12 +275,14 @@ export function createPublishingService(options: {
           text,
           mediaKeys,
         });
+        providerMutationCompleted = true;
         if (result.status === 'OUTCOME_UNKNOWN') {
           await repository.updateAttempt({
             ...scope(context),
             publicationId: publication.id,
             id: attempt.id,
             status: 'OUTCOME_UNKNOWN',
+            providerOperation: result.providerOperation,
             ...(result.providerJobId !== undefined ? { providerJobId: result.providerJobId } : {}),
             ...(result.response !== undefined ? { response: result.response } : {}),
           });
@@ -271,6 +296,7 @@ export function createPublishingService(options: {
           publicationId: publication.id,
           id: attempt.id,
           status: 'SUCCEEDED',
+          providerOperation: result.providerOperation,
           ...(result.providerJobId !== undefined ? { providerJobId: result.providerJobId } : {}),
           ...(result.response !== undefined ? { response: result.response } : {}),
         });
@@ -283,6 +309,15 @@ export function createPublishingService(options: {
         return load(context, publication.id);
       } catch (error) {
         if (error instanceof PublicationOutcomeUnknownError) throw error;
+        if (providerMutationCompleted) {
+          try {
+            await markOutcomeUnknown(context, publication.id, attempt.id);
+          } catch {
+            // A persistence outage may prevent recording the uncertainty. Never
+            // convert a completed external mutation into FAILED or retry it.
+          }
+          throw new PublicationOutcomeUnknownError();
+        }
         const message = error instanceof Error ? error.message : 'Provider publishing failed.';
         await repository.updateAttempt({
           ...scope(context),
@@ -303,10 +338,14 @@ export function createPublishingService(options: {
     },
     async investigate(context: Context, id: string) {
       const publication = await load(context, id);
-      if (publication.status !== 'OUTCOME_UNKNOWN') {
-        throw new Error('Only publications with an unknown outcome can be investigated.');
+      if (publication.status !== 'OUTCOME_UNKNOWN' && publication.status !== 'PUBLISHING') {
+        throw new Error('Only uncertain publications can be investigated.');
       }
-      const attempt = publication.attempts.find((item) => item.id === publication.lastAttemptId);
+      const attempt =
+        publication.attempts.find((item) => item.id === publication.lastAttemptId) ??
+        publication.attempts.find(
+          (item) => item.status === 'STARTED' || item.status === 'OUTCOME_UNKNOWN',
+        );
       if (!attempt) throw new Error('Unknown publication has no recorded attempt.');
       const provider = options.providers[publication.socialAccount.platform];
       if (!provider)
@@ -328,7 +367,7 @@ export function createPublishingService(options: {
         await transition(
           context,
           publication.id,
-          'OUTCOME_UNKNOWN',
+          publication.status,
           'PUBLISHED',
           {
             ...(status.externalPostId !== undefined
@@ -340,10 +379,18 @@ export function createPublishingService(options: {
           { reconciliation: true },
         );
       } else if (status.status === 'NOT_FOUND') {
+        await repository.updateAttempt({
+          ...scope(context),
+          publicationId: publication.id,
+          id: attempt.id,
+          status: 'FAILED',
+          errorCode: 'PROVIDER_RESULT_NOT_FOUND',
+          errorMessage: 'Provider reconciliation confirmed no external post.',
+        });
         await transition(
           context,
           publication.id,
-          'OUTCOME_UNKNOWN',
+          publication.status,
           'QUEUED',
           {},
           {
