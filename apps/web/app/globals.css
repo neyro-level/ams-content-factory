@@ -295,6 +295,28 @@ h2 {
   gap: 16px;
   margin-top: 20px;
 }
+.knowledge-intake {
+  display: grid;
+  gap: 24px;
+}
+.knowledge-intake .organization-form {
+  margin-top: 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.knowledge-intake textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+.knowledge-intake textarea,
+.knowledge-intake input[type='file'] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+}
 .organization-form label {
   display: grid;
   gap: 7px;

@@ -42,4 +42,11 @@ test('creates a brand inside the current authenticated organization', async ({ p
   await page.getByRole('link', { name: 'База знаний' }).click();
   await expect(page.getByRole('heading', { name: 'Документы бренда' })).toBeVisible();
   await expect(page.getByText('У этого бренда пока нет документов базы знаний.')).toBeVisible();
+
+  const textForm = page.locator('form').filter({ hasText: 'Добавить текст' });
+  await textForm.getByLabel('Название').fill('Текстовый источник E2E');
+  await textForm.getByLabel('Содержимое').fill('Надёжный текстовый источник для базы знаний.');
+  await textForm.getByRole('button', { name: 'Добавить текст' }).click();
+  await expect(textForm.getByRole('status')).toContainText('добавлен');
+  await expect(page.getByRole('heading', { name: 'Текстовый источник E2E' })).toBeVisible();
 });
