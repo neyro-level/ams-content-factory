@@ -428,7 +428,17 @@ parallel request
 | PR 3.9 | `DONE` | Storyboard creation is bound to verified tenant context and `content:write`.                       |
 | PR 4.1 | `DONE` | Worker fails unsupported workflow types instead of recording false success.                        |
 | PR 4.2 | `DONE` | Worker dispatches only registered handlers selected by workflow type.                              |
-| Next   | `W4.3` | Lifecycle-managed pg-boss connection.                                                              |
+| PR 4.3 | `DONE` | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                   |
+| Next   | `W4.4` | Reconcile orphaned queue work and expose worker readiness.                                         |
+
+### W4.3 — managed queue lifecycle
+
+`enqueueWorkflowRun` now obtains a process-lifetime pg-boss queue instead of opening and stopping a
+connection for every webhook or application request. Initialization is shared by concurrent enqueue calls;
+an initialization error clears the retained promise so the next request can retry. The default workflow
+repository is created lazily on the first enqueue, preserving import-time isolation from database access.
+Explicit lifecycle helpers provide a controlled shutdown path, while the unit contract proves reuse and
+recovery after an initialization failure.
 
 ### W4.2 — explicit workflow dispatcher
 

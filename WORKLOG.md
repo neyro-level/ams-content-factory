@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W4.3 managed queue lifecycle
+
+- Replaced per-request pg-boss start/stop in workflow enqueueing with a shared process-lifetime queue.
+  Failed initialization is recoverable on a later enqueue, and the default database repository is now lazy
+  so importing the application service does not access the database.
+- Added a unit contract for queue reuse and initialization recovery. Full gate is green: Prisma validation,
+  lint, formatting, typecheck, 21 unit tests, 27 integration contracts and production build. Next: W4.4
+  queue reconciliation and worker readiness.
+
 ## 2026-08-12 — W4.2 explicit workflow dispatcher
 
 - Replaced the placeholder worker path with a closed workflow-type dispatcher. `system.health` is the

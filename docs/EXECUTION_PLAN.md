@@ -3,7 +3,8 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W4.2 explicit workflow dispatcher — `DONE`; next W4.3 queue lifecycle.
+> Latest current-plan record: W4.3 managed queue lifecycle — `DONE`; next W4.4 reconciliation and worker
+> readiness.
 
 ## Protocol
 
