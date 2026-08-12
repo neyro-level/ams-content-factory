@@ -41,7 +41,9 @@ systemd unit. Never bind the app, Docker or a development server directly to por
 1. Owner confirms the production release window and adequate AMS Server capacity.
 2. Exact commit is merged into SourceCraft `main` and has green `verify` or equivalent operator gates.
 3. Timeweb DBaaS connection is supplied securely. From AMS Server verify the TLS connection,
-   least-privilege database user and enabled `pgvector` without printing the connection string.
+   least-privilege database user and installed `vector` SQL object (not merely an available package)
+   without printing the connection string. On a managed cluster, `CREATE EXTENSION vector` can require a
+   provider-controlled database owner; do not compensate by granting superuser to the application role.
 4. Create the root-owned env file from `.env.example`; set `APP_URL` to
    `https://fabrika.ams24.ru`, restrict file permissions and never copy it into Git or a release.
 5. Build and audit an immutable Linux artifact for the exact main SHA; do not build from a feature branch.
