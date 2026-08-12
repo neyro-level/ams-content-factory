@@ -6,6 +6,10 @@ import {
   WorkflowRunStatus,
 } from '../../packages/db/src/index.js';
 import { afterAll, describe, expect, it } from 'vitest';
+import {
+  processWorkflowRunWithoutDispatcher,
+  UnsupportedWorkflowTypeError,
+} from '../../apps/worker/src/workflow-run-handler.js';
 
 const prisma = createPrismaClient();
 const tenantRepository = createTenantRepository(prisma);
@@ -110,5 +114,25 @@ describe('workflow run repository', () => {
     expect(failure.status).toBe(WorkflowRunStatus.FAILED);
     expect(failure.error).toEqual({ message: 'provider unavailable' });
     expect(failureAudit).not.toBeNull();
+
+    const unsupported = await workflowRepository.createOrGet({
+      ...input,
+      type: 'unknown.workflow.type',
+      idempotencyKey: 'workflow-run-unsupported-contract-key',
+    });
+    await expect(
+      processWorkflowRunWithoutDispatcher(workflowRepository, {
+        organizationId: organization.id,
+        id: unsupported.id,
+      }),
+    ).rejects.toBeInstanceOf(UnsupportedWorkflowTypeError);
+    await expect(
+      prisma.workflowRun.findUniqueOrThrow({ where: { id: unsupported.id } }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        status: WorkflowRunStatus.FAILED,
+        error: expect.objectContaining({ code: 'UNSUPPORTED_WORKFLOW_TYPE' }),
+      }),
+    );
   });
 });

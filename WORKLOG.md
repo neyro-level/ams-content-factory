@@ -1,5 +1,13 @@
 # Worklog
 
+## 2026-08-12 — W4.1 worker false-success removal
+
+- The workflow worker no longer writes a timestamp result and marks a run `SUCCEEDED` without a registered
+  business handler. It now records `FAILED` with `UNSUPPORTED_WORKFLOW_TYPE` and rethrows a typed error.
+- A workflow integration contract proves an unknown workflow is auditable failure rather than false success.
+  Full gate is green: Prisma validation, lint, formatting, typecheck, 19 unit tests, 27 integration
+  contracts and production build. Next: W4.2 explicit dispatcher.
+
 ## 2026-08-12 — W3.9 storyboard authorization boundary
 
 - Storyboard creation now accepts a verified `TenantContext` and derives organization/brand only from it;
