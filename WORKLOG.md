@@ -1,5 +1,13 @@
 # Worklog
 
+## 2026-08-12 — W6.1 knowledge document list
+
+- Added the protected, brand-scoped Knowledge entry point and a tenant-scoped document listing application
+  service. The UI contains no direct Prisma access; foreign organization/brand route context is rejected.
+- Added PostgreSQL tenant-bound list coverage and browser navigation to the honest empty state. Full quality
+  gate is green: Prisma validation, lint, formatting, typecheck, 26 unit tests, 30 integration contracts,
+  7 browser E2E flows and production build. Next: W6.2 text/URL/file intake.
+
 ## 2026-08-12 — W5.5 first real end-to-end application flow
 
 - Added one browser-to-database contract for the available product path: Better Auth account, browser login,

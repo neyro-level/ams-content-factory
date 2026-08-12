@@ -87,6 +87,22 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
         where: input,
       });
     },
+    listDocuments(input: { organizationId: string; brandId: string }) {
+      return prisma.knowledgeDocument.findMany({
+        where: { organizationId: input.organizationId, brandId: input.brandId },
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          status: true,
+          sourceUrl: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: { select: { chunks: true } },
+        },
+        orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+      });
+    },
     findDocumentChunks(input: { organizationId: string; brandId: string; documentId: string }) {
       return prisma.knowledgeChunk.findMany({
         where: {

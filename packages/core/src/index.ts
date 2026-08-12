@@ -13,6 +13,7 @@ export {
 export type { KnowledgeSource } from './knowledge-ingestion';
 export { createKnowledgeRetrievalService } from './knowledge-retrieval';
 export type { KnowledgeRetrievalHit } from './knowledge-retrieval';
+export { createKnowledgeWorkspaceService } from './knowledge-workspace';
 export { createResearchService, ResearchInProgressError, ResearchIntegrityError } from './research';
 export type { ResearchInboxSource } from './research';
 export { contentTransitions, createContentService } from './content';

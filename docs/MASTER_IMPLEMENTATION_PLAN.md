@@ -436,7 +436,15 @@ parallel request
 | PR 5.3 | `DONE` | Brand list/create is scoped to a verified organization context with owner MANAGE access.              |
 | PR 5.4 | `DONE` | Route-aware application navigation and Better Auth session exit are available in the protected shell. |
 | PR 5.5 | `DONE` | Browser-to-PostgreSQL owner/brand lifecycle is covered as one real authenticated flow.                |
-| Next   | `W6`   | Knowledge UI: list, intake, retry and scoped search.                                                  |
+| PR 6.1 | `DONE` | Brand-scoped knowledge document list has a protected application entry point.                         |
+| Next   | `W6.2` | Knowledge intake for text, URL and UTF-8 text files.                                                  |
+
+### W6.1 — knowledge document list
+
+The first Knowledge UI entry point is nested below a verified organization and brand. Its application service
+rebuilds the authenticated tenant context, requires `brand:read`, and asks a repository to list documents
+with both organization and brand predicates. The browser path and a foreign-organization negative contract
+prove that the page never treats route parameters as authorization.
 
 ### W5.5 — first real end-to-end application flow
 
