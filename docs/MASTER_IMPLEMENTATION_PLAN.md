@@ -429,7 +429,15 @@ parallel request
 | PR 4.1 | `DONE` | Worker fails unsupported workflow types instead of recording false success.                        |
 | PR 4.2 | `DONE` | Worker dispatches only registered handlers selected by workflow type.                              |
 | PR 4.3 | `DONE` | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                   |
-| Next   | `W4.4` | Reconcile orphaned queue work and expose worker readiness.                                         |
+| PR 4.4 | `DONE` | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.          |
+| Next   | `W4.5` | Worker readiness signal.                                                                           |
+
+### W4.4 — lost queued-work reconciliation
+
+At worker startup the workflow repository lists durable `QUEUED` runs and re-enqueues each intent using
+its workflow-run id as the pg-boss `singletonKey`. This recovers work after an interrupted worker or a
+lost broker job without introducing a new direct execution path. Unit and PostgreSQL integration contracts
+verify the durable query and exact job payload.
 
 ### W4.3 — managed queue lifecycle
 

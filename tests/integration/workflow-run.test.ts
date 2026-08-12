@@ -10,6 +10,7 @@ import {
   processWorkflowRun,
   UnsupportedWorkflowTypeError,
 } from '../../apps/worker/src/workflow-run-handler.js';
+import { reconcileQueuedWorkflowRuns } from '../../apps/worker/src/queue-reconciliation.js';
 
 const prisma = createPrismaClient();
 const tenantRepository = createTenantRepository(prisma);
@@ -70,6 +71,20 @@ describe('workflow run repository', () => {
     expect(first.id).toBe(second.id);
     expect(new Set(runs.map((run) => run.id)).size).toBe(1);
     expect(first.status).toBe(WorkflowRunStatus.QUEUED);
+
+    const requeued: unknown[][] = [];
+    await expect(
+      reconcileQueuedWorkflowRuns(workflowRepository, {
+        send: async (...args: unknown[]) => {
+          requeued.push(args);
+        },
+      } as never),
+    ).resolves.toEqual({ requeued: 1 });
+    expect(requeued).toContainEqual([
+      'workflow.run',
+      { workflowRunId: first.id, organizationId: organization.id },
+      { singletonKey: first.id },
+    ]);
 
     await expect(
       workflowRepository.markRunning({ organizationId: foreignOrganization.id, id: first.id }),

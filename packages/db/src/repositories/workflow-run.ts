@@ -8,6 +8,14 @@ export function createWorkflowRunRepository(prisma: PrismaClient = getPrisma()) 
         where: { id: input.id, organizationId: input.organizationId },
       });
     },
+    findQueued() {
+      return prisma.workflowRun.findMany({
+        where: { status: WorkflowRunStatus.QUEUED },
+        select: { id: true, organizationId: true },
+        orderBy: { createdAt: 'asc' },
+        take: 100,
+      });
+    },
     async createOrGet(input: {
       organizationId: string;
       brandId?: string;

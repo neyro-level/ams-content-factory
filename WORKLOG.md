@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W4.4 lost queued-work reconciliation
+
+- Worker startup now scans durable `QUEUED` workflow runs and re-enqueues them through pg-boss with each
+  workflow-run id as `singletonKey`. Interrupted worker execution or a lost queue job can therefore recover
+  through the single durable intent path.
+- Added unit and PostgreSQL integration recovery contracts. Full gate is green: Prisma validation, lint,
+  formatting, typecheck, 22 unit tests, 27 integration contracts and production build. Next: W4.5 worker
+  readiness.
+
 ## 2026-08-12 — W4.3 managed queue lifecycle
 
 - Replaced per-request pg-boss start/stop in workflow enqueueing with a shared process-lifetime queue.
