@@ -4,6 +4,7 @@ import {
   createPublishingService,
   createTokenEncryptor,
   PublicationOutcomeUnknownError,
+  PublicationTransitionError,
   resolveTenantContext,
 } from '../../packages/core/src/index.js';
 import { createPrismaClient, createTenantRepository } from '../../packages/db/src/index.js';
@@ -128,6 +129,9 @@ describe('publishing foundation', () => {
     await expect(
       service.publish(firstContext, { id: publication.id, idempotencyKey: 'publication-one' }),
     ).resolves.toEqual(expect.objectContaining({ status: 'PUBLISHED' }));
+    await expect(service.schedule(firstContext, publication.id)).rejects.toBeInstanceOf(
+      PublicationTransitionError,
+    );
     expect(
       await prisma.publicationAttempt.count({ where: { publicationId: publication.id } }),
     ).toBe(1);
@@ -170,6 +174,9 @@ describe('publishing foundation', () => {
     await expect(
       service.publish(context, { id: publication.id, idempotencyKey: 'unknown-one' }),
     ).rejects.toBeInstanceOf(PublicationOutcomeUnknownError);
+    await expect(service.schedule(context, publication.id)).rejects.toBeInstanceOf(
+      PublicationTransitionError,
+    );
     await expect(
       service.publish(context, { id: publication.id, idempotencyKey: 'unknown-one' }),
     ).rejects.toBeInstanceOf(PublicationOutcomeUnknownError);
@@ -178,6 +185,53 @@ describe('publishing foundation', () => {
     ).toBe(1);
     await expect(service.investigate(context, publication.id)).resolves.toEqual(
       expect.objectContaining({ status: 'QUEUED' }),
+    );
+  });
+
+  it('recovers an interrupted legacy preparation state without entering it for new dispatches', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    const brand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'first' },
+    });
+    const context = await resolveTenantContext(
+      { userId: user.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const content = createContentService({ prisma });
+    const project = await content.create(context, {
+      title: 'Legacy preparation recovery project',
+      contentType: 'SOCIAL_POST',
+    });
+    const variant = await prisma.platformVariant.create({
+      data: { contentProjectId: project!.id, platform: 'VK', caption: 'Recovery text' },
+    });
+    const account = await prisma.socialAccount.findFirstOrThrow({
+      where: { brandId: brand.id, platform: 'VK' },
+    });
+    const service = createPublishingService({
+      prisma,
+      encryptor,
+      providers: {
+        INSTAGRAM: new MockPublishingProvider('INSTAGRAM'),
+        VK: new MockPublishingProvider('VK'),
+      },
+    });
+    const publication = await service.create(context, {
+      contentProjectId: project!.id,
+      platformVariantId: variant.id,
+      socialAccountId: account.id,
+    });
+    await prisma.publication.update({
+      where: { id: publication.id },
+      data: { status: 'PREPARING' },
+    });
+
+    await expect(service.recover(context, publication.id)).resolves.toEqual(
+      expect.objectContaining({ status: 'QUEUED' }),
+    );
+    await expect(service.recover(context, publication.id)).rejects.toBeInstanceOf(
+      PublicationTransitionError,
     );
   });
 });

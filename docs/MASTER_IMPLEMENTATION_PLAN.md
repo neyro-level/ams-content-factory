@@ -405,22 +405,43 @@ parallel request
 
 ## Статус исполнения
 
-| Задача | Статус | Результат                                                                                       |
-| ------ | ------ | ----------------------------------------------------------------------------------------------- |
-| PR 0.1 | `DONE` | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                     |
-| PR 0.2 | `DONE` | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`.   |
-| PR 1.1 | `DONE` | QC fail-closed: типизированные секции и вычисляемый persisted status.                           |
-| PR 1.2 | `DONE` | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                       |
-| PR 1.3 | `DONE` | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields. |
-| PR 1.4 | `DONE` | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                  |
-| PR 2.1 | `DONE` | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                    |
-| PR 2.2 | `DONE` | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.   |
-| PR 2.3 | `DONE` | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.       |
-| PR 2.4 | `DONE` | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.       |
-| PR 3.1 | `DONE` | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.           |
-| PR 3.2 | `DONE` | Research ingestion has explicit duplicate, processing and failed-retry transitions.             |
-| PR 3.3 | `DONE` | Knowledge ingestion has retry-safe document and chunk persistence.                              |
-| Next   | `W3.4` | Publishing state machine cleanup.                                                               |
+| Задача | Статус | Результат                                                                                          |
+| ------ | ------ | -------------------------------------------------------------------------------------------------- |
+| PR 0.1 | `DONE` | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                        |
+| PR 0.2 | `DONE` | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`.      |
+| PR 1.1 | `DONE` | QC fail-closed: типизированные секции и вычисляемый persisted status.                              |
+| PR 1.2 | `DONE` | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                          |
+| PR 1.3 | `DONE` | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields.    |
+| PR 1.4 | `DONE` | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                     |
+| PR 2.1 | `DONE` | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                       |
+| PR 2.2 | `DONE` | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.      |
+| PR 2.3 | `DONE` | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.          |
+| PR 2.4 | `DONE` | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.          |
+| PR 3.1 | `DONE` | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.              |
+| PR 3.2 | `DONE` | Research ingestion has explicit duplicate, processing and failed-retry transitions.                |
+| PR 3.3 | `DONE` | Knowledge ingestion has retry-safe document and chunk persistence.                                 |
+| PR 3.4 | `DONE` | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery. |
+| Next   | `W3.5` | Publishing reconciliation for uncertain external outcomes.                                         |
+
+### W3.4 — executable publication-state contract
+
+| State               | How entered                                                          | Valid exits                                   | Terminal / recovery                                             |
+| ------------------- | -------------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------- |
+| `DRAFT`             | Publication is created.                                              | `QUEUED`, `CANCELLED`                         | Not terminal.                                                   |
+| `QUEUED`            | Scheduling, failed retry or recovery of a legacy intermediate state. | `PUBLISHING`, `CANCELLED`                     | Not terminal.                                                   |
+| `PREPARING`         | Legacy persisted state only; new dispatch never writes it.           | `QUEUED`, `FAILED`, `CANCELLED`               | Explicit recovery to `QUEUED`.                                  |
+| `UPLOADING`         | Legacy persisted state only; new dispatch never writes it.           | `QUEUED`, `FAILED`, `CANCELLED`               | Explicit recovery to `QUEUED`.                                  |
+| `PROCESSING`        | Legacy persisted state only; new dispatch never writes it.           | `QUEUED`, `FAILED`, `CANCELLED`               | Explicit recovery to `QUEUED`.                                  |
+| `READY_TO_FINALIZE` | Legacy persisted state only; new dispatch never writes it.           | `QUEUED`, `FAILED`, `CANCELLED`               | Explicit recovery to `QUEUED`.                                  |
+| `PUBLISHING`        | Controlled transition immediately before the provider mutation.      | `PUBLISHED`, `FAILED`, `OUTCOME_UNKNOWN`      | Not terminal; result is persisted through a guarded transition. |
+| `PUBLISHED`         | Provider success or provider investigation confirms the post.        | None.                                         | Terminal.                                                       |
+| `FAILED`            | Provider mutation failed before a confirmed external outcome.        | `QUEUED`, `CANCELLED`                         | Controlled retry or cancellation.                               |
+| `OUTCOME_UNKNOWN`   | Provider outcome is uncertain after a mutation.                      | Only reconciliation: `PUBLISHED` or `QUEUED`. | Never re-dispatched by ordinary scheduling.                     |
+| `CANCELLED`         | Cancellation before a terminal external result.                      | None.                                         | Terminal.                                                       |
+
+`PREPARING`, `UPLOADING`, `PROCESSING` and `READY_TO_FINALIZE` remain in the database enum for safe
+recovery of historical rows but have no new write path until their durable steps are implemented. W3.5
+owns the provider reconciliation semantics for `OUTCOME_UNKNOWN`.
 
 ---
 

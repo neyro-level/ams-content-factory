@@ -12,19 +12,54 @@ import { createTokenEncryptor, TokenEncryptionError } from './token-encryption';
 type Context = { organizationId: string; brandId?: string; permissions: Set<Permission> };
 type Encryptor = ReturnType<typeof createTokenEncryptor>;
 
-export const publicationTransitions: Record<PublicationStatus, PublicationStatus[]> = {
+/**
+ * Transitions that may be requested by normal application operations.
+ *
+ * PREPARING, UPLOADING, PROCESSING and READY_TO_FINALIZE are legacy states:
+ * this service does not enter them until their corresponding durable steps
+ * exist. They can only be recovered to QUEUED after an interrupted legacy run.
+ * OUTCOME_UNKNOWN is deliberately excluded from ordinary transitions: only
+ * provider reconciliation may decide whether it is published or retryable.
+ */
+export const publicationTransitions: Record<PublicationStatus, readonly PublicationStatus[]> = {
   DRAFT: ['QUEUED', 'CANCELLED'],
-  QUEUED: ['PREPARING', 'CANCELLED'],
-  PREPARING: ['UPLOADING', 'PUBLISHING', 'FAILED', 'CANCELLED'],
-  UPLOADING: ['PROCESSING', 'READY_TO_FINALIZE', 'FAILED', 'OUTCOME_UNKNOWN'],
-  PROCESSING: ['READY_TO_FINALIZE', 'FAILED', 'OUTCOME_UNKNOWN'],
-  READY_TO_FINALIZE: ['PUBLISHING', 'FAILED', 'CANCELLED'],
+  QUEUED: ['PUBLISHING', 'CANCELLED'],
+  PREPARING: ['QUEUED', 'FAILED', 'CANCELLED'],
+  UPLOADING: ['QUEUED', 'FAILED', 'CANCELLED'],
+  PROCESSING: ['QUEUED', 'FAILED', 'CANCELLED'],
+  READY_TO_FINALIZE: ['QUEUED', 'FAILED', 'CANCELLED'],
   PUBLISHING: ['PUBLISHED', 'FAILED', 'OUTCOME_UNKNOWN'],
   PUBLISHED: [],
   FAILED: ['QUEUED', 'CANCELLED'],
-  OUTCOME_UNKNOWN: ['PUBLISHED', 'QUEUED'],
+  OUTCOME_UNKNOWN: [],
   CANCELLED: [],
 };
+
+const reconciliationTransitions: Partial<Record<PublicationStatus, readonly PublicationStatus[]>> =
+  {
+    OUTCOME_UNKNOWN: ['PUBLISHED', 'QUEUED'],
+  };
+
+const legacyRecoveryStates: readonly PublicationStatus[] = [
+  'PREPARING',
+  'UPLOADING',
+  'PROCESSING',
+  'READY_TO_FINALIZE',
+];
+
+export class PublicationTransitionError extends Error {
+  constructor(from: PublicationStatus, to: PublicationStatus) {
+    super(`Invalid publication transition: ${from} -> ${to}`);
+    this.name = 'PublicationTransitionError';
+  }
+}
+
+export class PublicationTransitionConflictError extends Error {
+  constructor() {
+    super('Publication transition was rejected because its state changed concurrently.');
+    this.name = 'PublicationTransitionConflictError';
+  }
+}
 
 export class PublicationOutcomeUnknownError extends Error {
   constructor() {
@@ -69,9 +104,13 @@ export function createPublishingService(options: {
       lastAttemptId?: string;
       publishedAt?: Date;
     } = {},
+    options: { reconciliation?: boolean } = {},
   ) => {
-    if (!publicationTransitions[from].includes(to)) {
-      throw new Error(`Invalid publication transition: ${from} -> ${to}`);
+    const allowed = options.reconciliation
+      ? (reconciliationTransitions[from] ?? [])
+      : publicationTransitions[from];
+    if (!allowed.includes(to)) {
+      throw new PublicationTransitionError(from, to);
     }
     const result = await repository.updatePublication({
       ...scope(context),
@@ -80,7 +119,7 @@ export function createPublishingService(options: {
       to,
       ...fields,
     });
-    if (result.count !== 1) throw new Error('Publication transition was rejected.');
+    if (result.count !== 1) throw new PublicationTransitionConflictError();
   };
 
   return {
@@ -133,6 +172,14 @@ export function createPublishingService(options: {
       await transition(context, id, publication.status, 'QUEUED');
       return load(context, id);
     },
+    async recover(context: Context, id: string) {
+      const publication = await load(context, id);
+      if (!legacyRecoveryStates.includes(publication.status)) {
+        throw new PublicationTransitionError(publication.status, 'QUEUED');
+      }
+      await transition(context, id, publication.status, 'QUEUED');
+      return load(context, id);
+    },
     async publish(
       context: Context,
       input: { id: string; idempotencyKey: string; text?: string; mediaKeys?: string[] },
@@ -150,8 +197,7 @@ export function createPublishingService(options: {
         publication = await load(context, publication.id);
       }
       if (publication.status === 'QUEUED') {
-        await transition(context, publication.id, 'QUEUED', 'PREPARING');
-        await transition(context, publication.id, 'PREPARING', 'PUBLISHING');
+        await transition(context, publication.id, 'QUEUED', 'PUBLISHING');
         publication = await load(context, publication.id);
       }
       if (publication.status !== 'PUBLISHING') {
@@ -279,13 +325,31 @@ export function createPublishingService(options: {
           status: 'SUCCEEDED',
           ...(status.response !== undefined ? { response: status.response } : {}),
         });
-        await transition(context, publication.id, 'OUTCOME_UNKNOWN', 'PUBLISHED', {
-          ...(status.externalPostId !== undefined ? { externalPostId: status.externalPostId } : {}),
-          ...(status.permalink !== undefined ? { permalink: status.permalink } : {}),
-          publishedAt: new Date(),
-        });
+        await transition(
+          context,
+          publication.id,
+          'OUTCOME_UNKNOWN',
+          'PUBLISHED',
+          {
+            ...(status.externalPostId !== undefined
+              ? { externalPostId: status.externalPostId }
+              : {}),
+            ...(status.permalink !== undefined ? { permalink: status.permalink } : {}),
+            publishedAt: new Date(),
+          },
+          { reconciliation: true },
+        );
       } else if (status.status === 'NOT_FOUND') {
-        await transition(context, publication.id, 'OUTCOME_UNKNOWN', 'QUEUED');
+        await transition(
+          context,
+          publication.id,
+          'OUTCOME_UNKNOWN',
+          'QUEUED',
+          {},
+          {
+            reconciliation: true,
+          },
+        );
       }
       return load(context, publication.id);
     },
