@@ -1,7 +1,7 @@
 import { jobNames, startJobQueue } from '@ams-content-factory/jobs';
 import { createWorkflowRunRepository } from '@ams-content-factory/db';
 import { assertRuntimeEnvironment } from '@ams-content-factory/config';
-import { processWorkflowRunWithoutDispatcher } from './workflow-run-handler';
+import { processWorkflowRun } from './workflow-run-handler';
 
 assertRuntimeEnvironment();
 const queue = await startJobQueue();
@@ -12,7 +12,7 @@ await queue.work<{ workflowRunId: string; organizationId: string }>(
     if (!job) return { skipped: true };
 
     const repository = createWorkflowRunRepository();
-    return processWorkflowRunWithoutDispatcher(repository, {
+    return processWorkflowRun(repository, {
       organizationId: job.data.organizationId,
       id: job.data.workflowRunId,
     });

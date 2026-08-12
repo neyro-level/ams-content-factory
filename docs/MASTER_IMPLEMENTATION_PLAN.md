@@ -427,7 +427,14 @@ parallel request
 | PR 3.8 | `DONE` | Content-project pillar and opportunity links are validated against the active brand graph.         |
 | PR 3.9 | `DONE` | Storyboard creation is bound to verified tenant context and `content:write`.                       |
 | PR 4.1 | `DONE` | Worker fails unsupported workflow types instead of recording false success.                        |
-| Next   | `W4.2` | Explicit workflow dispatcher.                                                                      |
+| PR 4.2 | `DONE` | Worker dispatches only registered handlers selected by workflow type.                              |
+| Next   | `W4.3` | Lifecycle-managed pg-boss connection.                                                              |
+
+### W4.2 — explicit workflow dispatcher
+
+The worker owns a closed `workflow type → registered handler` map. `system.health` is the initial actual
+handler; only its completed return value permits `SUCCEEDED`. Missing handlers retain the typed
+`UNSUPPORTED_WORKFLOW_TYPE` failure path, and payload values never choose executable functions.
 
 ### W4.1 — worker fail-closed contract
 
