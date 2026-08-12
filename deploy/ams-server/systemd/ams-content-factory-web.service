@@ -1,0 +1,27 @@
+[Unit]
+Description=AMS Content Factory web
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=amsplatform
+Group=www-data
+WorkingDirectory=/opt/ams-platform/ams-content-factory/current/app/apps/web/.next/standalone/apps/web
+EnvironmentFile=/etc/ams-platform/ams-content-factory.env
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3204
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/log/ams-platform/ams-content-factory /opt/ams-platform/ams-content-factory/shared
+StandardOutput=append:/var/log/ams-platform/ams-content-factory/web.log
+StandardError=append:/var/log/ams-platform/ams-content-factory/web.log
+
+[Install]
+WantedBy=multi-user.target

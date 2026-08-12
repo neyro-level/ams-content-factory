@@ -10,7 +10,8 @@
   },
   "scripts": {
     "dev": "pnpm --filter @ams-content-factory/web dev",
-    "build": "pnpm --filter @ams-content-factory/web build",
+    "build": "pnpm --filter @ams-content-factory/web build && pnpm --filter @ams-content-factory/worker build",
+    "release:artifact:build": "node deploy/ams-server/build-artifact.mjs",
     "lint": "eslint . --max-warnings=0",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --if-present typecheck",
@@ -31,15 +32,19 @@
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.58.0",
     "@tailwindcss/postcss": "^4.1.13",
-    "auth": "^1.6.26",
     "@types/node": "^22.19.0",
+    "auth": "^1.6.26",
     "dotenv": "^16.6.1",
+    "esbuild": "0.27.7",
     "eslint": "^9.39.1",
     "prettier": "^3.6.2",
-    "prisma": "^7.9.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.1",
     "vitest": "^4.0.8"
+  },
+  "dependencies": {
+    "prisma": "^7.9.0",
+    "tsx": "4.21.0"
   }
 }

@@ -6,7 +6,7 @@
 - **Last verification:** 2026-08-11 on a fresh temporary PostgreSQL 16 + pgvector database: all 18 migrations applied, idempotent seed completed, then Prisma validation, lint, formatting, typecheck, 4 unit tests, 18 integration contracts, 2 responsive E2E contracts and production build passed.
 - **Timeweb DBaaS package verification:** Compose syntax, POSIX shell syntax for deploy/backup/restore, Prisma validation, lint, formatting, typecheck, unit, integration, E2E and production build passed on 2026-08-11. No Timeweb cluster was provisioned or contacted.
 - **Completed Waves:** Waves 0, 2, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 and 16. Wave 1 foundation is implemented; its final gate remains deferred by owner direction.
-- **Deployment package:** `Dockerfile`, Timeweb DBaaS-compatible `docker-compose.prod.yml`, Nginx configuration, idempotent migration/seed scripts, logical backup/restore clients, health endpoints and runbooks are ready. Production Compose does not contain PostgreSQL. The selected AMS Server profile is host Nginx + systemd releases; Compose is retained as a portable package.
+- **Deployment package:** `Dockerfile`, Timeweb DBaaS-compatible `docker-compose.prod.yml`, health endpoints and logical backup/restore clients are ready. The selected AMS Server profile also has a reproducible Node 22.13 Linux artifact builder, atomic release activation helper and reviewed systemd/Nginx templates. Docker remains a portable package and artifact builder only; production runtime is host Nginx + systemd releases.
 - **Remote:** private SourceCraft repository `integrator-p/ams-content-factory` is canonical `origin`; protected `main` and `verify` CI are active. Private GitHub `neyro-level/ams-content-factory` is configured as non-canonical `github-legacy` mirror.
 
 ## Production boundary
@@ -32,6 +32,10 @@ in the Timeweb instance configuration and the PostgreSQL package is available, b
 installed in `default_db`: the provider-controlled database owner retains that permission. The Timeweb API
 has no separate extension-install action, so database schema deployment is specifically `BLOCKED_EXTERNAL`
 until Timeweb installs `vector` or supplies an extension-capable operator connection.
+
+The AMS Server artifact pipeline is implemented in the repository but has not been built from a merged
+main commit or installed on the server. It intentionally does not bypass the missing `vector` SQL object,
+runtime environment file, server capacity expansion, systemd/Nginx/TLS activation or release-gate proof.
 
 ## Verification note
 

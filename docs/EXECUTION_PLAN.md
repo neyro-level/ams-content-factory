@@ -64,7 +64,7 @@ CI and main policy. No production deploy. Status: `DONE`.
 - W13 AI Evals — DONE: seeded suites, cases, prompt comparison metadata and regression contracts.
 - W14 UX — DONE: accessible responsive operational shell and empty/disabled states.
 - W15 Hardening — DONE: security/architecture audit, repository-boundary remediation and repeat gate.
-- W16 Production — DONE: Timeweb DBaaS-compatible Docker/Nginx package, migration/seed, backup/restore runbooks and fresh-DB quality gate are complete; production deployment remains `BLOCKED_EXTERNAL` pending Timeweb cluster/TLS/backup setup and explicit infrastructure approval.
+- W16 Production — DONE: Timeweb DBaaS portable Docker package, Linux artifact/systemd/host-Nginx release path, migration/seed, backup/restore runbooks and fresh-DB quality gate are complete; production deployment remains `BLOCKED_EXTERNAL` pending installed Timeweb `vector`, runtime/TLS/backup setup and release proof.
 
 | Wave               | Task sequence                                                                    | Required outcome                                                             |
 | ------------------ | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
