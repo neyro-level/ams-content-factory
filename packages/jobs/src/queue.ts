@@ -21,3 +21,31 @@ export async function startJobQueue(queue = createJobQueue()) {
   await queue.createQueue(jobNames.learningAnalyze, { retryLimit: 3, retryBackoff: true });
   return queue;
 }
+
+let managedQueue: Promise<PgBoss> | undefined;
+
+/**
+ * Process-lifetime queue for web/application services. Starting pg-boss is a
+ * lifecycle concern, not a per-webhook side effect.
+ */
+export function getManagedJobQueue(start: () => Promise<PgBoss> = startJobQueue) {
+  if (!managedQueue) {
+    const queue = start();
+    managedQueue = queue;
+    void queue.catch(() => {
+      if (managedQueue === queue) managedQueue = undefined;
+    });
+  }
+  return managedQueue;
+}
+
+export async function stopManagedJobQueue() {
+  const queue = managedQueue;
+  managedQueue = undefined;
+  if (queue) await (await queue).stop();
+}
+
+/** Test-only reset that never stops an externally supplied fake queue. */
+export function resetManagedJobQueueForTests() {
+  managedQueue = undefined;
+}
