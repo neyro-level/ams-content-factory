@@ -6,7 +6,12 @@
   suspended membership denial. Publishing coverage now proves that a foreign social account cannot be
   attached to a publication in the active brand.
 - Existing integration contracts continue to cover foreign brand, content project and media resource paths;
-  all are executed by the mandatory SourceCraft pgvector gate. Next task: W3.1 — media pipeline.
+  all are executed by the mandatory SourceCraft pgvector gate. Next task: W3.2 — research concurrency/retry.
+- Rebuilt media storage into a fail-closed pipeline: server-side deterministic keys, `PENDING` intent,
+  storage write, byte-signature detection and controlled `READY` transition. Unsupported content, storage
+  failure and persistence failure reconcile to `FAILED` and attempt object cleanup. Contracts prove no write
+  without permission, no trust in fake MP4 MIME/extension, cross-brand isolation, and checksum retry
+  idempotency.
 - Added the fail-fast runtime environment contract. Web and worker startup now validate core configuration;
   provider credential groups are checked only when configured, localhost fallback is limited to dev/test, and
   invalid production worker configuration exits before it can start the queue. SourceCraft CI passes only

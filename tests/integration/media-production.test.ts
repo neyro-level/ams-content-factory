@@ -8,18 +8,27 @@ import {
   resolveTenantContext,
   seedInitialVideoRecipes,
 } from '../../packages/core/src/index.js';
-import { createPrismaClient, createTenantRepository } from '../../packages/db/src/index.js';
+import {
+  createPrismaClient,
+  createMediaRepository,
+  createTenantRepository,
+  MembershipRole,
+  MembershipStatus,
+} from '../../packages/db/src/index.js';
 import { MockStorageProvider } from '../../packages/providers/src/index.js';
+import { FailingStorageProvider } from '../helpers/failure-harness.js';
 import { afterAll, describe, expect, it } from 'vitest';
 
 const prisma = createPrismaClient();
 const tenants = createTenantRepository(prisma);
 const slug = 'media-production-contract';
 const email = `${slug}@local`;
+const mp4Bytes = new Uint8Array([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]);
+const distinctMp4Bytes = new Uint8Array([...mp4Bytes, 1]);
 
 afterAll(async () => {
   await prisma.organization.deleteMany({ where: { slug } });
-  await prisma.user.deleteMany({ where: { email } });
+  await prisma.user.deleteMany({ where: { email: { startsWith: slug } } });
   await prisma.$disconnect();
 });
 
@@ -61,13 +70,13 @@ describe('media production', () => {
     });
     const asset = await media.store(context, {
       type: 'VIDEO',
-      mimeType: 'video/mp4',
       filename: 'source.mp4',
-      storageKey: `${one.id}/source.mp4`,
-      content: new TextEncoder().encode('private-video'),
+      content: mp4Bytes,
       sourceType: 'UPLOAD',
     });
     expect(asset.status).toBe('READY');
+    expect(asset.mimeType).toBe('video/mp4');
+    expect(asset.storageKey).toMatch(new RegExp(`^media/${organization.id}/${one.id}/`));
     expect(asset.checksum).toMatch(/^[a-f0-9]{64}$/);
     await expect(media.find(otherContext, asset.id)).resolves.toBeNull();
 
@@ -159,5 +168,156 @@ describe('media production', () => {
       }),
     ).resolves.toEqual(expect.objectContaining({ role: 'SOURCE' }));
     await expect(production.find(otherContext, created!.id)).resolves.toBeNull();
+  });
+
+  it('fails closed for fake media and keeps retries idempotent', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    const brand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'one' },
+    });
+    const context = await resolveTenantContext(
+      { userId: user.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const storage = new MockStorageProvider();
+    const media = createMediaService({ prisma, storage, storageDriver: 'mock-private' });
+    await expect(
+      media.store(context, {
+        type: 'VIDEO',
+        filename: 'fake.mp4',
+        content: new TextEncoder().encode('not an mp4'),
+        sourceType: 'UPLOAD',
+      }),
+    ).rejects.toThrow('not a supported');
+    const failed = await prisma.mediaAsset.findFirstOrThrow({
+      where: { organizationId: organization.id, brandId: brand.id, filename: 'fake.mp4' },
+    });
+    expect(failed.status).toBe('FAILED');
+    await expect(storage.get(failed.storageKey)).resolves.toBeNull();
+
+    const first = await media.store(context, {
+      type: 'VIDEO',
+      filename: 'retry.mp4',
+      content: mp4Bytes,
+      sourceType: 'UPLOAD',
+    });
+    const duplicate = await media.store(context, {
+      type: 'VIDEO',
+      filename: 'retry.mp4',
+      content: mp4Bytes,
+      sourceType: 'UPLOAD',
+    });
+    expect(duplicate.id).toBe(first.id);
+    await expect(
+      prisma.mediaAsset.count({
+        where: { organizationId: organization.id, brandId: brand.id, checksum: first.checksum },
+      }),
+    ).resolves.toBe(1);
+  });
+
+  it('does not write without permission and persists FAILED after a storage failure', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug } });
+    const brand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'one' },
+    });
+    const viewer = await prisma.user.upsert({
+      where: { email: `${slug}-viewer@local` },
+      create: { email: `${slug}-viewer@local`, name: 'Media viewer' },
+      update: {},
+    });
+    await prisma.membership.upsert({
+      where: { organizationId_userId: { organizationId: organization.id, userId: viewer.id } },
+      create: {
+        organizationId: organization.id,
+        userId: viewer.id,
+        role: MembershipRole.VIEWER,
+        status: MembershipStatus.ACTIVE,
+      },
+      update: { role: MembershipRole.VIEWER, status: MembershipStatus.ACTIVE },
+    });
+    const viewerContext = await resolveTenantContext(
+      { userId: viewer.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const untouchedStorage = new MockStorageProvider();
+    const deniedMedia = createMediaService({
+      prisma,
+      storage: untouchedStorage,
+      storageDriver: 'mock-private',
+    });
+    await expect(
+      deniedMedia.store(viewerContext, {
+        type: 'VIDEO',
+        filename: 'denied.mp4',
+        content: mp4Bytes,
+        sourceType: 'UPLOAD',
+      }),
+    ).rejects.toThrow('Permission required: content:write');
+    await expect(
+      prisma.mediaAsset.count({
+        where: { organizationId: organization.id, brandId: brand.id, filename: 'denied.mp4' },
+      }),
+    ).resolves.toBe(0);
+
+    const owner = await prisma.user.findUniqueOrThrow({ where: { email } });
+    const ownerContext = await resolveTenantContext(
+      { userId: owner.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const failedMedia = createMediaService({
+      prisma,
+      storage: new FailingStorageProvider(),
+      storageDriver: 'mock-private',
+    });
+    await expect(
+      failedMedia.store(ownerContext, {
+        type: 'VIDEO',
+        filename: 'storage-failure.mp4',
+        content: distinctMp4Bytes,
+        sourceType: 'UPLOAD',
+      }),
+    ).rejects.toThrow('Simulated storage failure');
+    await expect(
+      prisma.mediaAsset.findFirst({
+        where: {
+          organizationId: organization.id,
+          brandId: brand.id,
+          filename: 'storage-failure.mp4',
+        },
+      }),
+    ).resolves.toEqual(expect.objectContaining({ status: 'FAILED' }));
+
+    const dbFailureStorage = new MockStorageProvider();
+    const repository = createMediaRepository(prisma);
+    const persistenceFailureMedia = createMediaService({
+      prisma,
+      storage: dbFailureStorage,
+      storageDriver: 'mock-private',
+      repository: {
+        ...repository,
+        async updateAssetStatus(input) {
+          if (input.to === 'READY') throw new Error('Simulated persistence failure.');
+          return repository.updateAssetStatus(input);
+        },
+      },
+    });
+    await expect(
+      persistenceFailureMedia.store(ownerContext, {
+        type: 'VIDEO',
+        filename: 'persistence-failure.mp4',
+        content: new Uint8Array([...mp4Bytes, 2]),
+        sourceType: 'UPLOAD',
+      }),
+    ).rejects.toThrow('Simulated persistence failure');
+    const persistenceFailed = await prisma.mediaAsset.findFirstOrThrow({
+      where: {
+        organizationId: organization.id,
+        brandId: brand.id,
+        filename: 'persistence-failure.mp4',
+      },
+    });
+    expect(persistenceFailed.status).toBe('FAILED');
+    await expect(dbFailureStorage.get(persistenceFailed.storageKey)).resolves.toBeNull();
   });
 });

@@ -62,6 +62,10 @@ export class FailingStorageProvider implements StorageProvider {
     throw this.error;
   }
 
+  async delete(_key: string): Promise<void> {
+    throw this.error;
+  }
+
   async getSignedDownloadUrl(_key: string, _expiresInSeconds: number): Promise<string | null> {
     throw this.error;
   }
