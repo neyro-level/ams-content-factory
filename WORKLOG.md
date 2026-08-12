@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W4.5 worker readiness signal
+
+- Refactored worker startup into a testable bootstrap sequence. A safe `worker.ready` signal is emitted only
+  after environment validation, pg-boss startup, queued-work recovery and handler registration; startup
+  failures do not report readiness and close an already-open queue.
+- Added positive and negative readiness contracts. Full gate is green: Prisma validation, lint, formatting,
+  typecheck, 25 unit tests, 27 integration contracts and production build. Next: W5.1 protected application
+  shell.
+
 ## 2026-08-12 — W4.4 lost queued-work reconciliation
 
 - Worker startup now scans durable `QUEUED` workflow runs and re-enqueues them through pg-boss with each

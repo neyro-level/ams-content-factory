@@ -3,7 +3,7 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W4.4 lost queued-work reconciliation — `DONE`; next W4.5 worker readiness.
+> Latest current-plan record: W4.5 worker readiness signal — `DONE`; next W5.1 protected application shell.
 
 ## Protocol
 
