@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W4.2 explicit workflow dispatcher
+
+- Replaced the placeholder worker path with a closed workflow-type dispatcher. `system.health` is the
+  initial registered handler; only an actual handler result transitions a workflow run to `SUCCEEDED`.
+- Missing types remain typed `UNSUPPORTED_WORKFLOW_TYPE` failures and handler exceptions persist as
+  `WORKFLOW_HANDLER_FAILED`. The payload never controls executable function selection. Full gate is green:
+  Prisma validation, lint, formatting, typecheck, 19 unit tests, 27 integration contracts and production
+  build. Next: W4.3 queue lifecycle.
+
 ## 2026-08-12 — W4.1 worker false-success removal
 
 - The workflow worker no longer writes a timestamp result and marks a run `SUCCEEDED` without a registered

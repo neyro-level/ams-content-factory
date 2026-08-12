@@ -7,7 +7,7 @@ import {
 } from '../../packages/db/src/index.js';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
-  processWorkflowRunWithoutDispatcher,
+  processWorkflowRun,
   UnsupportedWorkflowTypeError,
 } from '../../apps/worker/src/workflow-run-handler.js';
 
@@ -121,7 +121,7 @@ describe('workflow run repository', () => {
       idempotencyKey: 'workflow-run-unsupported-contract-key',
     });
     await expect(
-      processWorkflowRunWithoutDispatcher(workflowRepository, {
+      processWorkflowRun(workflowRepository, {
         organizationId: organization.id,
         id: unsupported.id,
       }),
@@ -132,6 +132,25 @@ describe('workflow run repository', () => {
       expect.objectContaining({
         status: WorkflowRunStatus.FAILED,
         error: expect.objectContaining({ code: 'UNSUPPORTED_WORKFLOW_TYPE' }),
+      }),
+    );
+
+    const handled = await workflowRepository.createOrGet({
+      ...input,
+      idempotencyKey: 'workflow-run-dispatcher-contract-key',
+    });
+    await expect(
+      processWorkflowRun(workflowRepository, {
+        organizationId: organization.id,
+        id: handled.id,
+      }),
+    ).resolves.toEqual(expect.objectContaining({ healthy: true, workflowRunId: handled.id }));
+    await expect(
+      prisma.workflowRun.findUniqueOrThrow({ where: { id: handled.id } }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        status: WorkflowRunStatus.SUCCEEDED,
+        result: expect.objectContaining({ healthy: true, workflowRunId: handled.id }),
       }),
     );
   });
