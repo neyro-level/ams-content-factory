@@ -28,7 +28,7 @@ export function createMcpAuthService(options: { prisma?: PrismaClient } = {}) {
     async authenticate(token: string, required: McpScope) {
       const key = await repository.findActiveApiKey(hash(token));
       if (!key || !(key.scopes.includes(required) || key.scopes.includes('ADMIN'))) return null;
-      await repository.markApiKeyUsed(key.id);
+      await repository.markApiKeyUsed({ organizationId: key.organizationId, id: key.id });
       return {
         organizationId: key.organizationId,
         apiKeyId: key.id,

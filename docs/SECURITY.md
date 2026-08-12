@@ -7,6 +7,8 @@
 - Inbound n8n webhooks определяют организацию исключительно по активному `keyId`, а не по request
   headers. Per-organization secret хранится только в зашифрованном виде; signature покрывает method,
   topic, keyId, brandId, idempotency key и hash body до поиска бренда и постановки workflow в очередь.
+- Public tenant-owned repository write methods принимают organization ID, brand ID (когда применимо) и
+  resource ID вместе; передача одного resource ID не может изменить чужую запись.
 - Secrets только в environment/Doppler; логи редактируют секретные поля.
 - SSRF, upload validation, webhook signatures, OAuth token encryption и rate limits появляются
   до соответствующих внешних entrypoints, а не в конце проекта.

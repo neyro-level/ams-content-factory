@@ -44,7 +44,13 @@ export async function resolveTenantContext(
   if (input.brandId) {
     const brand = await repository.findBrandInOrganization(input.organizationId, input.brandId);
     if (!brand) throw new AccessDeniedError('Brand is outside the active organization.');
-    brandRole = (await repository.findBrandAccess(input.brandId, input.userId))?.role;
+    brandRole = (
+      await repository.findBrandAccess({
+        organizationId: input.organizationId,
+        brandId: input.brandId,
+        userId: input.userId,
+      })
+    )?.role;
   }
 
   return {

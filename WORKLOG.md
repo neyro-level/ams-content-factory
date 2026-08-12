@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — Wave 1.4: tenant-scope repository cleanup
+
+- Removed ID-only tenant-owned write APIs for workflow runs, social accounts, publication attempts, API-key
+  usage and outbound webhook deliveries. Their callers now pass organization scope and brand scope where
+  the resource belongs to a brand.
+- The worker job payload includes the workflow organization scope; brand access lookup also requires its
+  organization. An integration contract proves a foreign organization cannot transition a workflow run.
+- Next task: W2.1 — SourceCraft PostgreSQL + pgvector integration gate.
+
 ## 2026-08-12 — Wave 1.3: secure n8n tenant binding
 
 - Replaced the global inbound webhook secret and caller-supplied organization header with encrypted
