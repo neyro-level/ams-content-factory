@@ -13,7 +13,11 @@ export async function enqueueWorkflowRun(input: {
   const queue = await createJobQueue();
   await queue.start();
   try {
-    await queue.send(jobNames.workflowRun, { workflowRunId: run.id }, { singletonKey: run.id });
+    await queue.send(
+      jobNames.workflowRun,
+      { workflowRunId: run.id, organizationId: run.organizationId },
+      { singletonKey: run.id },
+    );
   } finally {
     await queue.stop();
   }

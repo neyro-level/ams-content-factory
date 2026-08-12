@@ -208,6 +208,7 @@ export function createPublishingService(options: {
         });
         if (result.status === 'OUTCOME_UNKNOWN') {
           await repository.updateAttempt({
+            ...scope(context),
             publicationId: publication.id,
             id: attempt.id,
             status: 'OUTCOME_UNKNOWN',
@@ -220,6 +221,7 @@ export function createPublishingService(options: {
           throw new PublicationOutcomeUnknownError();
         }
         await repository.updateAttempt({
+          ...scope(context),
           publicationId: publication.id,
           id: attempt.id,
           status: 'SUCCEEDED',
@@ -237,6 +239,7 @@ export function createPublishingService(options: {
         if (error instanceof PublicationOutcomeUnknownError) throw error;
         const message = error instanceof Error ? error.message : 'Provider publishing failed.';
         await repository.updateAttempt({
+          ...scope(context),
           publicationId: publication.id,
           id: attempt.id,
           status: 'FAILED',
@@ -270,6 +273,7 @@ export function createPublishingService(options: {
       });
       if (status.status === 'PUBLISHED') {
         await repository.updateAttempt({
+          ...scope(context),
           publicationId: publication.id,
           id: attempt.id,
           status: 'SUCCEEDED',

@@ -26,8 +26,11 @@ export function createMcpRepository(prisma: PrismaClient = getPrisma()) {
         },
       });
     },
-    markApiKeyUsed(id: string) {
-      return prisma.apiKey.update({ where: { id }, data: { lastUsedAt: new Date() } });
+    markApiKeyUsed(input: { organizationId: string; id: string }) {
+      return prisma.apiKey.updateMany({
+        where: { id: input.id, organizationId: input.organizationId, revokedAt: null },
+        data: { lastUsedAt: new Date() },
+      });
     },
     revokeApiKey(input: { organizationId: string; id: string }) {
       return prisma.apiKey.updateMany({
@@ -80,9 +83,14 @@ export function createMcpRepository(prisma: PrismaClient = getPrisma()) {
     createDelivery(input: { endpointId: string; eventType: string; payload: object }) {
       return prisma.webhookDelivery.create({ data: input });
     },
-    updateDelivery(input: { id: string; status: WebhookDeliveryStatus; error?: string }) {
-      return prisma.webhookDelivery.update({
-        where: { id: input.id },
+    updateDelivery(input: {
+      organizationId: string;
+      id: string;
+      status: WebhookDeliveryStatus;
+      error?: string;
+    }) {
+      return prisma.webhookDelivery.updateMany({
+        where: { id: input.id, endpoint: { organizationId: input.organizationId } },
         data: {
           status: input.status,
           attempts: { increment: 1 },

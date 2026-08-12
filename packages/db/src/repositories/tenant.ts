@@ -69,9 +69,13 @@ export function createTenantRepository(prisma: PrismaClient = getPrisma()) {
       });
     },
 
-    findBrandAccess(brandId: string, userId: string) {
-      return prisma.brandAccess.findUnique({
-        where: { brandId_userId: { brandId, userId } },
+    findBrandAccess(input: { organizationId: string; brandId: string; userId: string }) {
+      return prisma.brandAccess.findFirst({
+        where: {
+          brandId: input.brandId,
+          userId: input.userId,
+          brand: { organizationId: input.organizationId, deletedAt: null },
+        },
       });
     },
 

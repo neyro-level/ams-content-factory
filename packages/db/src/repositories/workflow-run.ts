@@ -21,26 +21,38 @@ export function createWorkflowRunRepository(prisma: PrismaClient = getPrisma()) 
         update: {},
       });
     },
-    markRunning(id: string) {
-      return transition(id, WorkflowRunStatus.RUNNING, {
+    markRunning(input: { organizationId: string; id: string }) {
+      return transition(input, WorkflowRunStatus.RUNNING, {
         startedAt: new Date(),
         error: Prisma.JsonNull,
       });
     },
-    markSucceeded(id: string, result?: object) {
-      return transition(id, WorkflowRunStatus.SUCCEEDED, {
+    markSucceeded(input: { organizationId: string; id: string }, result?: object) {
+      return transition(input, WorkflowRunStatus.SUCCEEDED, {
         ...(result ? { result } : {}),
         finishedAt: new Date(),
       });
     },
-    markFailed(id: string, error: object) {
-      return transition(id, WorkflowRunStatus.FAILED, { error, finishedAt: new Date() });
+    markFailed(input: { organizationId: string; id: string }, error: object) {
+      return transition(input, WorkflowRunStatus.FAILED, { error, finishedAt: new Date() });
     },
   };
 
-  async function transition(id: string, status: WorkflowRunStatus, data: Record<string, unknown>) {
+  async function transition(
+    input: { organizationId: string; id: string },
+    status: WorkflowRunStatus,
+    data: Record<string, unknown>,
+  ) {
     return prisma.$transaction(async (tx) => {
-      const run = await tx.workflowRun.update({ where: { id }, data: { status, ...data } });
+      const existing = await tx.workflowRun.findFirst({
+        where: { id: input.id, organizationId: input.organizationId },
+        select: { id: true },
+      });
+      if (!existing) return null;
+      const run = await tx.workflowRun.update({
+        where: { id: existing.id },
+        data: { status, ...data },
+      });
       await tx.auditLog.create({
         data: {
           organizationId: run.organizationId,

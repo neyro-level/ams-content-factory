@@ -14,12 +14,14 @@ const email = 'workflow-run-contract@ams-content-factory.local';
 
 afterAll(async () => {
   await prisma.auditLog.deleteMany({
-    where: { organization: { slug: 'workflow-run-contract' } },
+    where: { organization: { slug: { startsWith: 'workflow-run-contract' } } },
   });
   await prisma.workflowRun.deleteMany({
-    where: { organization: { slug: 'workflow-run-contract' } },
+    where: { organization: { slug: { startsWith: 'workflow-run-contract' } } },
   });
-  await prisma.organization.deleteMany({ where: { slug: 'workflow-run-contract' } });
+  await prisma.organization.deleteMany({
+    where: { slug: { startsWith: 'workflow-run-contract' } },
+  });
   await prisma.user.deleteMany({ where: { email } });
   await prisma.$disconnect();
 });
@@ -27,12 +29,14 @@ afterAll(async () => {
 describe('workflow run repository', () => {
   it('deduplicates a run and persists controlled status transitions', async () => {
     await prisma.auditLog.deleteMany({
-      where: { organization: { slug: 'workflow-run-contract' } },
+      where: { organization: { slug: { startsWith: 'workflow-run-contract' } } },
     });
     await prisma.workflowRun.deleteMany({
-      where: { organization: { slug: 'workflow-run-contract' } },
+      where: { organization: { slug: { startsWith: 'workflow-run-contract' } } },
     });
-    await prisma.organization.deleteMany({ where: { slug: 'workflow-run-contract' } });
+    await prisma.organization.deleteMany({
+      where: { slug: { startsWith: 'workflow-run-contract' } },
+    });
     const user = await prisma.user.upsert({
       where: { email },
       create: { name: 'Workflow Contract', email },
@@ -42,6 +46,11 @@ describe('workflow run repository', () => {
       ownerUserId: user.id,
       name: 'Workflow Contract',
       slug: 'workflow-run-contract',
+    });
+    const foreignOrganization = await tenantRepository.createOrganizationWithOwner({
+      ownerUserId: user.id,
+      name: 'Workflow Contract Foreign',
+      slug: 'workflow-run-contract-foreign',
     });
     const input = {
       organizationId: organization.id,
@@ -57,8 +66,16 @@ describe('workflow run repository', () => {
     expect(first.id).toBe(second.id);
     expect(first.status).toBe(WorkflowRunStatus.QUEUED);
 
-    const running = await workflowRepository.markRunning(first.id);
-    const succeeded = await workflowRepository.markSucceeded(first.id, { healthy: true });
+    await expect(
+      workflowRepository.markRunning({ organizationId: foreignOrganization.id, id: first.id }),
+    ).resolves.toBeNull();
+    expect((await prisma.workflowRun.findUniqueOrThrow({ where: { id: first.id } })).status).toBe(
+      WorkflowRunStatus.QUEUED,
+    );
+
+    const scope = { organizationId: organization.id, id: first.id };
+    const running = await workflowRepository.markRunning(scope);
+    const succeeded = await workflowRepository.markSucceeded(scope, { healthy: true });
 
     expect(running.status).toBe(WorkflowRunStatus.RUNNING);
     expect(running.startedAt).toBeTruthy();
@@ -79,9 +96,12 @@ describe('workflow run repository', () => {
       ...input,
       idempotencyKey: 'workflow-run-failure-contract-key',
     });
-    const failure = await workflowRepository.markFailed(failed.id, {
-      message: 'provider unavailable',
-    });
+    const failure = await workflowRepository.markFailed(
+      { organizationId: organization.id, id: failed.id },
+      {
+        message: 'provider unavailable',
+      },
+    );
     const failureAudit = await prisma.auditLog.findFirst({
       where: { entityId: failed.id, action: 'workflow_run.failed' },
     });

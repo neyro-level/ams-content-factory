@@ -67,6 +67,7 @@ export function createWebhookService(options: {
             signature: createHmac('sha256', secret).update(body).digest('hex'),
           });
           await repository.updateDelivery({
+            organizationId: scope.organizationId,
             id: delivery.id,
             status: result.ok ? 'DELIVERED' : 'FAILED',
             ...(result.error !== undefined ? { error: result.error } : {}),

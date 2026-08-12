@@ -197,6 +197,8 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
       });
     },
     updateAttempt(input: {
+      organizationId: string;
+      brandId: string;
       publicationId: string;
       id: string;
       status: PublicationAttemptStatus;
@@ -206,7 +208,11 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
       errorMessage?: string;
     }) {
       return prisma.publicationAttempt.updateMany({
-        where: { id: input.id, publicationId: input.publicationId },
+        where: {
+          id: input.id,
+          publicationId: input.publicationId,
+          publication: { organizationId: input.organizationId, brandId: input.brandId },
+        },
         data: {
           status: input.status,
           ...(input.providerJobId !== undefined ? { providerJobId: input.providerJobId } : {}),
@@ -217,9 +223,18 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
         },
       });
     },
-    updateSocialAccountStatus(input: { id: string; status: SocialAccountStatus }) {
+    updateSocialAccountStatus(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      status: SocialAccountStatus;
+    }) {
       return prisma.socialAccount.updateMany({
-        where: { id: input.id },
+        where: {
+          id: input.id,
+          brandId: input.brandId,
+          brand: { organizationId: input.organizationId },
+        },
         data: { status: input.status },
       });
     },
