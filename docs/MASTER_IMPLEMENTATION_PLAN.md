@@ -416,7 +416,8 @@ parallel request
 | PR 2.1 | `DONE` | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                    |
 | PR 2.2 | `DONE` | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.   |
 | PR 2.3 | `DONE` | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.       |
-| Next   | `W2.4` | Fail-fast configuration.                                                                        |
+| PR 2.4 | `DONE` | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.       |
+| Next   | `W3.1` | Media pipeline.                                                                                 |
 
 ---
 

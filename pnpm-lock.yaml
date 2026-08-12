@@ -103,6 +103,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@ams-content-factory/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@ams-content-factory/db':
         specifier: workspace:*
         version: link:../../packages/db

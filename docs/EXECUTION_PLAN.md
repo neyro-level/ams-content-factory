@@ -3,8 +3,7 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W2.3 concurrency/failure harness — `DONE`; next W2.4 fail-fast
-> configuration.
+> Latest current-plan record: W2.4 fail-fast configuration — `DONE`; next W3.1 media pipeline.
 
 ## Protocol
 

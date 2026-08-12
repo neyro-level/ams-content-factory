@@ -38,6 +38,9 @@ workflows:
                 docker run --rm --network host --volume "$PWD:/workspace" --workdir /workspace \
                   --env DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ams_content_factory \
                   --env NODE_ENV=production \
+                  --env APP_URL=https://ci.ams-content-factory.invalid \
+                  --env BETTER_AUTH_SECRET=ci-only-auth-secret-that-is-at-least-32-characters \
+                  --env TOKEN_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
                   docker.io/library/node:22 bash -lc '
                     set -euo pipefail
                     export PNPM_HOME=/tmp/pnpm

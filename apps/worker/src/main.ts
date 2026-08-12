@@ -1,6 +1,8 @@
 import { jobNames, startJobQueue } from '@ams-content-factory/jobs';
 import { createWorkflowRunRepository } from '@ams-content-factory/db';
+import { assertRuntimeEnvironment } from '@ams-content-factory/config';
 
+assertRuntimeEnvironment();
 const queue = await startJobQueue();
 await queue.work(jobNames.health, async () => ({ healthy: true }));
 await queue.work<{ workflowRunId: string; organizationId: string }>(

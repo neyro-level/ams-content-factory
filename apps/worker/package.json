@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@ams-content-factory/config": "workspace:*",
     "@ams-content-factory/jobs": "workspace:*",
     "@ams-content-factory/db": "workspace:*",
     "tsx": "4.21.0"
