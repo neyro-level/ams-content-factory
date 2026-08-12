@@ -26,13 +26,48 @@ describe('captions and QC', () => {
     ).resolves.toEqual({ outputKey: 'private/final.mp4' });
   });
 
-  it('does not pass QC when a required section fails', () => {
+  it.each([
+    ['technical', { passed: false, issues: ['invalid-codec'] }],
+    ['visual', { passed: false, issues: ['caption-safe-zone'] }],
+    ['content', { passed: false, issues: ['missing-hook'] }],
+  ] as const)('fails QC when the required %s section fails', (_section, failedSection) => {
+    expect(
+      evaluateQc({
+        technical: _section === 'technical' ? failedSection : { passed: true, issues: [] },
+        visual: _section === 'visual' ? failedSection : { passed: true, issues: [] },
+        content: _section === 'content' ? failedSection : { passed: true, issues: [] },
+      }),
+    ).toEqual({ status: 'FAILED', issues: failedSection.issues });
+  });
+
+  it('fails QC when the optional compliance section fails', () => {
     expect(
       evaluateQc({
         technical: { passed: true, issues: [] },
-        visual: { passed: false, issues: ['caption-safe-zone'] },
+        visual: { passed: true, issues: [] },
+        content: { passed: true, issues: [] },
+        compliance: { passed: false, issues: ['missing-disclosure'] },
+      }),
+    ).toEqual({ status: 'FAILED', issues: ['missing-disclosure'] });
+  });
+
+  it('returns PASSED only when every supplied section passes without issues', () => {
+    expect(
+      evaluateQc({
+        technical: { passed: true, issues: [] },
+        visual: { passed: true, issues: [] },
         content: { passed: true, issues: [] },
       }),
-    ).toEqual({ status: 'FAILED', issues: ['caption-safe-zone'] });
+    ).toEqual({ status: 'PASSED', issues: [] });
+  });
+
+  it('returns WARNING when all sections pass but report non-blocking issues', () => {
+    expect(
+      evaluateQc({
+        technical: { passed: true, issues: [] },
+        visual: { passed: true, issues: ['low-contrast'] },
+        content: { passed: true, issues: [] },
+      }),
+    ).toEqual({ status: 'WARNING', issues: ['low-contrast'] });
   });
 });

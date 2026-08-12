@@ -3,6 +3,8 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
+> Latest current-plan record: W1.1 QC fail-closed — `DONE`; next W1.2 suspended organization
+> authorization.
 
 ## Protocol
 
