@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-12 — W3.8 resource graph validation
+
+- `ContentProject` now validates `pillarId` and `opportunityId` against the active brand before writing;
+  an opportunity classified under a pillar must match the project's pillar. This blocks foreign and
+  internally mismatched content graphs before persistence.
+- Integration coverage proves foreign pillar/opportunity denial and successful creation of a coherent
+  same-brand graph. Full gate is green: Prisma validation, lint, formatting, typecheck, 19 unit tests,
+  27 integration contracts and production build.
+
 ## 2026-08-12 — W3.7 video provider reconciliation
 
 - A successful provider video-job creation followed by a database persistence failure is now represented as

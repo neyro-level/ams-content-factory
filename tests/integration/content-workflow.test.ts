@@ -66,7 +66,61 @@ describe('content workflow', () => {
       { userId: user.id, organizationId: foreignOrganization.id, brandId: foreignBrand.id },
       tenants,
     );
+    const firstPillar = await prisma.contentPillar.create({
+      data: { brandId: first.id, name: 'First pillar' },
+    });
+    const secondPillar = await prisma.contentPillar.create({
+      data: { brandId: second.id, name: 'Second pillar' },
+    });
+    const firstOpportunity = await prisma.contentOpportunity.create({
+      data: {
+        brandId: first.id,
+        pillarId: firstPillar.id,
+        title: 'First opportunity',
+        angle: 'First angle',
+      },
+    });
+    const secondOpportunity = await prisma.contentOpportunity.create({
+      data: {
+        brandId: second.id,
+        pillarId: secondPillar.id,
+        title: 'Second opportunity',
+        angle: 'Second angle',
+      },
+    });
     const service = createContentService({ prisma });
+    await expect(
+      service.create(firstContext, {
+        title: 'Foreign pillar denied',
+        contentType: 'SOCIAL_POST',
+        pillarId: secondPillar.id,
+      }),
+    ).resolves.toBeNull();
+    await expect(
+      service.create(firstContext, {
+        title: 'Foreign opportunity denied',
+        contentType: 'SOCIAL_POST',
+        opportunityId: secondOpportunity.id,
+      }),
+    ).resolves.toBeNull();
+    await expect(
+      service.create(firstContext, {
+        title: 'Mismatched scoped graph denied',
+        contentType: 'SOCIAL_POST',
+        pillarId: firstPillar.id,
+        opportunityId: secondOpportunity.id,
+      }),
+    ).resolves.toBeNull();
+    await expect(
+      service.create(firstContext, {
+        title: 'Scoped graph accepted',
+        contentType: 'SOCIAL_POST',
+        pillarId: firstPillar.id,
+        opportunityId: firstOpportunity.id,
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({ pillarId: firstPillar.id, opportunityId: firstOpportunity.id }),
+    );
     const project = await service.create(firstContext, {
       title: 'Контент',
       contentType: 'SOCIAL_POST',

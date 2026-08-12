@@ -424,7 +424,8 @@ parallel request
 | PR 3.5 | `DONE` | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.           |
 | PR 3.6 | `DONE` | Publication attempts are atomically acquired per idempotency key under parallel dispatch.          |
 | PR 3.7 | `DONE` | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.     |
-| Next   | `W3.8` | Resource graph validation.                                                                         |
+| PR 3.8 | `DONE` | Content-project pillar and opportunity links are validated against the active brand graph.         |
+| Next   | `W3.9` | Storyboard authorization boundary.                                                                 |
 
 ### W3.4 — executable publication-state contract
 
@@ -467,6 +468,12 @@ The video generation intent is persisted before the provider call. If provider `
 external-job persistence fails, the render job is marked `OUTCOME_UNKNOWN` with the provider job identity
 instead of `FAILED`. `poll()` is the reconciliation path: it queries that provider job and writes its later
 status without resubmitting a video generation request.
+
+### W3.8 — resource graph validation
+
+Every content project now verifies its selected `ContentPillar` and `ContentOpportunity` in the active
+brand before persistence. When an opportunity is classified under a pillar, that pillar must match the
+project pillar. Existing scoped repositories continue to enforce the remaining resource graph edges.
 
 ---
 

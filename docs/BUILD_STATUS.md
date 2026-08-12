@@ -3,7 +3,7 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W3.7 — video provider reconciliation (`DONE`); next: W3.8 resource graph validation.
+- **Current task:** W3.8 — resource graph validation (`DONE`); next: W3.9 storyboard authorization boundary.
 - **Last verification:** 2026-08-12: Prisma validation, lint, formatting, typecheck, 19 unit tests,
   27 integration contracts and production build passed. The former E2E tests only cover the static shell.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
