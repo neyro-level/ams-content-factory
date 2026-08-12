@@ -3,6 +3,7 @@ import {
   createContentService,
   createPublishingService,
   createTokenEncryptor,
+  PublicationDispatchInProgressError,
   PublicationOutcomeUnknownError,
   PublicationTransitionError,
   resolveTenantContext,
@@ -253,6 +254,65 @@ describe('publishing foundation', () => {
       expect.objectContaining({ status: 'PUBLISHED' }),
     );
     expect(provider.getStatusCalls).toBe(1);
+  });
+
+  it('atomically acquires one logical attempt across twenty parallel identical dispatches', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    const brand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'first' },
+    });
+    const context = await resolveTenantContext(
+      { userId: user.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const content = createContentService({ prisma });
+    const project = await content.create(context, {
+      title: 'Atomic attempt project',
+      contentType: 'SOCIAL_POST',
+    });
+    const variant = await prisma.platformVariant.create({
+      data: { contentProjectId: project!.id, platform: 'VK', caption: 'Atomic attempt text' },
+    });
+    const account = await prisma.socialAccount.findFirstOrThrow({
+      where: { brandId: brand.id, platform: 'VK' },
+    });
+    const provider = new CountingPublishingProvider(new MockPublishingProvider('VK'));
+    const service = createPublishingService({
+      prisma,
+      encryptor,
+      providers: {
+        INSTAGRAM: new MockPublishingProvider('INSTAGRAM'),
+        VK: provider,
+      },
+    });
+    const publication = await service.create(context, {
+      contentProjectId: project!.id,
+      platformVariantId: variant.id,
+      socialAccountId: account.id,
+    });
+    await service.schedule(context, publication.id);
+
+    const results = await Promise.allSettled(
+      Array.from({ length: 20 }, () =>
+        service.publish(context, { id: publication.id, idempotencyKey: 'parallel-attempt-one' }),
+      ),
+    );
+    const unexpected = results.filter(
+      (result) =>
+        result.status === 'rejected' &&
+        !(result.reason instanceof PublicationDispatchInProgressError),
+    );
+    expect(unexpected).toHaveLength(0);
+    expect(provider.publishCalls).toBe(1);
+    expect(
+      await prisma.publicationAttempt.count({
+        where: { publicationId: publication.id, idempotencyKey: 'parallel-attempt-one' },
+      }),
+    ).toBe(1);
+    await expect(
+      prisma.publication.findUniqueOrThrow({ where: { id: publication.id } }),
+    ).resolves.toEqual(expect.objectContaining({ status: 'PUBLISHED' }));
   });
 
   it('recovers an interrupted legacy preparation state without entering it for new dispatches', async () => {

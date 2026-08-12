@@ -172,7 +172,7 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
         },
       });
     },
-    async createAttempt(input: {
+    async createOrGetAttempt(input: {
       organizationId: string;
       brandId: string;
       publicationId: string;
@@ -180,20 +180,46 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
       providerOperation: string;
       requestFingerprint: string;
     }) {
-      const publication = await scopedPublication({ ...input, id: input.publicationId });
-      if (!publication) return null;
-      const existing = publication.attempts.find(
-        (attempt) => attempt.idempotencyKey === input.idempotencyKey,
-      );
-      if (existing) return existing;
-      return prisma.publicationAttempt.create({
-        data: {
-          publicationId: input.publicationId,
-          attempt: Math.max(0, ...publication.attempts.map((attempt) => attempt.attempt)) + 1,
-          idempotencyKey: input.idempotencyKey,
-          providerOperation: input.providerOperation,
-          requestFingerprint: input.requestFingerprint,
-        },
+      return prisma.$transaction(async (tx) => {
+        const publication = await tx.publication.findFirst({
+          where: {
+            id: input.publicationId,
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+          },
+          select: { id: true },
+        });
+        if (!publication) return null;
+
+        // Serialize attempt numbering and same-key acquisition per publication.
+        // The row lock is intentionally held only while persisting the intent,
+        // never during the external provider call.
+        await tx.$queryRaw`SELECT 1 FROM "publication" WHERE "id" = ${input.publicationId}::uuid FOR UPDATE`;
+        const existing = await tx.publicationAttempt.findUnique({
+          where: {
+            publicationId_idempotencyKey: {
+              publicationId: input.publicationId,
+              idempotencyKey: input.idempotencyKey,
+            },
+          },
+        });
+        if (existing) return { attempt: existing, created: false };
+
+        const latest = await tx.publicationAttempt.findFirst({
+          where: { publicationId: input.publicationId },
+          orderBy: { attempt: 'desc' },
+          select: { attempt: true },
+        });
+        const attempt = await tx.publicationAttempt.create({
+          data: {
+            publicationId: input.publicationId,
+            attempt: (latest?.attempt ?? 0) + 1,
+            idempotencyKey: input.idempotencyKey,
+            providerOperation: input.providerOperation,
+            requestFingerprint: input.requestFingerprint,
+          },
+        });
+        return { attempt, created: true };
       });
     },
     updateAttempt(input: {

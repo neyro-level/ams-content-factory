@@ -63,6 +63,13 @@ export class PublicationTransitionConflictError extends Error {
   }
 }
 
+export class PublicationDispatchInProgressError extends Error {
+  constructor() {
+    super('Publication dispatch is already in progress for this idempotency key.');
+    this.name = 'PublicationDispatchInProgressError';
+  }
+}
+
 export class PublicationOutcomeUnknownError extends Error {
   constructor() {
     super('Publication outcome is unknown and requires provider investigation before retry.');
@@ -219,7 +226,11 @@ export function createPublishingService(options: {
         publication = await load(context, publication.id);
       }
       if (publication.status === 'QUEUED') {
-        await transition(context, publication.id, 'QUEUED', 'PUBLISHING');
+        try {
+          await transition(context, publication.id, 'QUEUED', 'PUBLISHING');
+        } catch (error) {
+          if (!(error instanceof PublicationTransitionConflictError)) throw error;
+        }
         publication = await load(context, publication.id);
       }
       if (publication.status !== 'PUBLISHING') {
@@ -245,21 +256,31 @@ export function createPublishingService(options: {
       const credential = publication.socialAccount.credential;
       if (!credential)
         throw new Error('Social account credentials are required before publishing.');
-      const attempt =
-        existing ??
-        (await repository.createAttempt({
-          ...scope(context),
-          publicationId: publication.id,
-          idempotencyKey: input.idempotencyKey,
-          providerOperation: `${provider.platform.toLowerCase()}:publish`,
-          requestFingerprint: fingerprint({
-            text,
-            mediaKeys,
-            accountId: publication.socialAccountId,
-          }),
-        }));
-      if (!attempt)
+      const attemptResult = existing
+        ? { attempt: existing, created: false }
+        : await repository.createOrGetAttempt({
+            ...scope(context),
+            publicationId: publication.id,
+            idempotencyKey: input.idempotencyKey,
+            providerOperation: `${provider.platform.toLowerCase()}:publish`,
+            requestFingerprint: fingerprint({
+              text,
+              mediaKeys,
+              accountId: publication.socialAccountId,
+            }),
+          });
+      if (!attemptResult)
         throw new AccessDeniedError('Publication attempt is outside the active tenant.');
+      const { attempt } = attemptResult;
+      if (!attemptResult.created && attempt.status === 'STARTED') {
+        throw new PublicationDispatchInProgressError();
+      }
+      if (!attemptResult.created && attempt.status === 'OUTCOME_UNKNOWN') {
+        throw new PublicationOutcomeUnknownError();
+      }
+      if (!attemptResult.created && attempt.status === 'SUCCEEDED') {
+        return load(context, publication.id);
+      }
       let providerMutationCompleted = false;
       try {
         const result = await provider.publish({
