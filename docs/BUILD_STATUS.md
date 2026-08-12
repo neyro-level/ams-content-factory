@@ -3,7 +3,7 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W3.8 — resource graph validation (`DONE`); next: W3.9 storyboard authorization boundary.
+- **Current task:** W3.9 — storyboard authorization boundary (`DONE`); next: W4.1 worker false-success removal.
 - **Last verification:** 2026-08-12: Prisma validation, lint, formatting, typecheck, 19 unit tests,
   27 integration contracts and production build passed. The former E2E tests only cover the static shell.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,

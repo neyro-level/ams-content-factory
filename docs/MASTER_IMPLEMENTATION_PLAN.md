@@ -425,7 +425,8 @@ parallel request
 | PR 3.6 | `DONE` | Publication attempts are atomically acquired per idempotency key under parallel dispatch.          |
 | PR 3.7 | `DONE` | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.     |
 | PR 3.8 | `DONE` | Content-project pillar and opportunity links are validated against the active brand graph.         |
-| Next   | `W3.9` | Storyboard authorization boundary.                                                                 |
+| PR 3.9 | `DONE` | Storyboard creation is bound to verified tenant context and `content:write`.                       |
+| Next   | `W4.1` | Remove worker false-success paths.                                                                 |
 
 ### W3.4 — executable publication-state contract
 
@@ -474,6 +475,11 @@ status without resubmitting a video generation request.
 Every content project now verifies its selected `ContentPillar` and `ContentOpportunity` in the active
 brand before persistence. When an opportunity is classified under a pillar, that pillar must match the
 project pillar. Existing scoped repositories continue to enforce the remaining resource graph edges.
+
+### W3.9 — storyboard authorization boundary
+
+`Storyboard.create()` accepts a verified `TenantContext`, not caller-provided organization/brand IDs. It
+requires `content:write`, requires a selected brand and passes only the validated scope to the repository.
 
 ---
 
