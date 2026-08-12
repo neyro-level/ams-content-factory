@@ -3,12 +3,13 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W1.4 — tenant-scope repository cleanup (`DONE`); next: W2.1 CI integration gate.
+- **Current task:** W2.1 — CI integration gate (`DONE`); next: W2.2 negative security tests.
 - **Last verification:** 2026-08-12: Prisma validation, lint, formatting, typecheck, 9 unit tests,
   19 integration contracts and production build passed. The former E2E tests only cover the static shell.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
-  organization denial, server-bound n8n webhook credentials and scoped tenant-owned write APIs exist.
+  organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a
+  PostgreSQL + pgvector integration gate in SourceCraft CI exist.
 - **NOT_IMPLEMENTED:** protected UI, real web/worker workflows, live provider runtime, durable scheduling,
   end-to-end content operations and release-gate proof.
 - **Remote:** private SourceCraft repository `integrator-p/ams-content-factory` is canonical `origin`;

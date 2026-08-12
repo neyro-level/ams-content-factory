@@ -413,7 +413,8 @@ parallel request
 | PR 1.2 | `DONE` | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                       |
 | PR 1.3 | `DONE` | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields. |
 | PR 1.4 | `DONE` | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                  |
-| Next   | `W2.1` | SourceCraft PostgreSQL + pgvector integration gate.                                             |
+| PR 2.1 | `DONE` | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                  |
+| Next   | `W2.2` | Negative security tests.                                                                        |
 
 ---
 

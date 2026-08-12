@@ -3,8 +3,8 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W1.4 tenant-scope repository cleanup — `DONE`; next W2.1 CI integration
-> gate.
+> Latest current-plan record: W2.1 SourceCraft CI integration gate — `DONE`; next W2.2 negative security
+> tests.
 
 ## Protocol
 
