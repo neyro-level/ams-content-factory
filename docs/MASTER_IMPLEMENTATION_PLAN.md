@@ -507,7 +507,8 @@ parallel request
 | PR 19.1  | `FOUNDATION`       | Portable Compose retains only web, worker and proxy as long-lived services; PostgreSQL/pgvector and S3 are external, maintenance clients require an explicit profile, and worker health uses real readiness.  |
 | PR 19.2  | `FOUNDATION`       | The `db:migration-drill` command creates a disposable pgvector database, applies `migrate deploy`, seeds, starts the production web process and proves `/api/health/ready` before cleanup.                    |
 | PR 19.3  | `FOUNDATION`       | The `db:backup-drill` command creates a non-empty custom-format `pg_dump` archive from a disposable pgvector database and verifies schema/seed entities through `pg_restore --list` before cleanup.           |
-| Next     | `W19.4`            | Restore the verified disposable archive into a separate clean database and prove application readiness plus critical entities.                                                                                |
+| PR 19.4  | `FOUNDATION`       | The `db:restore-drill` command restores a real source archive into a separate clean pgvector database, verifies migrations/critical seed entities and proves standalone web readiness on the restored target. |
+| Next     | `W19.5`            | Verify TLS/domain and document which live inputs are still external; do not issue a certificate or deploy without the explicit release authorization.                                                         |
 
 ### W6.4 — hybrid retrieval
 

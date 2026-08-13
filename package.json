@@ -28,7 +28,8 @@
     "prisma:deploy": "prisma migrate deploy",
     "db:seed": "pnpm --filter @ams-content-factory/core exec tsx src/seed.ts",
     "db:migration-drill": "node scripts/migration-drill.mjs",
-    "db:backup-drill": "node scripts/backup-drill.mjs"
+    "db:backup-drill": "node scripts/backup-drill.mjs",
+    "db:restore-drill": "node scripts/restore-drill.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -3,11 +3,11 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W19.3 logical backup drill is `FOUNDATION`: a disposable pgvector database produces a real,
-  non-empty custom `pg_dump` archive, which `pg_restore --list` validates for schema and seed entities before cleanup.
-  Next: W19.4 restore/application-smoke drill.
-- **Last verification:** 2026-08-13: the disposable backup drill completed migration, seed, custom archive creation
-  and list verification without reading `.env` or touching Timeweb. The preceding application gate passed lint,
+- **Current task:** W19.4 restore/application-smoke drill is `FOUNDATION`: a real archive is restored from a source
+  pgvector database into a separate clean target, where migrations/seed entities and standalone web readiness are
+  proven before both databases are removed. Next: W19.5 TLS/domain external-input verification.
+- **Last verification:** 2026-08-13: the disposable restore drill completed backup, clean restore, critical entity
+  checks and live readiness without reading `.env` or touching Timeweb. The preceding application gate passed lint,
   formatting, workspace typecheck, 75 unit tests, 77 PostgreSQL integration contracts and production web/worker builds.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-

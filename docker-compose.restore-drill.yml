@@ -1,0 +1,38 @@
+services:
+  source:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ams_content_factory_source
+      POSTGRES_USER: ams_content_factory_drill
+      # Deliberately disposable local-only value; never reuse it outside this drill container.
+      POSTGRES_PASSWORD: restore_drill_only
+    ports:
+      - '127.0.0.1:${RESTORE_DRILL_SOURCE_PORT:-55452}:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ams_content_factory_drill -d ams_content_factory_source']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - restore-drill-source:/var/lib/postgresql/data
+
+  target:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ams_content_factory_target
+      POSTGRES_USER: ams_content_factory_drill
+      # Deliberately disposable local-only value; never reuse it outside this drill container.
+      POSTGRES_PASSWORD: restore_drill_only
+    ports:
+      - '127.0.0.1:${RESTORE_DRILL_TARGET_PORT:-55453}:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ams_content_factory_drill -d ams_content_factory_target']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - restore-drill-target:/var/lib/postgresql/data
+
+volumes:
+  restore-drill-source:
+  restore-drill-target:

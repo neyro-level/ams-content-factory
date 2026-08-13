@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — W19.4 restore and application-smoke drill
+
+- Added `pnpm db:restore-drill`: a source disposable pgvector database receives migrations and seed, emits a real
+  custom archive, and a separate clean target database receives `pg_restore --clean --if-exists --no-owner`.
+  The target must contain migration history plus seeded recipes/evaluation suites before standalone web readiness is
+  accepted against that restored target.
+- Source/target volumes, private temporary archive and web process are always removed. The drill does not read `.env`,
+  connect to Timeweb or restore production data; its operational boundary is documented in `docs/RESTORE_DRILL.md`.
+- Next: W19.5 TLS/domain external-input verification. Production deployment remains prohibited.
+
 ## 2026-08-13 — W19.3 logical backup drill
 
 - Added `pnpm db:backup-drill`: it builds a disposable pgvector schema with `migrate deploy` and seed, streams a
