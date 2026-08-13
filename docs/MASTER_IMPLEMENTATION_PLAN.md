@@ -18,6 +18,9 @@ Prisma enum-значения; enum остаются внутренним кон�
 claims, состояниям Research и контентному редакторскому flow. Content list/detail use a shared label catalog,
 preventing stale display-only states.
 
+**Manual-publication gate V0.1:** copy is a final editorial action and is exposed only from `READY`; the editable
+draft experience remains available earlier in the state machine without calling it publishable output.
+
 ---
 
 # 0. Назначение документа

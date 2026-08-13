@@ -14,6 +14,7 @@ export function ContentVersionControls({
   contentProjectId,
   sourceVersionId,
   currentBody,
+  canCopy,
   canWrite,
 }: {
   organizationId: string;
@@ -21,6 +22,7 @@ export function ContentVersionControls({
   contentProjectId: string;
   sourceVersionId?: string;
   currentBody: string;
+  canCopy: boolean;
   canWrite: boolean;
 }) {
   const action = contentVersionAction.bind(null, { organizationId, brandId, contentProjectId });
@@ -68,16 +70,22 @@ export function ContentVersionControls({
           </button>
         </form>
       ) : null}
-      <button
-        className="button"
-        type="button"
-        onClick={async () => {
-          await navigator.clipboard.writeText(currentBody);
-          setCopied(true);
-        }}
-      >
-        Скопировать финальный текст
-      </button>
+      {canCopy ? (
+        <button
+          className="button"
+          type="button"
+          onClick={async () => {
+            await navigator.clipboard.writeText(currentBody);
+            setCopied(true);
+          }}
+        >
+          Скопировать финальный текст
+        </button>
+      ) : (
+        <p className="muted">
+          Копирование для ручной публикации станет доступно после редакционного согласования.
+        </p>
+      )}
       {copied ? (
         <p className="form-success" role="status">
           Текст скопирован для ручной публикации.

@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-13 — V0.1 final-copy workflow gate
+
+- The owner-facing copy control is now shown only after the manual review path reaches `READY`. Drafts keep their
+  editing and rewrite tools, but cannot be mistaken for final text prepared for manual publication. The critical
+  editorial browser flow asserts both sides of this boundary.
+
 ## 2026-08-13 — V0.1 Research product language
 
 - Research materials now render lifecycle values as Russian editorial labels. An unavailable Firecrawl provider is

@@ -123,6 +123,7 @@ export default async function ContentProjectPage({
                 contentProjectId={contentProjectId}
                 sourceVersionId={current.id}
                 currentBody={current.body ?? current.script ?? ''}
+                canCopy={project.status === 'READY'}
                 canWrite={canWrite}
               />
             ) : null}
