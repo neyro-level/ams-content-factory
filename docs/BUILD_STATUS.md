@@ -3,12 +3,12 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W19.4 restore/application-smoke drill is `FOUNDATION`: a real archive is restored from a source
-  pgvector database into a separate clean target, where migrations/seed entities and standalone web readiness are
-  proven before both databases are removed. Next: W19.5 TLS/domain external-input verification.
-- **Last verification:** 2026-08-13: the disposable restore drill completed backup, clean restore, critical entity
-  checks and live readiness without reading `.env` or touching Timeweb. The preceding application gate passed lint,
-  formatting, workspace typecheck, 75 unit tests, 77 PostgreSQL integration contracts and production web/worker builds.
+- **Current task:** W19.5 TLS/domain is `BLOCKED_EXTERNAL`: DNS and public ports resolve to AMS Server, but both
+  protocols serve generic Nginx and TLS is not trusted for `fabrika.ams24.ru`. No certificate, vhost or deployment
+  was changed. Next: W19.6 non-destructive release smoke suite.
+- **Last verification:** 2026-08-13: the disposable restore drill passed; independent public DNS/TCP/HTTP/TLS
+  inspection confirmed the stated TLS/domain block. The application gate passed lint, formatting, workspace typecheck,
+  75 unit tests, 77 PostgreSQL integration contracts and production web/worker builds.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a

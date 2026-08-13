@@ -6,7 +6,8 @@
 - [ ] Зафиксирован SourceCraft commit из зелёного `main`.
 - [x] AMS Server, SSH, ОС, host Nginx и Certbot проверены; DNS `fabrika.ams24.ru` указывает на него.
 - [ ] Сервер расширен до согласованного ресурса для web + worker; свободный внутренний порт закреплён.
-- [ ] Создан отдельный Nginx vhost `fabrika.ams24.ru` и выпущен/проверен TLS-сертификат.
+- [ ] Создан отдельный Nginx vhost `fabrika.ams24.ru` и выпущен/проверен TLS-сертификат. Независимая read-only
+      проверка зафиксирована в `docs/TLS_DOMAIN_AUDIT.md`: пока видна generic Nginx-страница, а TLS не доверен для домена.
 - [ ] `.env` создан из template, secret values сгенерированы и не попали в Git.
 - [ ] В Timeweb Cloud создан PostgreSQL 16 cluster, для базы включён `pgvector`, а `DATABASE_URL` и TLS requirements проверены. Подключение с AMS Server проверено, но `pgvector` пока отсутствует и требует включения в панели/оператором БД.
 - [ ] Для DBaaS включены provider backups; проверена стратегия off-server logical backups и тест восстановления.

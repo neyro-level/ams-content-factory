@@ -508,7 +508,8 @@ parallel request
 | PR 19.2  | `FOUNDATION`       | The `db:migration-drill` command creates a disposable pgvector database, applies `migrate deploy`, seeds, starts the production web process and proves `/api/health/ready` before cleanup.                    |
 | PR 19.3  | `FOUNDATION`       | The `db:backup-drill` command creates a non-empty custom-format `pg_dump` archive from a disposable pgvector database and verifies schema/seed entities through `pg_restore --list` before cleanup.           |
 | PR 19.4  | `FOUNDATION`       | The `db:restore-drill` command restores a real source archive into a separate clean pgvector database, verifies migrations/critical seed entities and proves standalone web readiness on the restored target. |
-| Next     | `W19.5`            | Verify TLS/domain and document which live inputs are still external; do not issue a certificate or deploy without the explicit release authorization.                                                         |
+| PR 19.5  | `BLOCKED_EXTERNAL` | Read-only DNS/TCP checks pass, but public HTTP/HTTPS serve generic Nginx and TLS is not trusted for `fabrika.ams24.ru`; vhost, certificate and release inputs remain external and unmodified.                 |
+| Next     | `W19.6`            | Implement a non-destructive release smoke suite and record which checks remain unavailable until infrastructure is authorized.                                                                                |
 
 ### W6.4 — hybrid retrieval
 

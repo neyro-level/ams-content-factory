@@ -13,8 +13,8 @@
 > proven-query indexes are `FOUNDATION`. W18.1 web/worker real readiness, W18.2 PostgreSQL rate limits and W18.3
 > outbound webhook SSRF validation, W18.4 Docker runtime hardening, W18.5 dependency hygiene and W18.6 security
 > headers, W19.1 final portable production Compose audit, W19.2 clean-database migration drill and W19.3 logical
-> backup drill and W19.4 restore/application-smoke drill are `FOUNDATION`. Next: W19.5 TLS/domain external-input
-> verification.
+> backup drill and W19.4 restore/application-smoke drill are `FOUNDATION`. W19.5 TLS/domain is
+> `BLOCKED_EXTERNAL` after read-only verification; Next: W19.6 non-destructive release smoke suite.
 
 ## Protocol
 

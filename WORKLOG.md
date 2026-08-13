@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — W19.5 TLS/domain external-input audit
+
+- Performed read-only public checks for `fabrika.ams24.ru`: the A record resolves to AMS Server and ports 80/443
+  accept connections, but both protocols serve a generic Nginx page. The TLS relationship is not trusted for this
+  hostname, so it is not an application release signal.
+- Recorded the evidence, required external inputs and the strict no-deploy boundary in `docs/TLS_DOMAIN_AUDIT.md`.
+  No certificate, host Nginx configuration, systemd service, database migration or release artifact was changed.
+- W19.5 is `BLOCKED_EXTERNAL`; next is W19.6, a non-destructive release smoke suite. Production deployment remains
+  prohibited pending the full Release Gate and separate owner authorization.
+
 ## 2026-08-13 — W19.4 restore and application-smoke drill
 
 - Added `pnpm db:restore-drill`: a source disposable pgvector database receives migrations and seed, emits a real
