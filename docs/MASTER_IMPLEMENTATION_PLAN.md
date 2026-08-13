@@ -14,8 +14,9 @@
 неизменяемая пользовательская версия создаются одной tenant-scoped транзакцией.
 
 **Product-language уточнение V0.1:** пользовательские экраны показывают русские продуктовые подписи, а не сырые
-Prisma enum-значения; enum остаются внутренним контрактом state machine. Это относится и к результатам проверки
-claims в редакторском flow. Content list/detail use a shared label catalog, preventing stale display-only states.
+Prisma enum-значения; enum остаются внутренним контрактом state machine. Это относится к результатам проверки
+claims, состояниям Research и контентному редакторскому flow. Content list/detail use a shared label catalog,
+preventing stale display-only states.
 
 ---
 

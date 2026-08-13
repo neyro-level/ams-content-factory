@@ -13,7 +13,7 @@ type ResearchProvider = SearchProvider & PageFetcherProvider;
 
 export class ResearchWorkspaceBlockedExternalError extends Error {
   constructor() {
-    super('BLOCKED_EXTERNAL: Firecrawl is not configured for this environment.');
+    super('Research provider is not configured for this environment.');
     this.name = 'ResearchWorkspaceBlockedExternalError';
   }
 }

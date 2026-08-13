@@ -9,8 +9,9 @@ const password = 'w5-brands-password';
 const organizationName = 'Организация бренда E2E';
 const brandName = 'Первый бренд E2E';
 const origin = `http://127.0.0.1:${process.env.E2E_PORT ?? '3000'}`;
+const testIp = `198.18.0.${(Number.parseInt(randomUUID().slice(0, 2), 16) % 250) + 1}`;
 
-test.use({ extraHTTPHeaders: { 'x-real-ip': '198.18.0.14' } });
+test.use({ extraHTTPHeaders: { 'x-real-ip': testIp } });
 
 test.afterAll(async () => {
   await prisma.user.deleteMany({ where: { email } });
@@ -40,7 +41,9 @@ test('creates a brand inside the current authenticated organization', async ({ p
   await page.getByRole('button', { name: 'Создать бренд' }).click();
   await expect(page.getByRole('heading', { name: brandName })).toBeVisible();
   await expect(page.getByText('ru-RU')).toBeVisible();
-  await page.getByRole('link', { name: 'База знаний' }).click();
+  await page.getByRole('link', { name: 'Открыть рабочее пространство' }).click();
+  await expect(page.getByRole('heading', { name: brandName })).toBeVisible();
+  await page.locator('.app-navigation').getByRole('link', { name: 'База знаний' }).click();
   await expect(page.getByRole('heading', { name: 'Документы бренда' })).toBeVisible();
   await expect(page.getByText('У этого бренда пока нет документов базы знаний.')).toBeVisible();
 
@@ -54,23 +57,20 @@ test('creates a brand inside the current authenticated organization', async ({ p
   const searchForm = searchPanel.locator('form');
   await searchForm.getByLabel('Запрос').fill('база знаний');
   await searchForm.getByRole('button', { name: 'Найти' }).click();
-  await expect(searchPanel.getByRole('status')).toContainText('BLOCKED_EXTERNAL');
-
-  await page.getByRole('link', { name: 'К брендам' }).click();
-  await page.getByRole('link', { name: 'Исследование' }).click();
-  await expect(page.getByRole('heading', { name: 'Источники и материалы' })).toBeVisible();
-  const researchSearch = page
-    .locator('.research-workspace')
-    .locator('form')
-    .filter({ hasText: 'Найти источники' });
-  await researchSearch.getByLabel('Запрос').fill('контент-маркетинг');
-  await researchSearch.getByRole('button', { name: 'Найти источники' }).click();
-  await expect(page.locator('.research-workspace').getByRole('status')).toContainText(
-    'BLOCKED_EXTERNAL',
+  await expect(searchPanel.getByRole('status')).toContainText(
+    'Поиск по базе знаний будет доступен после подключения AI-индекса.',
   );
 
   await page.getByRole('link', { name: 'К брендам' }).click();
-  await page.getByRole('link', { name: 'База знаний' }).click();
+  await page.getByRole('link', { name: 'Открыть рабочее пространство' }).click();
+  await page.locator('.app-navigation').getByRole('link', { name: 'Исследования' }).click();
+  await expect(page.getByRole('heading', { name: 'Источники и материалы' })).toBeVisible();
+  const researchWorkspace = page.locator('.research-workspace');
+  await expect(researchWorkspace.getByRole('button', { name: 'Найти источники' })).toBeDisabled();
+
+  await page.getByRole('link', { name: 'К брендам' }).click();
+  await page.getByRole('link', { name: 'Открыть рабочее пространство' }).click();
+  await page.locator('.app-navigation').getByRole('link', { name: 'База знаний' }).click();
   await expect(page).toHaveURL(/\/knowledge$/);
 
   const organization = await prisma.organization.findFirstOrThrow({
@@ -94,7 +94,7 @@ test('creates a brand inside the current authenticated organization', async ({ p
   await page.reload();
   await expect(page).toHaveURL(/\/knowledge$/);
   const failedDocument = page.getByRole('listitem').filter({ hasText: 'Неудачный источник E2E' });
-  await expect(failedDocument.getByText('FAILED')).toBeVisible();
+  await expect(failedDocument.getByText('Не удалось обработать')).toBeVisible();
   await failedDocument.getByRole('button', { name: 'Повторить' }).click();
-  await expect(failedDocument.getByText('READY')).toBeVisible();
+  await expect(failedDocument.getByText('Готов к использованию')).toBeVisible();
 });

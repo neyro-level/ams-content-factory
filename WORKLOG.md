@@ -1,5 +1,13 @@
 # Worklog
 
+## 2026-08-13 — V0.1 Research product language
+
+- Research materials now render lifecycle values as Russian editorial labels. An unavailable Firecrawl provider is
+  communicated as a limited upcoming capability, not as a raw technical marker; text intake remains available and
+  tenant-scoped.
+- The V0.1 navigation audit confirmed that Media, Calendar, Social Accounts and Analytics direct routes all enter
+  the shared `PLANNED` product-state page before any immature provider, storage or publication operation can run.
+
 ## 2026-08-13 — V0.1 unified content product labels
 
 - Added one web-only catalog for content-type and lifecycle labels, used by both Content list and project detail.

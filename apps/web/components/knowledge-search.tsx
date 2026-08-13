@@ -26,7 +26,9 @@ export function KnowledgeSearchForm({
   return (
     <section className="knowledge-search" aria-labelledby="knowledge-search-title">
       <h2 id="knowledge-search-title">Поиск по базе знаний</h2>
-      <p className="muted">Поиск использует гибридное совпадение текста и векторных embeddings.</p>
+      <p className="muted">
+        Поиск по добавленным материалам использует совпадение текста и смысловую релевантность.
+      </p>
       <form className="organization-form" action={searchAction}>
         <label>
           Запрос
