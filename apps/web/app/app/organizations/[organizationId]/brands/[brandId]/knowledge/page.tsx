@@ -15,6 +15,22 @@ import {
   KnowledgeSearchForm,
 } from '../../../../../../../components/knowledge-search';
 
+const documentTypeLabel: Record<string, string> = {
+  FILE: 'Файл',
+  URL: 'Страница сайта',
+  TEXT: 'Текст',
+  NOTE: 'Заметка',
+  CASE: 'Кейс',
+  PRODUCT: 'Материал о продукте',
+};
+const documentStatusLabel: Record<string, string> = {
+  PENDING: 'Ожидает обработки',
+  PROCESSING: 'Обрабатывается',
+  READY: 'Готов к использованию',
+  FAILED: 'Не удалось обработать',
+  ARCHIVED: 'В архиве',
+};
+
 export default async function KnowledgePage({
   params,
 }: {
@@ -62,11 +78,14 @@ export default async function KnowledgePage({
                   <div>
                     <h3>{document.title}</h3>
                     <p className="muted">
-                      {document.type} · {document._count.chunks} фрагм.
+                      {documentTypeLabel[document.type] ?? 'Документ'} · {document._count.chunks}{' '}
+                      фрагм.
                     </p>
                   </div>
                   <div className="knowledge-document-actions">
-                    <span className="badge">{document.status}</span>
+                    <span className="badge">
+                      {documentStatusLabel[document.status] ?? 'Неизвестный статус'}
+                    </span>
                     {document.status === 'FAILED' ? (
                       <KnowledgeRetryButton
                         organizationId={organizationId}

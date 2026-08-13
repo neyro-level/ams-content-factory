@@ -59,6 +59,9 @@ test('V0.1 editorial flow: context, knowledge, draft, review, READY and copy', a
     .fill('Мы работаем с B2B-командами и объясняем сложные процессы.');
   await textForm.getByRole('button', { name: 'Добавить текст' }).click();
   await expect(page.getByRole('status')).toContainText('добавлен в базу знаний');
+  await expect(page.getByText('Текст · 1 фрагм.')).toBeVisible();
+  await expect(page.getByText('Готов к использованию')).toBeVisible();
+  await expect(page.getByText('READY', { exact: true })).toHaveCount(0);
 
   await page.goto(`${base}/content`);
   await page.getByLabel('Название проекта').fill('Первый V0.1 материал');
