@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { securityHeaders } from './security-headers';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -8,6 +9,9 @@ const nextConfig: NextConfig = {
     '@ams-content-factory/core',
     '@ams-content-factory/db',
   ],
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders }];
+  },
 };
 
 export default nextConfig;

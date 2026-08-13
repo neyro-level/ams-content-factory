@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — W18.6 security headers
+
+- Added an application-level response policy so direct Next responses remain protected even if a reverse proxy is
+  misconfigured. It sets `nosniff`, DENY framing, strict referrer and camera/microphone/geolocation permissions;
+  the CSP is same-origin, blocks objects and framing, and permits only the inline script/style support Next currently
+  requires plus local/data/blob rendering paths.
+- Mirrored the policy in portable Compose Nginx and the inactive AMS Server vhost; HSTS remains HTTPS-only in the
+  latter. Unit contracts assert the policy's fail-closed directives, and portable Nginx syntax is checked locally.
+- Wave 18 hardening is complete. Next: W19.1 final production Compose audit; production deployment remains prohibited.
+
 ## 2026-08-13 — W18.5 dependency hygiene
 
 - Audited pnpm dependency provenance, production/full lockfile vulnerabilities and unused declarations. Removed the

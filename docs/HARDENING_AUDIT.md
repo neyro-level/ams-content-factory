@@ -12,6 +12,7 @@
 | SSRF                               | PASS      | URL providers validate public HTTP(S) destinations and redirects.                                                                                                                   |
 | Webhooks/MCP                       | PASS      | HMAC is constant-time checked; n8n boundary is Zod-validated; keys are scoped and revocable.                                                                                        |
 | Dependencies                       | PASS      | W18.5 confirms both `pnpm audit --prod --json` and full `pnpm audit --json` report 0 vulnerabilities; evidence and reviewed analyzer findings live in `docs/DEPENDENCY_HYGIENE.md`. |
+| Response security policy           | PASS      | W18.6 applies the same origin-bound CSP, `nosniff`, frame denial, referrer and permissions policy in Next and both Nginx profiles; direct-web contract tests cover the policy.      |
 
 ## Architecture audit
 

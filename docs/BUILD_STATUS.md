@@ -3,12 +3,12 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W18.5 dependency hygiene is `FOUNDATION`: audit reports are clean, dependency intent is
-  recorded and the workspace forces patched `esbuild@0.28.1`. Next: W18.6 security headers.
-- **Last verification:** 2026-08-13: `pnpm why`, production/full lockfile audits and a pinned unused-dependency
-  check passed review. Both audit scopes report zero vulnerabilities; the final dependency graph has only
-  `esbuild@0.28.1`. The preceding full application gate passed lint, formatting, workspace typecheck, 72 unit tests,
-  77 PostgreSQL integration contracts and production web/worker builds.
+- **Current task:** W18.6 security headers are `FOUNDATION`: direct web responses and both Nginx profiles enforce
+  a tested same-origin CSP plus `nosniff`, anti-frame, referrer and permissions policies. Next: W19.1 final
+  production Compose audit.
+- **Last verification:** 2026-08-13: application header contracts and portable Nginx syntax passed. The preceding
+  full application gate passed lint, formatting, workspace typecheck, 72 unit tests, 77 PostgreSQL integration
+  contracts, production web/worker builds and production/full dependency audits with zero vulnerabilities.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a
