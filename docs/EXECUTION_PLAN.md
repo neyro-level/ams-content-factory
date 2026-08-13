@@ -10,8 +10,8 @@
 > W15.6 negative contracts are `FOUNDATION`; live key injection is `BLOCKED_EXTERNAL`. W14.2 VK and W14.3 Instagram
 > adapters remain `BLOCKED_EXTERNAL` until connected credentials are available. W16 structured logging, secret
 > redaction, durable audit and error reporting are `FOUNDATION`. W17 bounded provider/project/analytics reads and
-> proven-query indexes are `FOUNDATION`. W18.1 web/worker real readiness and W18.2 PostgreSQL rate limits are
-> `FOUNDATION`. Next: W18.3 outbound webhook SSRF.
+> proven-query indexes are `FOUNDATION`. W18.1 web/worker real readiness, W18.2 PostgreSQL rate limits and W18.3
+> outbound webhook SSRF validation are `FOUNDATION`. Next: W18.4 Docker runtime hardening.
 
 ## Protocol
 

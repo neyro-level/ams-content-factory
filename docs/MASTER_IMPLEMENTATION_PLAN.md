@@ -500,7 +500,8 @@ parallel request
 | PR 17.4  | `FOUNDATION`       | Query audit added only indexes for proven project-list and due-publication queue predicates/sorts.                                                                            |
 | PR 18.1  | `FOUNDATION`       | Web readiness fails closed for invalid runtime config or unavailable PostgreSQL; worker opens a loopback readiness probe only after config, DB/pg-boss and handler bootstrap. |
 | PR 18.2  | `FOUNDATION`       | PostgreSQL atomic rate limits protect auth, inbound n8n, MCP tools, AI generation and external search/extraction/indexing without storing raw request subjects.               |
-| Next     | `W18.3`            | Apply the existing SSRF-safe URL policy to configurable outbound webhook endpoints.                                                                                           |
+| PR 18.3  | `FOUNDATION`       | Outbound webhook configuration accepts only HTTPS URLs that pass the shared public-DNS/IP SSRF guard before encrypted persistence.                                            |
+| Next     | `W18.4`            | Harden the Docker artifact runtime: multi-stage, non-root, minimal and production-only dependencies.                                                                          |
 
 ### W6.4 — hybrid retrieval
 

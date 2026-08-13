@@ -3,12 +3,10 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W18.2 rate limiting is `FOUNDATION`: PostgreSQL atomically enforces bounded windows for auth,
-  inbound n8n, MCP tools, AI generation and external provider entry points without persisting raw request subjects.
-  Next: W18.3 outbound webhook SSRF.
-- **Last verification:** 2026-08-13: Prisma migration/generation, lint, formatting, workspace typecheck, 69 unit
-  tests, 77 PostgreSQL integration contracts and production web/worker builds passed. The rate-limit integration
-  contract proves exactly three accepts and three denials under six parallel calls.
+- **Current task:** W18.3 outbound webhook SSRF is `FOUNDATION`: webhook endpoints need HTTPS plus the same public
+  DNS/IP validation as knowledge URLs before encrypted persistence. Next: W18.4 Docker runtime hardening.
+- **Last verification:** 2026-08-13: lint, formatting, workspace typecheck, 72 unit tests, 77 PostgreSQL integration
+  contracts and production web/worker builds passed. Health route checks now establish their own full test runtime.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a

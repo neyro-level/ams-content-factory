@@ -1,5 +1,16 @@
 # Worklog
 
+## 2026-08-13 — W18.3 outbound webhook SSRF guard
+
+- Outbound webhook endpoint configuration now requires HTTPS and passes the shared DNS/IP public-target validator
+  before an encrypted endpoint record is persisted. Invalid, non-HTTPS, loopback, private or non-public targets fail
+  closed with a safe configuration error; no outbound request is attempted by configuration.
+- The MCP runtime limiter is lazy at the tool boundary, so malformed/denied protocol requests never create a database
+  client during parsing. Health-route contracts now set their entire test runtime explicitly instead of inheriting shell
+  environment state.
+- Full local gate passed: lint, formatting, workspace typecheck, 72 unit tests, 77 PostgreSQL integration contracts
+  and production web/worker builds. Next: W18.4 Docker runtime hardening.
+
 ## 2026-08-13 — W18.2 bounded PostgreSQL rate limiting
 
 - Added an atomic PostgreSQL window limiter that stores only SHA-256 subject hashes. It protects authentication POST,

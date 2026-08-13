@@ -122,7 +122,11 @@ export {
   InboundWebhookError,
   signInboundWebhookRequest,
 } from './inbound-webhooks';
-export { createWebhookService } from './webhooks';
+export {
+  createWebhookService,
+  OutboundWebhookUrlError,
+  validateOutboundWebhookUrl,
+} from './webhooks';
 export type { OutboundWebhookTransport } from './webhooks';
 export {
   createEvaluationService,

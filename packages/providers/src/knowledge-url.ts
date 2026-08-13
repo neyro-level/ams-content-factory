@@ -68,6 +68,11 @@ export class NodeKnowledgeUrlProvider implements KnowledgeUrlProvider {
 }
 
 export async function assertSafeKnowledgeUrl(sourceUrl: string) {
+  return assertSafeExternalUrl(sourceUrl);
+}
+
+/** Shared fail-closed URL guard for every outbound HTTP target, not just knowledge ingestion. */
+export async function assertSafeExternalUrl(sourceUrl: string) {
   return (await resolveSafeKnowledgeUrl(sourceUrl)).url;
 }
 

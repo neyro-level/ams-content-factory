@@ -3,10 +3,12 @@ import { GET as live } from '../../apps/web/app/api/health/live/route.js';
 import { GET as ready } from '../../apps/web/app/api/health/ready/route.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-const runtimeKeys = ['BETTER_AUTH_SECRET', 'TOKEN_ENCRYPTION_KEY'] as const;
+const runtimeKeys = ['NODE_ENV', 'APP_URL', 'BETTER_AUTH_SECRET', 'TOKEN_ENCRYPTION_KEY'] as const;
 const originalEnvironment = new Map(runtimeKeys.map((key) => [key, process.env[key]]));
 
 beforeEach(() => {
+  process.env.NODE_ENV = 'test';
+  process.env.APP_URL = 'http://localhost:3000';
   process.env.BETTER_AUTH_SECRET = 'health-route-test-secret-with-at-least-32-characters';
   process.env.TOKEN_ENCRYPTION_KEY = Buffer.alloc(32, 91).toString('base64');
 });

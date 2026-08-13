@@ -1,5 +1,6 @@
 import { createHmac } from 'node:crypto';
 import { createMcpRepository, type PrismaClient } from '@ams-content-factory/db';
+import { assertSafeExternalUrl } from '@ams-content-factory/providers';
 import { createTokenEncryptor } from './token-encryption';
 import { requirePermission, type Permission } from './tenant-context';
 
@@ -14,10 +15,38 @@ export interface OutboundWebhookTransport {
   }): Promise<{ ok: boolean; error?: string }>;
 }
 
+export class OutboundWebhookUrlError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'OutboundWebhookUrlError';
+  }
+}
+
+export async function validateOutboundWebhookUrl(
+  value: string,
+  assertSafeUrl: (url: string) => Promise<string> = assertSafeExternalUrl,
+) {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new OutboundWebhookUrlError('Webhook endpoint URL must be an absolute HTTPS URL.');
+  }
+  if (url.protocol !== 'https:') {
+    throw new OutboundWebhookUrlError('Webhook endpoints must use HTTPS.');
+  }
+  try {
+    return await assertSafeUrl(url.toString());
+  } catch {
+    throw new OutboundWebhookUrlError('Webhook endpoint URL is not a safe public target.');
+  }
+}
+
 export function createWebhookService(options: {
   prisma?: PrismaClient;
   encryptor: Encryptor;
   transport: OutboundWebhookTransport;
+  assertSafeUrl?: (url: string) => Promise<string>;
 }) {
   const repository = createMcpRepository(options.prisma);
   const requireAdmin = (context: Context) => {
@@ -30,13 +59,12 @@ export function createWebhookService(options: {
       input: { url: string; secret: string; eventTypes: string[] },
     ) {
       const scope = requireAdmin(context);
-      const url = new URL(input.url);
-      if (url.protocol !== 'https:') throw new Error('Webhook endpoints must use HTTPS.');
+      const url = await validateOutboundWebhookUrl(input.url, options.assertSafeUrl);
       if (!input.secret || !input.eventTypes.length)
         throw new Error('Webhook secret and event types are required.');
       return repository.createWebhookEndpoint({
         ...scope,
-        url: url.toString(),
+        url,
         secretCiphertext: options.encryptor.encrypt(input.secret),
         encryptionVersion: options.encryptor.encryptionVersion,
         eventTypes: [...new Set(input.eventTypes)],

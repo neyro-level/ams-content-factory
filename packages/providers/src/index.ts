@@ -1,4 +1,5 @@
 export {
+  assertSafeExternalUrl,
   assertSafeKnowledgeUrl,
   NodeKnowledgeUrlProvider,
   UnsafeKnowledgeUrlError,

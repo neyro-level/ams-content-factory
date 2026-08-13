@@ -79,9 +79,14 @@ export function createMcpServer(
   options: { rateLimiter?: McpToolRateLimiter } = {},
 ) {
   const server = new McpServer({ name: 'ams-content-factory', version: '0.1.0' });
-  const rateLimiter = options.rateLimiter ?? createRateLimitService();
-  const limitTool = () =>
-    rateLimiter.consume(rateLimitPolicies.mcp, `${context.organizationId}:${context.apiKeyId}`);
+  let defaultRateLimiter: McpToolRateLimiter | undefined;
+  const limitTool = () => {
+    const rateLimiter = options.rateLimiter ?? (defaultRateLimiter ??= createRateLimitService());
+    return rateLimiter.consume(
+      rateLimitPolicies.mcp,
+      `${context.organizationId}:${context.apiKeyId}`,
+    );
+  };
   const withBrand = async <T extends { brandId: string }>(
     input: T,
     requiredPermission: Permission,
