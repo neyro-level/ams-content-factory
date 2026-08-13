@@ -131,6 +131,7 @@ workflows:
                 set -euo pipefail
                 docker run --rm --network host --volume "$PWD:/workspace" --workdir /workspace \
                   --env DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ams_content_factory \
+                  --env CI=true \
                   --env NODE_ENV=development \
                   --env APP_URL=https://ci.ams-content-factory.invalid \
                   --env BETTER_AUTH_SECRET=ci-only-auth-secret-that-is-at-least-32-characters \
@@ -142,7 +143,7 @@ workflows:
                     npm install --global pnpm@11.5.1
                     pnpm config set store-dir /tmp/pnpm-store
                     pnpm exec playwright install --with-deps chromium
-                    CI=true pnpm test:e2e:critical
+                    pnpm test:e2e:critical
                   '
           - name: stop-postgres
             needs: [critical-e2e-quality-gate]

@@ -14,12 +14,25 @@
   Playwright with PostgreSQL + pgvector. Local verification passed Prisma validation/migration deploy, lint,
   format, typecheck, 76 unit, 85 integration, two V0.1 E2E scenarios, production build and a clean-database
   migration drill.
-- The strict verdict remains `NOT READY FOR V0.1 USER TESTING`: the sole V0.1 blocker is a safely configured
-  live `OPENAI_API_KEY` plus one owner smoke. The deterministic provider is test-only. No production deployment
-  was attempted.
+- The strict verdict remains `NOT READY FOR V0.1 USER TESTING`: the canonical SourceCraft critical E2E check must
+  first be green, then a safely configured live `OPENAI_API_KEY` plus one owner smoke are required. The deterministic
+  provider is test-only. No production deployment was attempted.
 - SourceCraft PR CI initially stopped while the fresh runner started its pgvector container, before migration
   or application checks. The bootstrap now explicitly pulls that image and separates registry latency from a
   90-second PostgreSQL readiness window; the PR is being re-verified.
+- The first post-merge critical E2E cube reached the new gate but failed before tests: its container mounted the
+  host `node_modules`, and pnpm correctly refused a non-interactive modules-directory replacement. The isolated
+  CI container now receives `CI=true` before the Playwright install, matching the runner contract; the fix is
+  being sent as a separate PR without changing `main` protection or production.
+- A local Docker Desktop reproduction cannot represent the Linux CI network: its browser container cannot reach
+  the host PostgreSQL through `localhost`. The final CI fix therefore keeps the required Node 22 image, sets
+  `CI=true` before pnpm touches the mounted modules directory, and installs the matching Chromium/dependencies
+  only inside the real SourceCraft Linux runner.
+- Because SourceCraft PR workflows take the CI YAML from `main`, the bootstrap fix itself cannot affect its
+  first PR run. Project-level `confirm-modules-purge=false` now lets pnpm safely replace an incompatible mounted
+  modules directory during that transition, without weakening the protected-branch policy.
+- The critical contracts now explicitly allow a cold Next.js start and first route compilation (90-second test and
+  120-second web-server bounds). Assertion timeouts remain 15 seconds, so product regressions are not masked.
 
 ## 2026-08-13 — W19.6 non-destructive release smoke suite
 

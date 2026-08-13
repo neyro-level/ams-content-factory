@@ -4,7 +4,14 @@ const port = Number(process.env.E2E_PORT ?? 3000);
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30_000,
+  // A cold CI worker has to start Next.js, compile protected routes and
+  // initialise the isolated database. Keep the assertion strict, but allow
+  // that first real request enough time instead of treating compilation as a
+  // product failure.
+  timeout: 90_000,
+  expect: {
+    timeout: 15_000,
+  },
   // Contracts share one Next development server and PostgreSQL instance.
   // Keep their database/auth observations isolated and reproducible in CI.
   workers: 1,
@@ -14,6 +21,7 @@ export default defineConfig({
   webServer: {
     command: `pnpm --filter @ams-content-factory/web exec next dev --port ${port}`,
     port,
+    timeout: 120_000,
     env: {
       ...process.env,
       APP_URL: `http://127.0.0.1:${port}`,

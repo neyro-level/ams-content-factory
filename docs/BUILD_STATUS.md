@@ -6,9 +6,10 @@
 - **Current V0.1 slice:** `docs/V0_1_USER_TEST_PLAN.md` is `IMPLEMENTED`: the owner-facing Brand Context →
   Knowledge → Content → READY → Copy workflow, generation integrity and critical E2E CI gate are present.
   Local verification passed Prisma validation/migration deploy, clean-database migration drill, lint, format,
-  typecheck, 76 unit tests, 85 integration tests, two V0.1 browser smokes and build. The final user-test verdict is `NOT READY` only
-  because no securely configured `OPENAI_API_KEY` exists for a real owner smoke; deterministic E2E is not
-  a substitute. User-facing module labels remain only `READY`, `LIMITED` and `PLANNED`.
+  typecheck, 76 unit tests, 85 integration tests, two V0.1 browser smokes and build. The final user-test verdict is
+  `NOT READY`: the SourceCraft critical E2E check must first pass on the canonical pull request, then a securely
+  configured `OPENAI_API_KEY` is required for one real owner smoke. The deterministic E2E is not a substitute for
+  that provider check. User-facing module labels remain only `READY`, `LIMITED` and `PLANNED`.
 - **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, five critical browser flows
   and three worker contracts passed. The Release Gate remains `BLOCKED_EXTERNAL`: DNS/ports resolve, but the public
   hostname still serves generic Nginx and trusted project TLS/vhost, Timeweb `vector`, live providers and owner
