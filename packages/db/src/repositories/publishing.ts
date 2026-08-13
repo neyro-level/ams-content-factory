@@ -18,6 +18,153 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
       },
     });
   return {
+    listDueQueuedPublications(input: { now: Date; take?: number; cursor?: string }) {
+      return prisma.publication.findMany({
+        where: {
+          status: 'QUEUED',
+          scheduledAt: { lte: input.now },
+        },
+        select: { id: true, organizationId: true, brandId: true },
+        orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 100, 1), 250),
+      });
+    },
+    listCalendarPublications(input: {
+      organizationId: string;
+      brandId: string;
+      from: Date;
+      until: Date;
+      take?: number;
+      cursor?: string;
+    }) {
+      return prisma.publication.findMany({
+        where: {
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: 'QUEUED',
+          scheduledAt: { gte: input.from, lt: input.until },
+        },
+        select: {
+          id: true,
+          status: true,
+          scheduledAt: true,
+          contentProject: { select: { title: true } },
+          platformVariant: { select: { platform: true } },
+          socialAccount: { select: { name: true, platform: true } },
+        },
+        orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 100, 1), 250),
+      });
+    },
+    listUnscheduledDraftPublications(input: {
+      organizationId: string;
+      brandId: string;
+      take?: number;
+      cursor?: string;
+    }) {
+      return prisma.publication.findMany({
+        where: {
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: 'DRAFT',
+          scheduledAt: null,
+        },
+        select: {
+          id: true,
+          contentProject: { select: { title: true } },
+          platformVariant: { select: { platform: true } },
+          socialAccount: { select: { name: true, platform: true } },
+        },
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
+      });
+    },
+    listPublicationIssues(input: {
+      organizationId: string;
+      brandId: string;
+      take?: number;
+      cursor?: string;
+    }) {
+      return prisma.publication.findMany({
+        where: {
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: { in: ['FAILED', 'OUTCOME_UNKNOWN'] },
+        },
+        select: {
+          id: true,
+          status: true,
+          contentProject: { select: { title: true } },
+          platformVariant: { select: { platform: true } },
+          socialAccount: { select: { id: true, name: true, status: true } },
+          attempts: {
+            select: { errorCode: true },
+            orderBy: { attempt: 'desc' },
+            take: 1,
+          },
+        },
+        orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
+      });
+    },
+    listPublicationIssueAccounts(input: {
+      organizationId: string;
+      brandId: string;
+      take?: number;
+      cursor?: string;
+    }) {
+      return prisma.socialAccount.findMany({
+        where: {
+          brandId: input.brandId,
+          status: { in: ['EXPIRED', 'ERROR'] },
+          brand: { organizationId: input.organizationId, deletedAt: null },
+        },
+        select: { id: true, name: true, platform: true, status: true },
+        orderBy: [{ status: 'asc' }, { name: 'asc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
+      });
+    },
+    listSocialAccounts(input: {
+      organizationId: string;
+      brandId: string;
+      take?: number;
+      cursor?: string;
+    }) {
+      return prisma.socialAccount.findMany({
+        where: {
+          brandId: input.brandId,
+          brand: { organizationId: input.organizationId, deletedAt: null },
+        },
+        select: {
+          id: true,
+          platform: true,
+          externalAccountId: true,
+          name: true,
+          username: true,
+          status: true,
+          scopes: true,
+          updatedAt: true,
+        },
+        orderBy: [{ platform: 'asc' }, { name: 'asc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
+      });
+    },
+    findSocialAccountCredential(input: { organizationId: string; brandId: string; id: string }) {
+      return prisma.socialAccount.findFirst({
+        where: {
+          id: input.id,
+          brandId: input.brandId,
+          brand: { organizationId: input.organizationId, deletedAt: null },
+        },
+        include: { credential: true },
+      });
+    },
     async createSocialAccount(input: {
       organizationId: string;
       brandId: string;
@@ -98,13 +245,91 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
         },
       });
     },
+    async replaceCredentialAndSetStatus(input: {
+      organizationId: string;
+      brandId: string;
+      socialAccountId: string;
+      accessTokenCiphertext: string;
+      refreshTokenCiphertext?: string;
+      expiresAt: Date;
+      encryptionVersion: string;
+    }) {
+      return prisma.$transaction(async (tx) => {
+        const account = await tx.socialAccount.findFirst({
+          where: {
+            id: input.socialAccountId,
+            brandId: input.brandId,
+            brand: { organizationId: input.organizationId, deletedAt: null },
+          },
+          select: { id: true },
+        });
+        if (!account) return null;
+        await tx.socialCredential.upsert({
+          where: { socialAccountId: account.id },
+          create: {
+            socialAccountId: account.id,
+            accessTokenCiphertext: input.accessTokenCiphertext,
+            ...(input.refreshTokenCiphertext !== undefined
+              ? { refreshTokenCiphertext: input.refreshTokenCiphertext }
+              : {}),
+            expiresAt: input.expiresAt,
+            encryptionVersion: input.encryptionVersion,
+          },
+          update: {
+            accessTokenCiphertext: input.accessTokenCiphertext,
+            ...(input.refreshTokenCiphertext !== undefined
+              ? { refreshTokenCiphertext: input.refreshTokenCiphertext }
+              : {}),
+            expiresAt: input.expiresAt,
+            encryptionVersion: input.encryptionVersion,
+          },
+        });
+        return tx.socialAccount.update({
+          where: { id: account.id },
+          data: { status: 'CONNECTED' },
+          include: { credential: true },
+        });
+      });
+    },
+    updateSocialAccountStatus(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      status: SocialAccountStatus;
+    }) {
+      return prisma.socialAccount.updateMany({
+        where: {
+          id: input.id,
+          brandId: input.brandId,
+          brand: { organizationId: input.organizationId, deletedAt: null },
+        },
+        data: { status: input.status },
+      });
+    },
+    async disconnectSocialAccount(input: { organizationId: string; brandId: string; id: string }) {
+      return prisma.$transaction(async (tx) => {
+        const account = await tx.socialAccount.findFirst({
+          where: {
+            id: input.id,
+            brandId: input.brandId,
+            brand: { organizationId: input.organizationId, deletedAt: null },
+          },
+          select: { id: true, platform: true },
+        });
+        if (!account) return null;
+        await tx.socialCredential.deleteMany({ where: { socialAccountId: account.id } });
+        return tx.socialAccount.update({
+          where: { id: account.id },
+          data: { status: 'DISCONNECTED' },
+        });
+      });
+    },
     async createPublication(input: {
       organizationId: string;
       brandId: string;
       contentProjectId: string;
       platformVariantId: string;
       socialAccountId: string;
-      scheduledAt?: Date;
     }) {
       const [project, variant, account] = await Promise.all([
         prisma.contentProject.findFirst({
@@ -112,6 +337,7 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
             id: input.contentProjectId,
             organizationId: input.organizationId,
             brandId: input.brandId,
+            status: 'APPROVED',
           },
           select: { id: true },
         }),
@@ -120,18 +346,25 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
             id: input.platformVariantId,
             contentProject: { organizationId: input.organizationId, brandId: input.brandId },
           },
-          select: { contentProjectId: true },
+          select: { contentProjectId: true, platform: true },
         }),
         prisma.socialAccount.findFirst({
           where: {
             id: input.socialAccountId,
             brandId: input.brandId,
-            brand: { organizationId: input.organizationId },
+            status: 'CONNECTED',
+            brand: { organizationId: input.organizationId, deletedAt: null },
           },
-          select: { id: true },
+          select: { id: true, platform: true },
         }),
       ]);
-      if (!project || !variant || variant.contentProjectId !== input.contentProjectId || !account)
+      if (
+        !project ||
+        !variant ||
+        variant.contentProjectId !== input.contentProjectId ||
+        !account ||
+        variant.platform !== account.platform
+      )
         return null;
       return prisma.publication.create({
         data: {
@@ -140,8 +373,70 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
           contentProjectId: input.contentProjectId,
           platformVariantId: input.platformVariantId,
           socialAccountId: input.socialAccountId,
-          ...(input.scheduledAt !== undefined ? { scheduledAt: input.scheduledAt } : {}),
         },
+      });
+    },
+    schedulePublication(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      scheduledAt: Date;
+    }) {
+      return prisma.publication.updateMany({
+        where: {
+          id: input.id,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: 'DRAFT',
+        },
+        data: { status: 'QUEUED', scheduledAt: input.scheduledAt },
+      });
+    },
+    reschedulePublication(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      scheduledAt: Date;
+    }) {
+      return prisma.publication.updateMany({
+        where: {
+          id: input.id,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: 'QUEUED',
+          lastAttemptId: null,
+        },
+        data: { scheduledAt: input.scheduledAt },
+      });
+    },
+    cancelPublication(input: { organizationId: string; brandId: string; id: string }) {
+      return prisma.publication.updateMany({
+        where: {
+          id: input.id,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: 'QUEUED',
+          lastAttemptId: null,
+        },
+        data: { status: 'CANCELLED' },
+      });
+    },
+    claimDuePublicationForDispatch(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      now: Date;
+    }) {
+      return prisma.publication.updateMany({
+        where: {
+          id: input.id,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: 'QUEUED',
+          scheduledAt: { lte: input.now },
+          lastAttemptId: null,
+        },
+        data: { status: 'PUBLISHING' },
       });
     },
     findPublication: scopedPublication,
@@ -251,21 +546,6 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
           ...(input.errorMessage !== undefined ? { errorMessage: input.errorMessage } : {}),
           finishedAt: new Date(),
         },
-      });
-    },
-    updateSocialAccountStatus(input: {
-      organizationId: string;
-      brandId: string;
-      id: string;
-      status: SocialAccountStatus;
-    }) {
-      return prisma.socialAccount.updateMany({
-        where: {
-          id: input.id,
-          brandId: input.brandId,
-          brand: { organizationId: input.organizationId },
-        },
-        data: { status: input.status },
       });
     },
   };

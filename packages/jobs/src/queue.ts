@@ -3,6 +3,7 @@ import { PgBoss } from 'pg-boss';
 export const jobNames = {
   health: 'system.health',
   workflowRun: 'workflow.run',
+  publicationDispatch: 'publication.dispatch',
   analyticsCollect: 'analytics.collect',
   learningAnalyze: 'learning.analyze',
 } as const;
@@ -17,6 +18,7 @@ export async function startJobQueue(queue = createJobQueue()) {
   await queue.start();
   await queue.createQueue(jobNames.health, { retryLimit: 3, retryBackoff: true });
   await queue.createQueue(jobNames.workflowRun, { retryLimit: 5, retryBackoff: true });
+  await queue.createQueue(jobNames.publicationDispatch, { retryLimit: 5, retryBackoff: true });
   await queue.createQueue(jobNames.analyticsCollect, { retryLimit: 5, retryBackoff: true });
   await queue.createQueue(jobNames.learningAnalyze, { retryLimit: 3, retryBackoff: true });
   return queue;

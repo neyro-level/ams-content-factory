@@ -25,6 +25,22 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
         update: input.data,
       });
     },
+    async findBrandGenerationContext(input: { organizationId: string; brandId: string }) {
+      const brand = await findBrand(input.organizationId, input.brandId);
+      if (!brand) return null;
+      const [profile, voices, pillars] = await Promise.all([
+        prisma.brandProfile.findUnique({ where: { brandId: input.brandId } }),
+        prisma.brandVoice.findMany({
+          where: { brandId: input.brandId },
+          orderBy: [{ language: 'asc' }, { id: 'asc' }],
+        }),
+        prisma.contentPillar.findMany({
+          where: { brandId: input.brandId, status: 'ACTIVE' },
+          orderBy: [{ priority: 'desc' }, { name: 'asc' }],
+        }),
+      ]);
+      return { profile, voices, pillars };
+    },
     async createOrGetDocument(input: {
       organizationId: string;
       brandId: string;
@@ -87,7 +103,35 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
         where: input,
       });
     },
-    listDocuments(input: { organizationId: string; brandId: string }) {
+    findFailedDocumentForRetry(input: {
+      organizationId: string;
+      brandId: string;
+      documentId: string;
+    }) {
+      return prisma.knowledgeDocument.findFirst({
+        where: {
+          id: input.documentId,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: KnowledgeDocumentStatus.FAILED,
+        },
+      });
+    },
+    findDocumentById(input: { organizationId: string; brandId: string; documentId: string }) {
+      return prisma.knowledgeDocument.findFirst({
+        where: {
+          id: input.documentId,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+        },
+      });
+    },
+    listDocuments(input: {
+      organizationId: string;
+      brandId: string;
+      take?: number;
+      cursor?: string;
+    }) {
       return prisma.knowledgeDocument.findMany({
         where: { organizationId: input.organizationId, brandId: input.brandId },
         select: {
@@ -101,6 +145,8 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
           _count: { select: { chunks: true } },
         },
         orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
       });
     },
     findDocumentChunks(input: { organizationId: string; brandId: string; documentId: string }) {

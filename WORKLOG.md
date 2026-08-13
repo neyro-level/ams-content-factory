@@ -1,5 +1,572 @@
 # Worklog
 
+## 2026-08-13 — W16.3–W16.4 audit expansion and error reporter
+
+- Added durable audit records for brand/API-key create/revoke, editorial approve/reject, publication scheduling,
+  provider dispatch and reconciliation. They store tenant/resource identifiers and safe action metadata only; neither
+  bearer keys nor social credentials are included.
+- Added a minimal infrastructure-compatible error reporter that accepts an optional sink and redacts both error text
+  and arbitrary context first. Full local gate passed: Prisma validation, lint, formatting, workspace typecheck,
+  65 unit tests, 75 PostgreSQL integration contracts and production web/worker builds. Next: W17 performance
+  hardening.
+
+## 2026-08-13 — W16.1–W16.2 structured logger and secret redaction
+
+- Added a closed-schema structured logger with approved correlation and outcome fields. Arbitrary metadata cannot be
+  attached to normal events. `redactSecrets` recursively removes password, cookie, token, webhook/API secret and
+  encryption-key fields plus bearer and raw MCP token strings before a sink receives free-form context.
+- Prisma validation, lint, formatting, workspace typecheck and 64 unit tests passed. Next: W16.3 audit expansion.
+
+## 2026-08-13 — W15.6 MCP negative security tests
+
+- Added protocol-level in-memory MCP contracts proving a read-only key cannot invoke a write tool and an unknown tool
+  returns an MCP error without reaching any handler. PostgreSQL contracts prove revoked and expired keys fail before
+  usage tracking; existing guard contracts cover foreign brands and wrong-scope denial.
+- W15 MCP runtime remains `FOUNDATION`: it is scoped and fail-closed, while live process launch stays
+  `BLOCKED_EXTERNAL` until a production scoped key is provisioned through approved secret storage. Full local gate
+  passed: Prisma validation, lint, formatting, workspace typecheck, 62 unit tests, 74 PostgreSQL integration
+  contracts and production web/worker builds. Next: W16.
+
+## 2026-08-13 — W15.5b MCP application-service tools
+
+- Bound the full planned MCP catalogue to tenant-scoped knowledge, research, content, editorial, calendar and
+  analytics application services. Added a bounded tenant-scoped content-opportunity list to the research workspace;
+  MCP does not query Prisma directly.
+- The transport boundary now requires the permission implied by the API key before brand validation and handler
+  invocation. A read-only key cannot reach a write tool even when its bound user has broader membership rights.
+  Missing generation or retrieval provider configuration remains `BLOCKED_EXTERNAL`, never a fabricated success.
+  Full local gate passed: Prisma validation, lint, formatting, workspace typecheck, 60 unit tests, 73 PostgreSQL
+  integration contracts and production web/worker builds. Next: W15.6 negative MCP runtime tests.
+
+## 2026-08-13 — W15.5a MCP actor binding
+
+- Added a nullable `ApiKey.actorUserId` relation through migration `20260813001952_add_mcp_api_key_actor`. New keys
+  require an active actor with API-management permission. Authentication re-resolves that actor's membership and
+  exposes only the intersection of the API-key scopes and real actor permissions.
+- Existing unbound keys are intentionally authentication-ineligible: the migration preserves their rows but fails
+  closed rather than guessing an actor. PostgreSQL tests also prove a suspended organization invalidates a previously
+  bound key. Next: W15.5b bind the MCP tool catalogue to tenant-scoped application services.
+
+## 2026-08-13 — W15.4 startable MCP stdio runtime
+
+- Added the executable `apps/mcp` entrypoint. It accepts only a runtime `MCP_API_KEY`, resolves its read scope before
+  constructing the MCP server, then connects a real stdio transport. The bearer is consumed at the boundary and never
+  reaches the server factory or a future tool handler.
+- The runtime fails closed before stdio startup when the key is missing or authentication fails. It deliberately has no
+  mock business tools: W15.5 must bind the catalogue to existing tenant-scoped application services. Live use remains
+  `BLOCKED_EXTERNAL` until an operator provisions and injects an active scoped key via approved secret storage.
+- Full local gate passed: Prisma validation, lint, formatting, workspace typecheck, 59 unit tests, 72 PostgreSQL
+  integration contracts and production web/worker builds. The missing-key process check also proves fail-closed
+  startup under Node 22.13. Next: W15.5 real tenant-scoped MCP tool handlers.
+
+## 2026-08-13 — W15.3 MCP API-key usage semantics
+
+- `authenticate` now validates a token hash, active state and required scope without writing to the database.
+  The MCP authentication edge calls the separate `markUsed` method only after it receives an authenticated,
+  token-free context, binding the update to the exact organization and API-key id.
+- Unit and PostgreSQL contracts prove insufficient scope does not update `lastUsedAt`, while an authenticated
+  context does. Prisma validation, lint, formatting, typecheck, 56 unit tests and production web build passed;
+  browser coverage remains applicable because no web route or component changed. Next: W15.4 startable MCP runtime entrypoint.
+
+## 2026-08-13 — W15.2 MCP brand-in-organization guard
+
+- All MCP tools that receive a `brandId` now use one shared guard before their handler. It accepts only an active,
+  non-deleted brand in the organization bound to the authenticated API key; list-brands remains organization-scoped
+  and requires no brand lookup.
+- Unit coverage proves a rejected guard never reaches a tool handler. PostgreSQL coverage proves own active brands
+  pass while foreign and soft-deleted brands fail closed. The MCP/core-only change passed Prisma validation, lint,
+  formatting, typecheck, 56 unit tests, 72 PostgreSQL integration contracts and production build; W15.1 browser
+  coverage remains applicable because no web route or component changed. Next: W15.3 API-key successful-auth usage semantics.
+
+## 2026-08-13 — W15.1 MCP authenticated context
+
+- MCP now resolves a strict bearer API key before constructing tool handlers. The authenticated handler input is
+  immutable `McpAuthContext` containing only organization, API-key id, scopes and derived permissions; the bearer
+  token itself cannot reach tool code.
+- Missing, malformed, revoked, expired or insufficiently scoped keys fail before a handler is invoked. Usage
+  tracking remains on the existing successful-auth path; W15.3 will isolate its precise mutation semantics.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 54 unit tests, 71 PostgreSQL integration
+  contracts, production build and 13 browser E2E flows. Unit contracts cover exact bearer parsing, context
+  propagation and insufficient scope. Next: W15.2 brand-in-organization validation before every MCP brand tool.
+
+## 2026-08-13 — W14.6 protected per-brand analytics dashboard
+
+- Added a tenant-bound dashboard service and protected brand route backed only by normalized persisted snapshots.
+  It selects the latest snapshot per publication before aggregating views, reach, impressions, engagement, clicks
+  and follower delta, so collection checkpoints cannot be double counted.
+- Platform, pillar and linked content-opportunity topic comparisons use existing model relations. Top and low
+  content are ranked by engagement rate against the first available reach, impressions or views denominator.
+  Missing provider metrics render as unavailable and the empty state makes no mock-performance claim.
+- PostgreSQL and browser contracts prove aggregation, active-brand isolation, authentication and dashboard
+  rendering. Full gate passed: Prisma validation, lint, formatting, typecheck, 52 unit tests, 71 PostgreSQL
+  integration contracts, production build and 13 browser E2E flows.
+- Next: W15.1 MCP server boundary and scoped API-key runtime.
+
+## 2026-08-13 — W14.5 bounded tenant history pagination
+
+- Added a deterministic `take`/`cursor` contract to history reads for knowledge, research/evidence/claims,
+  content projects, media assets, social accounts, publication operations, snapshots/insights, MCP keys and
+  evaluation cases. Defaults and maxima bound every returned page; sort orders add `id` as a stable tie-breaker.
+- Workspace and application services pass optional page inputs through their tenant-bound boundary. The query
+  predicates remain organization-and-brand scoped; a PostgreSQL contract proves a foreign cursor cannot return
+  a foreign project while subsequent pages advance correctly.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 52 unit tests, 70 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows.
+- Next: W14.6 protected per-brand analytics dashboard.
+
+## 2026-08-13 — W14.4 durable analytics collection worker
+
+- Registered `analytics.collect` in the real worker dispatcher. The handler accepts only a due workflow with an
+  active brand scope and a valid `publicationId`/`capturedAt` payload, then calls the existing tenant-scoped core
+  service; it does not access Prisma or provider HTTP clients directly.
+- Malformed payloads, foreign publications and prematurely delivered jobs fail closed and the workflow transition
+  persists `FAILED` without a metric snapshot. Missing runtime provider configuration is represented by an explicit
+  `UnavailableAnalyticsProvider`, never a mock success.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 52 unit tests, 69 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows. Live analytics remains `BLOCKED_EXTERNAL` until connected
+  social credentials and provider configuration are present.
+- Next: W14.5 bounded cursor pagination for history lists.
+
+## 2026-08-13 — W14.3 Instagram analytics runtime adapter
+
+- Added a bounded, read-only Instagram Graph adapter. It validates numeric account/media ids, reads direct media
+  like/comment counters and Media Insights values for impressions, reach, shares and saved media; unavailable
+  fields are not fabricated.
+- Missing version/token, malformed identifiers, Graph errors, timeouts and an absent media object fail closed.
+  The access token exists only for the outbound request and cannot appear in normalized/raw metrics or errors.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 52 unit tests, 68 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows. Live analytics remains `BLOCKED_EXTERNAL`: no connected
+  Instagram credential is present and W14.4 has not yet attached analytics collection to the real worker.
+- Next: W14.4 real `analytics.collect` worker handler.
+
+## 2026-08-13 — W14.2 VK analytics runtime adapter
+
+- Added a bounded read-only VK `wall.getById` adapter in the provider layer. It accepts only a numeric connected
+  account and a matching `<owner_id>_<post_id>`, then normalizes only metrics actually returned by VK: views,
+  likes, comments and reposts (as shares). Reach, clicks and saves are intentionally not fabricated.
+- Missing version/token, malformed or foreign ids, API errors, timeouts, empty/malformed responses and absent
+  posts fail closed. The token is used only in the outbound request and is excluded from raw metrics and errors.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 49 unit tests, 68 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows. Live analytics remains `BLOCKED_EXTERNAL`: no connected
+  account credential is present and W14.4 has not yet attached collection to the real worker.
+- Next: W14.3 fail-closed Instagram analytics runtime adapter.
+
+## 2026-08-13 — W14.1 durable analytics scheduling
+
+- Added the nullable `WorkflowRun.scheduledFor` field and queue index through a Prisma migration. Queue
+  reconciliation now returns queued runs only when their schedule is absent or already due; existing immediate
+  workflows retain their previous behaviour.
+- A published active-brand publication now has a scoped scheduler that persists exactly three idempotent
+  `analytics.collect` intents for +24, +72 and +168 hours. It makes no provider call and sends no premature job;
+  W14.4 will bind due intents to the real worker handler.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 46 unit tests, 68 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows.
+- Next: W14.2 fail-closed VK analytics runtime adapter; live provider access remains `BLOCKED_EXTERNAL`.
+
+## 2026-08-13 — W13.6 provider-failure operator UX
+
+- The protected active-brand calendar now reads a separate scoped issue DTO: failed and uncertain publications
+  include only title, platform, account name, state and a safe error code; `errorMessage`, provider response and
+  every credential field remain outside the page data.
+- Expired or errored social accounts are shown with a direct link to the brand account workspace. `OUTCOME_UNKNOWN`
+  explicitly tells the operator not to re-publish before provider reconciliation, while failed attempts direct them
+  to repair the connection before a controlled retry. PostgreSQL and browser contracts prove the states render.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 46 unit tests, 67 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows. One initial unrelated research integration timeout was
+  immediately rerun successfully as 67/67, confirming a transient database-load condition rather than a regression.
+- Next: W14 scoped analytics collection and learning loop; live provider access remains `BLOCKED_EXTERNAL`.
+
+## 2026-08-13 — W13.5 publication mutation idempotency
+
+- Added a PostgreSQL concurrency contract that pauses the first provider mutation, launches twenty duplicate
+  dispatches, then makes its result `OUTCOME_UNKNOWN`. Exactly one external provider call is recorded; the
+  duplicates fail with an in-progress or uncertainty outcome and a later retry remains blocked until controlled
+  reconciliation.
+- The guarantee is made by the existing transactionally acquired `PublicationAttempt` per publication and
+  idempotency key; the database lock is released before the provider call, so it does not hold a transaction
+  across an external network boundary.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 46 unit tests, 67 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows.
+- Next: W13.6 provider-failure operator UX without credential disclosure.
+
+## 2026-08-13 — W13.4 credential-aware publication reconciliation
+
+- Moved publication outcome investigation to the same encrypted-credential boundary as publication itself:
+  the application decrypts the active-brand account token immediately before the provider status request and
+  does not put it into a database record, normalized response, audit event or log.
+- VK `wall.getById` and Instagram Graph media lookup now make bounded authenticated reconciliation calls. Missing
+  credentials, malformed status responses, provider errors and timeouts fail closed: they preserve
+  `OUTCOME_UNKNOWN` and cannot trigger a second external mutation. The PostgreSQL contract proves the decrypted
+  token reaches only the test provider input during investigation.
+- Next: W13.5 provider-call idempotency proof for duplicate and concurrent dispatch paths.
+
+## 2026-08-13 — W13.3 durable publication dispatch worker
+
+- Registered the `publication.dispatch` pg-boss consumer. It loads the durable workflow from PostgreSQL, validates
+  the brand-scoped payload, atomically claims only a due `QUEUED` publication and invokes the provider through the
+  existing encrypted-credential and idempotent attempt boundary.
+- Cancelled, future/rescheduled, already-started, missing and cross-brand records are skipped before an external
+  call. Missing runtime provider configuration uses an explicit `UnavailablePublishingProvider`, never a mock;
+  a real provider error becomes a durable failed attempt/publication/workflow.
+- Added worker package dependencies explicitly and expanded readiness to report all three registered queues.
+  Full gate passed: Prisma validation, lint, formatting, typecheck, 46 unit tests, 66 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows.
+- Next: W13.4 credential-aware outcome investigation.
+
+## 2026-08-13 — W13.2 Instagram publishing provider boundary
+
+- Added a provider-layer Instagram Graph API v22.0 client that creates one public image container and then calls
+  `media_publish`. It returns only normalized provider IDs and never includes the OAuth access token in its result.
+- The adapter accepts exactly one public HTTPS image URL. Private S3 keys, loopback/private URLs, unsupported
+  media shapes, malformed account IDs, Graph errors and timeouts fail closed. Credential-free status lookup is
+  deliberately `OUTCOME_UNKNOWN` until W13.4 adds the safe reconciliation boundary.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 46 unit tests, 65 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows. Live Instagram remains `BLOCKED_EXTERNAL` pending a
+  connected OAuth account and public media delivery/upload path.
+- Next: W13.3 durable publication dispatch worker.
+
+## 2026-08-12 — W13.1 VK publishing provider boundary
+
+- Added a provider-layer VK API v5.199 runtime client for text-only `wall.post` and `wall.getById`
+  reconciliation. It uses the encrypted account OAuth token only for the outbound request and never returns it
+  in a normalized result, error or audit payload.
+- Missing configuration, malformed owner ID, upstream VK error, timeout, malformed response and an internal
+  media key all fail closed. Media publication is intentionally unavailable until a dedicated VK upload pipeline
+  exists; no mock post is created.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 43 unit tests, 65 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows. Live VK remains `BLOCKED_EXTERNAL` pending real OAuth
+  account tokens and media-upload implementation.
+- Next: W13.2 Instagram provider boundary.
+
+## 2026-08-12 — W12.6 safe publication cancellation
+
+- A publication can now transition atomically from `QUEUED` to `CANCELLED` only in its active brand and before
+  any dispatch attempt. A cancelled record cannot be scheduled, rescheduled or cancelled again through the
+  application service, and no social provider is invoked.
+- Calendar reads now explicitly select only `QUEUED` publication records. The protected UI action, PostgreSQL
+  contracts and browser flow prove that a cancellation is immediately absent from the scheduled view.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 39 unit tests, 65 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows.
+- Next: W13.1 real VK publishing-provider boundary; live communication remains `BLOCKED_EXTERNAL` pending
+  external app credentials.
+
+## 2026-08-12 — W12.5 safe publication rescheduling
+
+- A future time can now be changed only on the same active-brand `QUEUED` publication before it has a
+  `lastAttemptId`. The scoped atomic update retains the publication identity, so rescheduling never creates a
+  second publication or calls a social provider.
+- The protected calendar exposes the reschedule form only for queued records. Integration coverage proves the
+  retained ID, no duplicate record and foreign-brand denial; E2E covers the real calendar action and local-time
+  normalization.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 39 unit tests, 65 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows.
+- Next: W12.6 cancel a queued publication before external dispatch.
+
+## 2026-08-12 — W12.4 durable publication scheduler
+
+- PostgreSQL now remains the source of truth for due `QUEUED` publications. The scheduler reads a stable,
+  bounded active-brand batch, creates or reuses `publication-dispatch:<publicationId>` workflow intent and
+  sends a pg-boss singleton job; repeated scans do not create a duplicate durable workflow record.
+- This wave deliberately does not invoke a social provider or mark a publication as published. The named queue
+  is only the durable dispatch boundary; W13.3 will add the provider handler with its own outcome and recovery
+  rules, so an absent credential cannot become a mock success.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 39 unit tests, 65 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows.
+- Next: W12.5 reschedule an existing queued publication safely.
+
+## 2026-08-12 — W12.3 protected publication scheduling
+
+- Added the explicit scheduling transition: a valid future `scheduledAt` atomically moves only one scoped
+  `DRAFT` publication to `QUEUED`. Repeated, past, invalid and cross-brand requests are fail-closed.
+- The calendar's unscheduled-draft lane now has a protected Server Action and form. It persists no provider intent;
+  a durable worker is still required to find and dispatch due queue records in W12.4.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 39 unit tests, 64 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows.
+- Next: W12.4 durable DB-backed scheduler.
+
+## 2026-08-12 — W12.2 protected calendar UI
+
+- Added a protected active-brand publication calendar with deterministic UTC week and month ranges. It lists only
+  scheduled records inside the range and keeps unscheduled `DRAFT` publications in a separate planning lane.
+- The page rebuilds the authenticated actor, calls the application service and never queries Prisma directly.
+  Cross-brand calendar records cannot enter either list.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 39 unit tests, 63 PostgreSQL integration
+  contracts, production build and 12 browser E2E flows.
+- Next: W12.3 explicit scheduling transition.
+
+## 2026-08-12 — W12.1 approved publication creation
+
+- Publication creation now requires an active-tenant `APPROVED` ContentProject, its own PlatformVariant and a
+  `CONNECTED` SocialAccount with the same platform. All new records start as `DRAFT` without `scheduledAt`.
+- A draft project, a foreign brand, a disconnected account or a mismatched platform cannot create a publication.
+  Scheduling remains a separate state transition in W12.3; this step does not offer a bypass.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 39 unit tests, 62 PostgreSQL integration
+  contracts, production build and 11 browser E2E flows.
+- Next: W12.2 protected week/month calendar UI.
+
+## 2026-08-12 — W11.4 social account audit
+
+- Added scoped audit events for `social.connect`, `social.disconnect`, `social.expired` and
+  `social.refresh_failed`; metadata includes only operational identifiers and never credential values.
+- Disconnecting an account atomically removes its encrypted credential and marks the account `DISCONNECTED`.
+  Cross-brand disconnect is denied before any status, credential or audit mutation.
+- Wave 11 Social Accounts foundation is complete. Live VK/Instagram OAuth and refresh runtime remains
+  `BLOCKED_EXTERNAL` until valid provider credentials are configured.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 39 unit tests, 61 PostgreSQL integration
+  contracts, production build and 11 browser E2E flows.
+- Next: W12.1 calendar and scheduling entry point.
+
+## 2026-08-12 — W11.3 controlled social token refresh
+
+- Added a tenant- and brand-scoped refresh service: it runs only inside the configured expiry window, decrypts a
+  stored refresh token at the provider boundary and atomically replaces encrypted tokens plus `expiresAt` on success.
+- Missing refresh credentials mark the account `EXPIRED`; rejected refreshes mark it `ERROR`. Neither branch writes
+  plaintext secrets, and a foreign brand cannot inspect or refresh an account.
+- The real provider runtime remains `BLOCKED_EXTERNAL` without VK/Instagram credentials; no mock refresh is exposed
+  through the product path.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 39 unit tests, 60 PostgreSQL integration
+  contracts, production build and 11 browser E2E flows.
+- Next: W11.4 social account audit events.
+
+## 2026-08-12 — W11.2 provider-layer OAuth architecture
+
+- Added provider-only VK and Instagram OAuth contracts for authorization URLs and authorization-code exchange,
+  including redirect URI, signed state and optional PKCE challenge/verifier fields.
+- Core remains free of provider callback shapes and OAuth client secrets. No runtime HTTP client is configured,
+  so a live account connection remains `BLOCKED_EXTERNAL` rather than becoming a mock success.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 39 unit tests, 56 PostgreSQL integration
+  contracts, production build and 11 browser E2E flows.
+- Next: W11.3 controlled token refresh strategy.
+
+## 2026-08-12 — W11.1 protected social accounts UI
+
+- Added a read-only active-brand workspace for VK and Instagram accounts. It resolves the authenticated actor,
+  requires `brand:read`, and applies both organization and brand predicates in the repository.
+- The repository returns presentation fields and status only; it does not select credential data. The UI exposes no
+  token input or pretend connection flow, leaving provider-specific OAuth for W11.2.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 37 unit tests, 56 PostgreSQL integration
+  contracts, production build and 11 browser E2E flows.
+- Next: W11.2 provider-specific OAuth architecture outside core.
+
+## 2026-08-12 — W10.8 persisted QC gate
+
+- Removed the generic `QC → READY` production transition. A dedicated QC gate now loads the production and
+  latest persisted report in the active tenant scope, accepting only `PASSED` before it executes atomic READY.
+- Missing and failed reports stay fail-closed; recovery remains explicit through `QC → COMPOSING` or `QC → FAILED`.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 37 unit tests, 54 PostgreSQL integration
+  contracts, production build and 10 browser E2E flows.
+- Wave 10 implementation foundation is complete. Next: W11.1 protected social accounts entry points.
+
+## 2026-08-12 — W10.7 caption serialization
+
+- Added SRT/ASS serialization from a persisted scoped transcript. Both files are checksummed `DERIVED`
+  MediaAssets in the private storage boundary and are linked to the resulting CaptionTrack only after READY.
+- CaptionTrack repository writes now verify every optional caption asset belongs to the same active brand and
+  is READY; foreign or failed files cannot be attached through a crafted request.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 37 unit tests, 54 PostgreSQL integration
+  contracts, production build and 10 browser E2E flows.
+- Next: W10.8 QC gate.
+
+## 2026-08-12 — W10.6 output-asset transcription
+
+- Added an output-asset service which attaches only a `READY`, active-brand MediaAsset to a `COMPOSING`
+  VideoProduction. The attachment is tenant-scoped and guarded by a compare-and-set lifecycle predicate.
+- The transcription service accepts an injected real provider boundary but invokes it only after reading that
+  durable output asset; otherwise it persists no transcript and reports an explicit precondition error.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 37 unit tests, 54 PostgreSQL integration
+  contracts, production build and 10 browser E2E flows.
+- Next: W10.7 caption tracks and SRT/ASS.
+
+## 2026-08-12 — W10.5 RenderJob orchestration
+
+- Provider submission now refuses any video production outside persisted `GENERATING`; it creates the scoped
+  RenderJob and provider-usage records before the external call, preserving idempotency and recovery evidence.
+- Completed polling advances the same checked production from `GENERATING` to `COMPOSING` through an atomic
+  transition. A foreign or stale production cannot invoke a provider or receive a completion transition.
+- Next: W10.6 transcription after a durable generated-video asset.
+
+## 2026-08-12 — W10.4 HeyGen runtime adapter
+
+- Added a fail-closed HeyGen V2 client for avatar generation and status polling. It maps provider statuses,
+  uses bounded requests and keeps API credentials, avatar and voice identifiers inside provider configuration.
+- A completed HeyGen response does not expose its temporary download URL as an internal storage key; durable
+  media ingestion remains the following RenderJob task. Live use is `BLOCKED_EXTERNAL` without credentials.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 37 unit tests, 53 PostgreSQL integration
+  contracts, production build and 10 browser E2E flows.
+- Next: W10.5 RenderJob orchestration.
+
+## 2026-08-12 — W10.3 guarded VideoProduction lifecycle
+
+- Added the product-path production workflow: it accepts only an approved scoped project, approved storyboard
+  and active recipe, then applies persisted `PLANNED → … → READY` transitions atomically.
+- Invalid skips are denied; start and terminal timestamps are written at their lifecycle boundaries. Recovery
+  from `FAILED → GENERATING` clears the old terminal timestamp and is covered by PostgreSQL integration tests.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 35 unit tests, 53 PostgreSQL integration
+  contracts, production build and 10 browser E2E flows.
+- Next: W10.4 HeyGen runtime adapter.
+
+## 2026-08-12 — W10.2 approved-script storyboard generation
+
+- Added a generation service that permits storyboard persistence only for an `APPROVED` content project,
+  its owned script version and an active video recipe in the resolved brand scope.
+- LLM output is strict JSON: every beat must carry narration, an allowed visual job, visual instruction and
+  duration; recipe job and duration bounds are validated before persistence. Missing provider credentials
+  return `BLOCKED_EXTERNAL` with no storyboard record.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 35 unit tests, 52 PostgreSQL integration
+  contracts, production build and 10 browser E2E flows.
+- Next: W10.3 VideoProduction lifecycle.
+
+## 2026-08-12 — W10.1 protected media library
+
+- Added a protected brand-scoped media route that lists persisted assets by source and lifecycle status;
+  repository predicates prevent a foreign brand asset from appearing in the library.
+- The upload server action reconstructs the session and delegates to an application service. Without private
+  S3-compatible production storage it returns `BLOCKED_EXTERNAL` before creating an asset or writing a
+  local fallback. Integration and browser contracts cover active-brand scope and this fail-closed UI state.
+- Full gate passed: Prisma validation, lint, formatting, typecheck, 35 unit tests, 50 PostgreSQL integration
+  contracts, production build and 10 browser E2E flows.
+- Next: W10.2 storyboard generation from an approved script.
+
+## 2026-08-12 — W9.1 content state UI
+
+- Added protected UI entry points to create content projects and advance only the next valid state. The
+  detail view invokes core for `IDEA → RESEARCHING`, live draft generation and `DRAFT → FACT_CHECK`; it does
+  not access Prisma or a provider from web code.
+- Browser coverage proves project creation, the first state transition and explicit `BLOCKED_EXTERNAL` when
+  OpenAI generation is unavailable. No mock draft is shown or persisted. W9 checks are green; next: W10.
+- Stabilized the shared E2E contract environment: browser scenarios run sequentially, and the existing
+  Knowledge route test now waits for the completed Next navigation before direct test-data insertion/reload.
+
+## 2026-08-12 — W9.2 editorial review actions
+
+- Fact-check now stops at `FACT_CHECK`; a separate authenticated editorial action explicitly requests
+  `FACT_CHECK → REVIEW`. Writers can add scoped comments, while reviewers can approve, return to draft or
+  reject with an immutable decision record.
+- The content detail route displays only actions that match the resolved permissions, but each Server Action
+  reconstructs the session and repeats service authorization. A browser flow verifies
+  `FACT_CHECK → REVIEW → APPROVED`; no AI or worker path can approve content.
+
+## 2026-08-12 — W9.3 manual approval invariant
+
+- Added a human-only approval service requiring `content:review`. It atomically records the reviewer and
+  moves only `REVIEW → APPROVED`; writers and a repeated approval are denied.
+- PostgreSQL coverage proves reviewer success, writer denial, state guard and the active-membership boundary.
+  Next: editorial actions and UI controls.
+
+## 2026-08-12 — W8.9 content project UI
+
+- Added protected brand-scoped content list and detail routes. The detail view reads the current immutable
+  version, status, version/approval counts and fact-check claims/evidence through application services only.
+- Added a repository-backed read model and PostgreSQL coverage for list/detail and foreign-project denial.
+  Empty states do not claim generated content, evidence or review data that does not exist. Next: editorial
+  state actions and manual approval invariant.
+
+## 2026-08-12 — W8.8 fact-check gate
+
+- Added a tenant-scoped fact-check service for `DRAFT` content. It extracts each version assertion as a
+  project claim, evaluates its existing evidence and records `SUPPORTED` or `UNVERIFIED` rather than making
+  an unsupported claim invisible.
+- The service completes the guarded `DRAFT → FACT_CHECK → REVIEW` path and returns unsupported findings to
+  its caller. It cannot approve content. PostgreSQL contracts cover unsupported claims, evidence-backed
+  claims and foreign-brand denial. Next: content-project UI.
+
+## 2026-08-12 — W8.7 immutable rewrite loop
+
+- Added the checked rewrite path for a `DRAFT` content project. A source version is scoped through its
+  project, brand and organization before any AI execution starts; every successful rewrite creates a new
+  AI-authored version and leaves the selected source unchanged.
+- A source from another project is denied before a provider call. Provider failure remains a failed execution
+  rather than a false successful rewrite. Live rewrite remains `BLOCKED_EXTERNAL` without `OPENAI_API_KEY`.
+  Next: fact-check and editorial approval entry points.
+
+## 2026-08-12 — W8.6 persisted AI draft generation
+
+- Added the application path from a checked actor and tenant-scoped context through an `AiExecution` to an
+  immutable AI-authored `ContentVersion`, then the guarded `RESEARCHING → DRAFT` transition. The production
+  provider is not called by a browser route yet; this is the service-level execution path for the later
+  editorial entry point.
+- A missing OpenAI credential produces a persisted `FAILED` execution with `BLOCKED_EXTERNAL` and no draft.
+  The test double proves the successful database lifecycle only; it is not a product-path substitute for a
+  live provider. PostgreSQL contracts cover both outcomes without a network call. Next: W8.7 immutable
+  rewrite loop.
+
+## 2026-08-12 — W8.5 tenant-scoped context assembler
+
+- Added repository-bound reads for brand profile, voices, active pillars and bounded claim evidence, then
+  assembled them only after tenant context, `content:write` and scoped content-project validation.
+- Hybrid knowledge retrieval remains an injected boundary for the resolved brand. A cross-brand project or
+  evidence cannot enter the context; no UI or provider call claims a live generation result.
+
+## 2026-08-12 — W8.4 prompt versioning
+
+- Added the approved eight v1 prompt identifiers to a code catalogue. Unknown operations are rejected
+  rather than silently falling back to another prompt; each definition prohibits unsupported facts outside
+  supplied context. No schema, migration, provider call or live-generation claim was added.
+
+## 2026-08-12 — W8.3 AI execution tracking
+
+- Added the additive `AiExecution` migration and repository. Each record is bound to organization, brand
+  and content project; it preserves provider/model/operation, prompt version, lifecycle timestamps, token
+  usage, costs and failure details.
+- Repository writes use the full tenant/project scope and expected state. PostgreSQL coverage proves a
+  successful lifecycle, persisted failure metadata, foreign-brand denial and no illegal restart of a failed
+  execution. This is tracking `FOUNDATION`, not a live generation result.
+
+## 2026-08-12 — W8.2 production text-generation adapter
+
+- Added exactly one `OpenAiTextGenerationProvider` using the Responses API behind the existing neutral
+  contract. It does not introduce SDK coupling, model routing or a fallback matrix; requests are bounded
+  and explicitly set `store: false`.
+- The adapter fails closed on a missing credential, non-success provider response or absent output. This
+  environment has no `OPENAI_API_KEY`, therefore live generation is correctly `BLOCKED_EXTERNAL`, not a
+  mock success. Provider response mapping and error behavior are covered without a network call.
+
+## 2026-08-12 — W8.1 text generation provider boundary
+
+- Added the provider-neutral `TextGenerationProvider` contract and a deterministic test-only
+  `MockTextGenerationProvider`. The application contract carries operation, prompt, optional model and
+  normalized result/usage only; it does not depend on an LLM SDK or implement routing/fallback logic.
+- No schema, migration or live provider has been added. Text generation remains `FOUNDATION`; the next
+  separate task adds exactly one production adapter and must report `BLOCKED_EXTERNAL` until its credential
+  is present.
+
+## 2026-08-12 — W7 protected research workspace
+
+- Added protected brand-scoped research list, text/URL intake and external-search entry points. Every route
+  reconstructs the Better Auth actor and verified organization/brand context before reaching the
+  application service; neither Server Actions nor React access Prisma directly.
+- Added `FirecrawlResearchProvider` for the documented v2 search and scrape contracts. Core URL intake
+  remains SSRF-safe, the workspace maps an absent provider credential to a visible `BLOCKED_EXTERNAL`, and
+  no mock result is shown in the live product path. The environment has no `FIRECRAWL_API_KEY`, so live
+  search and URL extraction remain `BLOCKED_EXTERNAL`.
+- Added provider mapping/fail-closed unit contracts, workspace URL/search and cross-brand integration
+  coverage, plus the authenticated browser path. Full quality gate is green: Prisma validation, lint,
+  formatting, typecheck, 28 unit tests, 34 integration contracts, 7 browser E2E flows and production
+  build. Next: W8 content generation and editorial workflow.
+
+## 2026-08-12 — W6.4 hybrid knowledge retrieval
+
+- Added protected document indexing and hybrid search UI through the application service, repository
+  predicates and `OpenAiEmbeddingProvider`. Indexing requires `content:write`; search stays constrained to
+  the verified active organization and brand.
+- `MockEmbeddingProvider` is used only in the PostgreSQL isolation contract. The browser flow verifies that
+  the live UI reports `BLOCKED_EXTERNAL` when the required OpenAI credential is absent; no mock success is
+  shown to a user. Full quality gate is green: Prisma validation, lint, formatting, typecheck, 26 unit
+  tests, 33 integration contracts, 7 browser E2E flows and production build. Live retrieval remains
+  `BLOCKED_EXTERNAL` pending `OPENAI_API_KEY`. Next: W7 research workspace.
+
+## 2026-08-12 — W6.3 controlled knowledge retry
+
+- Added a tenant- and brand-scoped recovery path for documents in `FAILED` only. It reuses the already
+  persisted safe text and the existing guarded state transitions, so retry neither refetches a URL nor
+  creates a duplicate document or bypasses repository boundaries.
+- Added valid recovery plus pending and foreign-brand negative PostgreSQL contracts, and a browser retry
+  scenario. During the final gate, removed the exhausted 20-slug ceiling for non-Latin organization names:
+  readable attempts now fall back to a collision-safe UUID suffix, with an integration contract. Browser
+  assertions now use persisted rendered state rather than a transient revalidation notice. Full quality
+  gate is green: Prisma validation, lint, formatting, typecheck, 26 unit tests, 32 integration contracts,
+  7 browser E2E flows and production build. Next: W6.4 hybrid retrieval.
+
 ## 2026-08-12 — W6.2 knowledge intake
 
 - Connected text, URL and UTF-8 textual-file forms to tenant-bound Server Actions and the existing safe

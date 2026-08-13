@@ -5,6 +5,9 @@ const port = Number(process.env.E2E_PORT ?? 3000);
 export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
+  // Contracts share one Next development server and PostgreSQL instance.
+  // Keep their database/auth observations isolated and reproducible in CI.
+  workers: 1,
   use: {
     baseURL: `http://127.0.0.1:${port}`,
   },

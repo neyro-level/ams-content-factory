@@ -20,7 +20,12 @@ export function createMediaRepository(prisma: PrismaClient = getPrisma()) {
         id: input.id,
         contentProject: { organizationId: input.organizationId, brandId: input.brandId },
       },
-      include: { renderJobs: { orderBy: { createdAt: 'asc' } }, outputAsset: true },
+      include: {
+        contentProject: { select: { id: true, status: true } },
+        storyboard: { include: { beats: { orderBy: { ordinal: 'asc' } } } },
+        renderJobs: { orderBy: { createdAt: 'asc' } },
+        outputAsset: true,
+      },
     });
 
   return {
@@ -126,6 +131,17 @@ export function createMediaRepository(prisma: PrismaClient = getPrisma()) {
         where: { id: input.id, organizationId: input.organizationId, brandId: input.brandId },
       });
     },
+    listAssets(input: { organizationId: string; brandId: string; take?: number; cursor?: string }) {
+      return prisma.mediaAsset.findMany({
+        where: {
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
+      });
+    },
     async createProduction(input: {
       organizationId: string;
       brandId: string;
@@ -166,6 +182,41 @@ export function createMediaRepository(prisma: PrismaClient = getPrisma()) {
       });
     },
     findProduction,
+    async createProductionFromApprovedStoryboard(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      storyboardId: string;
+      videoRecipeId: string;
+      aspectRatio: string;
+      targetDuration?: number;
+    }) {
+      const storyboard = await prisma.storyboard.findFirst({
+        where: {
+          id: input.storyboardId,
+          status: 'APPROVED',
+          contentProjectId: input.contentProjectId,
+          videoRecipeId: input.videoRecipeId,
+          contentProject: {
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+            status: 'APPROVED',
+          },
+          videoRecipe: { status: 'ACTIVE' },
+        },
+        select: { id: true },
+      });
+      if (!storyboard) return null;
+      return prisma.videoProduction.create({
+        data: {
+          contentProjectId: input.contentProjectId,
+          storyboardId: input.storyboardId,
+          videoRecipeId: input.videoRecipeId,
+          aspectRatio: input.aspectRatio,
+          ...(input.targetDuration === undefined ? {} : { targetDuration: input.targetDuration }),
+        },
+      });
+    },
     async createRenderJob(input: {
       organizationId: string;
       brandId: string;
@@ -300,6 +351,38 @@ export function createMediaRepository(prisma: PrismaClient = getPrisma()) {
         update: input.metadata !== undefined ? { metadata: input.metadata } : {},
       });
     },
+    async setOutputAsset(input: {
+      organizationId: string;
+      brandId: string;
+      videoProductionId: string;
+      mediaAssetId: string;
+    }) {
+      const asset = await prisma.mediaAsset.findFirst({
+        where: {
+          id: input.mediaAssetId,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: 'READY',
+        },
+        select: { id: true },
+      });
+      if (!asset) return null;
+      const updated = await prisma.videoProduction.updateMany({
+        where: {
+          id: input.videoProductionId,
+          status: 'COMPOSING',
+          contentProject: { organizationId: input.organizationId, brandId: input.brandId },
+        },
+        data: { outputAssetId: asset.id },
+      });
+      return updated.count === 1
+        ? findProduction({
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+            id: input.videoProductionId,
+          })
+        : null;
+    },
     transitionProduction(input: {
       organizationId: string;
       brandId: string;
@@ -313,7 +396,13 @@ export function createMediaRepository(prisma: PrismaClient = getPrisma()) {
           status: input.from,
           contentProject: { organizationId: input.organizationId, brandId: input.brandId },
         },
-        data: { status: input.to },
+        data: {
+          status: input.to,
+          ...(input.to === 'GENERATING' ? { startedAt: new Date(), completedAt: null } : {}),
+          ...(['READY', 'FAILED', 'CANCELLED'].includes(input.to)
+            ? { completedAt: new Date() }
+            : {}),
+        },
       });
     },
   };

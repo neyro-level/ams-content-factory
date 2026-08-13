@@ -17,7 +17,7 @@ export function createWorkerReadinessSignal(requeuedWorkflowRuns: number): Worke
     event: 'worker.ready',
     ready: true,
     timestamp: new Date().toISOString(),
-    registeredQueues: [jobNames.health, jobNames.workflowRun],
+    registeredQueues: [jobNames.health, jobNames.workflowRun, jobNames.publicationDispatch],
     requeuedWorkflowRuns,
   };
 }

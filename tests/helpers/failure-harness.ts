@@ -2,6 +2,7 @@ import type {
   PublicationStatusResult,
   PublishInput,
   PublishResult,
+  PublicationStatusInput,
   PublishingPlatform,
   PublishingProvider,
   StorageProvider,
@@ -81,10 +82,7 @@ export class FailingPublishingProvider implements PublishingProvider {
     throw this.error;
   }
 
-  async getStatus(_input: {
-    providerOperation: string;
-    providerJobId?: string;
-  }): Promise<PublicationStatusResult> {
+  async getStatus(_input: PublicationStatusInput): Promise<PublicationStatusResult> {
     throw this.error;
   }
 }
@@ -107,10 +105,7 @@ export class DelayedPublishingProvider implements PublishingProvider {
     return this.delegate.publish(input);
   }
 
-  async getStatus(input: {
-    providerOperation: string;
-    providerJobId?: string;
-  }): Promise<PublicationStatusResult> {
+  async getStatus(input: PublicationStatusInput): Promise<PublicationStatusResult> {
     await delay(this.delayMs);
     return this.delegate.getStatus(input);
   }
@@ -130,10 +125,7 @@ export class CountingPublishingProvider implements PublishingProvider {
     return this.delegate.publish(input);
   }
 
-  async getStatus(input: {
-    providerOperation: string;
-    providerJobId?: string;
-  }): Promise<PublicationStatusResult> {
+  async getStatus(input: PublicationStatusInput): Promise<PublicationStatusResult> {
     this.getStatusCalls += 1;
     return this.delegate.getStatus(input);
   }

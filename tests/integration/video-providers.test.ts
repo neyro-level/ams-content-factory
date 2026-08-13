@@ -122,6 +122,14 @@ describe('video providers', () => {
     await expect(service.submit(otherContext, input)).rejects.toThrow(
       'outside the active content project',
     );
+    await production.transition(context, { id: created!.id, from: 'GENERATING', to: 'COMPOSING' });
+    await expect(service.submit(context, input)).rejects.toThrow(
+      'must be GENERATING before a provider render is submitted',
+    );
+    await production.transition(context, { id: created!.id, from: 'COMPOSING', to: 'QC' });
+    await production.transition(context, { id: created!.id, from: 'QC', to: 'COMPOSING' });
+    await production.transition(context, { id: created!.id, from: 'COMPOSING', to: 'FAILED' });
+    await production.transition(context, { id: created!.id, from: 'FAILED', to: 'GENERATING' });
     const submitted = await service.submit(context, input);
     expect(submitted.providerJob.status).toBe('SUBMITTED');
     await expect(service.submit(context, input)).resolves.toEqual(
@@ -156,6 +164,9 @@ describe('video providers', () => {
         renderJobId: submitted.renderId,
       }),
     ).resolves.toEqual(expect.objectContaining({ status: 'COMPLETED', actualCost: 0 }));
+    await expect(production.find(context, created!.id)).resolves.toEqual(
+      expect.objectContaining({ status: 'COMPOSING' }),
+    );
     const completedUsage = await prisma.providerUsage.findUnique({
       where: { id: submitted.providerUsageId },
     });
@@ -165,6 +176,10 @@ describe('video providers', () => {
     // recovery contract focused on persistence-after-provider-success rather
     // than the separately planned render-attempt allocation work.
     await prisma.renderJob.deleteMany({ where: { videoProductionId: created!.id } });
+    await production.transition(context, { id: created!.id, from: 'COMPOSING', to: 'QC' });
+    await production.transition(context, { id: created!.id, from: 'QC', to: 'COMPOSING' });
+    await production.transition(context, { id: created!.id, from: 'COMPOSING', to: 'FAILED' });
+    await production.transition(context, { id: created!.id, from: 'FAILED', to: 'GENERATING' });
 
     const baseMedia = createMediaRepository(prisma);
     let failFinalPersistence = true;

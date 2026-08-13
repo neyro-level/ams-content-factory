@@ -47,12 +47,22 @@ export function createBrandService(repository: TenantRepository = createTenantRe
       for (let suffix = 1; suffix <= 20; suffix += 1) {
         const slug = suffix === 1 ? baseSlug : `${baseSlug}-${suffix}`;
         try {
-          return await repository.createBrand({
+          const brand = await repository.createBrand({
             organizationId: tenant.organizationId,
             ownerUserId: tenant.userId,
             name,
             slug,
           });
+          await repository.appendAuditLog({
+            organizationId: tenant.organizationId,
+            brandId: brand.id,
+            actorUserId: tenant.userId,
+            action: 'brand.create',
+            entityType: 'Brand',
+            entityId: brand.id,
+            metadata: { slug: brand.slug },
+          });
+          return brand;
         } catch (error) {
           if (!(error instanceof BrandSlugConflictError)) throw error;
         }

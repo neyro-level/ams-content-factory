@@ -5,6 +5,7 @@ import {
   createKnowledgeFileAction,
   createKnowledgeTextAction,
   createKnowledgeUrlAction,
+  retryKnowledgeDocumentAction,
   type KnowledgeIntakeState,
 } from '../app/app/organizations/[organizationId]/brands/[brandId]/knowledge/actions';
 
@@ -115,4 +116,28 @@ function IntakeFeedback({ state, errorId }: { state: KnowledgeIntakeState; error
       </p>
     );
   return null;
+}
+
+export function KnowledgeRetryButton({
+  organizationId,
+  brandId,
+  documentId,
+}: {
+  organizationId: string;
+  brandId: string;
+  documentId: string;
+}) {
+  const [state, retryAction, pending] = useActionState(
+    retryKnowledgeDocumentAction.bind(null, { organizationId, brandId }, documentId),
+    initialState,
+  );
+
+  return (
+    <form className="knowledge-retry" action={retryAction}>
+      <button className="button button-secondary" type="submit" disabled={pending}>
+        {pending ? 'Повторяем…' : 'Повторить'}
+      </button>
+      <IntakeFeedback state={state} errorId={`knowledge-retry-${documentId}-error`} />
+    </form>
+  );
 }

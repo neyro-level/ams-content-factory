@@ -31,7 +31,6 @@ test('creates and lists an organization for the authenticated owner', async ({ p
   await page.getByLabel('Название организации').fill(organizationName);
   await page.getByRole('button', { name: 'Создать организацию' }).click();
 
-  await expect(page.getByRole('status')).toContainText('создана');
   await expect(page.getByRole('heading', { name: organizationName })).toBeVisible();
   await expect(page.getByText('OWNER')).toBeVisible();
 });

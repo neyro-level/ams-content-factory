@@ -63,7 +63,7 @@ export function createEvaluationService(options: { prisma?: PrismaClient } = {})
     async finishRun(id: string) {
       const run = await repository.findRun(id);
       if (!run || run.status !== 'RUNNING') throw new Error('Evaluation run is not active.');
-      const cases = await repository.listCases(run.suiteId);
+      const cases = await repository.listCases({ suiteId: run.suiteId });
       if (run.results.length !== cases.length)
         throw new Error('Every evaluation case requires a result.');
       const status: EvaluationRunStatus = run.results.every((result) => result.passed)

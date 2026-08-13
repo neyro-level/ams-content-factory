@@ -14,6 +14,9 @@ const brands = createBrandService(tenants);
 const prefix = 'w5-brands-contract';
 
 afterAll(async () => {
+  await prisma.auditLog.deleteMany({
+    where: { organization: { is: { slug: { startsWith: prefix } } } },
+  });
   await prisma.organization.deleteMany({ where: { slug: { startsWith: prefix } } });
   await prisma.user.deleteMany({ where: { email: { startsWith: prefix } } });
   await prisma.$disconnect();

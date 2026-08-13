@@ -133,12 +133,13 @@ export function createResearchService(
         throw error;
       }
     },
-    list(context: Context) {
+    list(context: Context, input: { take?: number; cursor?: string } = {}) {
       requirePermission(context, 'brand:read');
       if (!context.brandId) throw new AccessDeniedError('Research requires a brand context.');
       return repository.findItems({
         organizationId: context.organizationId,
         brandId: context.brandId,
+        ...input,
       });
     },
   };

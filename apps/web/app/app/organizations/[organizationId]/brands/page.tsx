@@ -54,6 +54,42 @@ export default async function BrandsPage({
                     >
                       База знаний
                     </Link>
+                    <Link
+                      className="text-link"
+                      href={`/app/organizations/${organizationId}/brands/${brand.id}/research`}
+                    >
+                      Исследование
+                    </Link>
+                    <Link
+                      className="text-link"
+                      href={`/app/organizations/${organizationId}/brands/${brand.id}/content`}
+                    >
+                      Контент
+                    </Link>
+                    <Link
+                      className="text-link"
+                      href={`/app/organizations/${organizationId}/brands/${brand.id}/media`}
+                    >
+                      Медиа
+                    </Link>
+                    <Link
+                      className="text-link"
+                      href={`/app/organizations/${organizationId}/brands/${brand.id}/social-accounts`}
+                    >
+                      Соцсети
+                    </Link>
+                    <Link
+                      className="text-link"
+                      href={`/app/organizations/${organizationId}/brands/${brand.id}/calendar`}
+                    >
+                      Календарь
+                    </Link>
+                    <Link
+                      className="text-link"
+                      href={`/app/organizations/${organizationId}/brands/${brand.id}/analytics`}
+                    >
+                      Аналитика
+                    </Link>
                   </div>
                 </li>
               ))}

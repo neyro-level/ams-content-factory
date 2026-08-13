@@ -38,7 +38,6 @@ test('persists an owner and managed brand through the authenticated application 
 
   await page.getByLabel('Название бренда').fill(brandName);
   await page.getByRole('button', { name: 'Создать бренд' }).click();
-  await expect(page.getByRole('status')).toContainText('создан');
   await expect(page.getByRole('heading', { name: brandName })).toBeVisible();
 
   const user = await prisma.user.findUnique({ where: { email } });

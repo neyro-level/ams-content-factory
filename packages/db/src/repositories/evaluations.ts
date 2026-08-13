@@ -52,8 +52,13 @@ export function createEvaluationsRepository(prisma: PrismaClient = getPrisma()) 
         },
       });
     },
-    listCases(suiteId: string) {
-      return prisma.evaluationCase.findMany({ where: { suiteId }, orderBy: { name: 'asc' } });
+    listCases(input: { suiteId: string; take?: number; cursor?: string }) {
+      return prisma.evaluationCase.findMany({
+        where: { suiteId: input.suiteId },
+        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
+      });
     },
     createResult(input: {
       runId: string;

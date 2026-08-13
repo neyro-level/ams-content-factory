@@ -60,6 +60,20 @@ export function createCaptionsRepository(prisma: PrismaClient = getPrisma()) {
         select: { id: true },
       });
       if (!transcript) return null;
+      const assetIds = [input.srtAssetId, input.assAssetId].filter(
+        (id): id is string => id !== undefined,
+      );
+      if (assetIds.length) {
+        const assets = await prisma.mediaAsset.count({
+          where: {
+            id: { in: assetIds },
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+            status: 'READY',
+          },
+        });
+        if (assets !== assetIds.length) return null;
+      }
       return prisma.captionTrack.create({
         data: {
           videoProductionId: input.videoProductionId,
@@ -93,10 +107,41 @@ export function createCaptionsRepository(prisma: PrismaClient = getPrisma()) {
         },
       });
     },
+    findLatestQcReport(input: {
+      organizationId: string;
+      brandId: string;
+      videoProductionId: string;
+    }) {
+      return prisma.qcReport.findFirst({
+        where: {
+          videoProductionId: input.videoProductionId,
+          videoProduction: {
+            contentProject: { organizationId: input.organizationId, brandId: input.brandId },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    },
     findTranscript(input: { organizationId: string; brandId: string; id: string }) {
       return prisma.transcript.findFirst({
         where: {
           id: input.id,
+          videoProduction: {
+            contentProject: { organizationId: input.organizationId, brandId: input.brandId },
+          },
+        },
+      });
+    },
+    findTranscriptForProduction(input: {
+      organizationId: string;
+      brandId: string;
+      videoProductionId: string;
+      transcriptId: string;
+    }) {
+      return prisma.transcript.findFirst({
+        where: {
+          id: input.transcriptId,
+          videoProductionId: input.videoProductionId,
           videoProduction: {
             contentProject: { organizationId: input.organizationId, brandId: input.brandId },
           },

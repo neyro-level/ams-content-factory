@@ -3,7 +3,13 @@
 > **Статус:** historical/reference. Текущую последовательность задач, реальные статусы и release gate
 > определяет [`MASTER_IMPLEMENTATION_PLAN.md`](MASTER_IMPLEMENTATION_PLAN.md). Записи `DONE` ниже
 > фиксируют наличие foundation-кода и прежних проверок, а не готовность пользовательского продукта.
-> Latest current-plan record: W6.2 safe text/URL/file intake — `DONE`; next W6.3 controlled document retry.
+> Latest current-plan record: W10 Media and Video — `FOUNDATION`; live external media providers remain
+> `BLOCKED_EXTERNAL`; W14.1 scheduling, W14.4 worker dispatch, W14.5 bounded cursor pagination, W14.6
+> protected per-brand analytics dashboard, W15.1 MCP authenticated context, W15.2 brand-in-organization guard,
+> W15.3 API-key usage semantics, W15.4 startable stdio runtime, W15.5a actor-bound MCP keys, W15.5b tools and
+> W15.6 negative contracts are `FOUNDATION`; live key injection is `BLOCKED_EXTERNAL`. W14.2 VK and W14.3 Instagram
+> adapters remain `BLOCKED_EXTERNAL` until connected credentials are available. W16 structured logging, secret
+> redaction, durable audit and error reporting are `FOUNDATION`. Next: W17 bounded performance hardening.
 
 ## Protocol
 

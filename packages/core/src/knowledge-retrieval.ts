@@ -27,7 +27,7 @@ export function createKnowledgeRetrievalService(options: {
 
   return {
     async embedDocument(input: { context: KnowledgeReadContext; documentId: string }) {
-      const { organizationId, brandId } = requireReadContext(input.context);
+      const { organizationId, brandId } = requireWriteContext(input.context);
       const chunks = await repository.findDocumentChunks({
         organizationId,
         brandId,
@@ -76,6 +76,14 @@ function requireReadContext(context: KnowledgeReadContext) {
   requirePermission(context, 'brand:read');
   if (!context.brandId) {
     throw new AccessDeniedError('Knowledge retrieval requires a brand context.');
+  }
+  return { organizationId: context.organizationId, brandId: context.brandId };
+}
+
+function requireWriteContext(context: KnowledgeReadContext) {
+  requirePermission(context, 'content:write');
+  if (!context.brandId) {
+    throw new AccessDeniedError('Knowledge indexing requires a brand context.');
   }
   return { organizationId: context.organizationId, brandId: context.brandId };
 }

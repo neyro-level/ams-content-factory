@@ -132,6 +132,13 @@ enum ContentVersionAuthorType {
   SYSTEM
 }
 
+enum AiExecutionStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
 enum VideoRecipeStatus {
   ACTIVE
   ARCHIVED
@@ -203,12 +210,14 @@ enum SocialPlatform {
   INSTAGRAM
   VK
 }
+
 enum SocialAccountStatus {
   CONNECTED
   EXPIRED
   DISCONNECTED
   ERROR
 }
+
 enum PublicationStatus {
   DRAFT
   QUEUED
@@ -222,6 +231,7 @@ enum PublicationStatus {
   OUTCOME_UNKNOWN
   CANCELLED
 }
+
 enum PublicationAttemptStatus {
   STARTED
   SUCCEEDED
@@ -250,18 +260,19 @@ enum EvaluationRunStatus {
 }
 
 model User {
-  id            String       @id @default(uuid()) @db.Uuid
+  id            String        @id @default(uuid()) @db.Uuid
   name          String
-  email         String       @unique
-  emailVerified Boolean      @default(false)
+  email         String        @unique
+  emailVerified Boolean       @default(false)
   image         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   sessions      Session[]
   accounts      Account[]
   memberships   Membership[]
   brandAccesses BrandAccess[]
-  auditEvents   AuditLog[]   @relation("AuditActor")
+  apiKeys       ApiKey[]      @relation("ApiKeyActor")
+  auditEvents   AuditLog[]    @relation("AuditActor")
 
   @@map("user")
 }
@@ -282,10 +293,10 @@ model Session {
 }
 
 model Account {
-  id                    String   @id @default(uuid()) @db.Uuid
+  id                    String    @id @default(uuid()) @db.Uuid
   accountId             String
   providerId            String
-  userId                String   @db.Uuid
+  userId                String    @db.Uuid
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -293,9 +304,9 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([providerId, accountId])
   @@index([userId])
@@ -315,18 +326,18 @@ model Verification {
 }
 
 model Organization {
-  id          String             @id @default(uuid()) @db.Uuid
-  name        String
-  slug        String             @unique
-  status      OrganizationStatus @default(ACTIVE)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  memberships Membership[]
-  brands      Brand[]
-  auditEvents AuditLog[]
-  workflowRuns WorkflowRun[]
-  apiKeys ApiKey[]
-  webhookEndpoints WebhookEndpoint[]
+  id                        String                     @id @default(uuid()) @db.Uuid
+  name                      String
+  slug                      String                     @unique
+  status                    OrganizationStatus         @default(ACTIVE)
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  memberships               Membership[]
+  brands                    Brand[]
+  auditEvents               AuditLog[]
+  workflowRuns              WorkflowRun[]
+  apiKeys                   ApiKey[]
+  webhookEndpoints          WebhookEndpoint[]
   inboundWebhookCredentials InboundWebhookCredential[]
 
   @@map("organization")
@@ -349,40 +360,41 @@ model Membership {
 }
 
 model Brand {
-  id             String        @id @default(uuid()) @db.Uuid
-  organizationId String        @db.Uuid
-  name           String
-  slug           String
-  status         BrandStatus   @default(ACTIVE)
-  timezone       String        @default("Europe/Moscow")
-  locale         String        @default("ru-RU")
-  websiteUrl     String?
-  description    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  deletedAt      DateTime?
-  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  accesses       BrandAccess[]
-  auditEvents    AuditLog[]
-  workflowRuns   WorkflowRun[]
-  profile        BrandProfile?
-  voices         BrandVoice[]
-  contentPillars ContentPillar[]
-  knowledgeDocuments KnowledgeDocument[]
-  knowledgeChunks KnowledgeChunk[]
-  researchInboxItems ResearchInboxItem[]
-  researchSources ResearchSource[]
-  researchItems ResearchItem[]
-  researchReports ResearchReport[]
+  id                   String               @id @default(uuid()) @db.Uuid
+  organizationId       String               @db.Uuid
+  name                 String
+  slug                 String
+  status               BrandStatus          @default(ACTIVE)
+  timezone             String               @default("Europe/Moscow")
+  locale               String               @default("ru-RU")
+  websiteUrl           String?
+  description          String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  deletedAt            DateTime?
+  organization         Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  accesses             BrandAccess[]
+  auditEvents          AuditLog[]
+  workflowRuns         WorkflowRun[]
+  profile              BrandProfile?
+  voices               BrandVoice[]
+  contentPillars       ContentPillar[]
+  knowledgeDocuments   KnowledgeDocument[]
+  knowledgeChunks      KnowledgeChunk[]
+  researchInboxItems   ResearchInboxItem[]
+  researchSources      ResearchSource[]
+  researchItems        ResearchItem[]
+  researchReports      ResearchReport[]
   contentOpportunities ContentOpportunity[]
-  claims Claim[]
-  contentProjects ContentProject[]
-  mediaAssets MediaAsset[]
-  providerUsages ProviderUsage[]
-  socialAccounts SocialAccount[]
-  publications Publication[]
-  metricSnapshots MetricSnapshot[]
-  performanceInsights PerformanceInsight[]
+  claims               Claim[]
+  contentProjects      ContentProject[]
+  mediaAssets          MediaAsset[]
+  providerUsages       ProviderUsage[]
+  aiExecutions         AiExecution[]
+  socialAccounts       SocialAccount[]
+  publications         Publication[]
+  metricSnapshots      MetricSnapshot[]
+  performanceInsights  PerformanceInsight[]
 
   @@unique([organizationId, slug])
   @@index([organizationId, status])
@@ -390,371 +402,390 @@ model Brand {
 }
 
 model BrandProfile {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @unique @db.Uuid
-  positioning Json? @default("{}")
-  targetAudience Json? @default("{}")
-  offers Json? @default("[]")
-  customerProblems Json? @default("[]")
-  differentiators Json? @default("[]")
-  proof Json? @default("[]")
-  constraints Json? @default("[]")
-  forbiddenClaims Json? @default("[]")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields:[brandId], references:[id], onDelete:Cascade)
+  id               String   @id @default(uuid()) @db.Uuid
+  brandId          String   @unique @db.Uuid
+  positioning      Json?    @default("{}")
+  targetAudience   Json?    @default("{}")
+  offers           Json?    @default("[]")
+  customerProblems Json?    @default("[]")
+  differentiators  Json?    @default("[]")
+  proof            Json?    @default("[]")
+  constraints      Json?    @default("[]")
+  forbiddenClaims  Json?    @default("[]")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  brand            Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
   @@map("brand_profile")
 }
 
 model BrandVoice {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  language String @default("ru")
-  toneSummary String
-  styleRules Json?
-  doRules Json?
-  dontRules Json?
-  lexicon Json?
+  id             String   @id @default(uuid()) @db.Uuid
+  brandId        String   @db.Uuid
+  language       String   @default("ru")
+  toneSummary    String
+  styleRules     Json?
+  doRules        Json?
+  dontRules      Json?
+  lexicon        Json?
   forbiddenWords Json?
-  exampleTexts Json?
-  ctaExamples Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  exampleTexts   Json?
+  ctaExamples    Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
   @@index([brandId, language])
   @@map("brand_voice")
 }
 
 model ContentPillar {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  name String
-  description String?
-  priority Int @default(0)
-  status String @default("ACTIVE")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  id              String           @id @default(uuid()) @db.Uuid
+  brandId         String           @db.Uuid
+  name            String
+  description     String?
+  priority        Int              @default(0)
+  status          String           @default("ACTIVE")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  brand           Brand            @relation(fields: [brandId], references: [id], onDelete: Cascade)
   contentProjects ContentProject[]
+
   @@unique([brandId, name])
   @@map("content_pillar")
 }
 
 model KnowledgeDocument {
-  id String @id @default(uuid()) @db.Uuid
-  organizationId String @db.Uuid
-  brandId String @db.Uuid
-  title String
-  type KnowledgeDocumentType
-  sourceUrl String?
-  sourceText String?
-  status KnowledgeDocumentStatus @default(PENDING)
-  checksum String?
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  chunks KnowledgeChunk[]
+  id             String                  @id @default(uuid()) @db.Uuid
+  organizationId String                  @db.Uuid
+  brandId        String                  @db.Uuid
+  title          String
+  type           KnowledgeDocumentType
+  sourceUrl      String?
+  sourceText     String?
+  status         KnowledgeDocumentStatus @default(PENDING)
+  checksum       String?
+  metadata       Json?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  brand          Brand                   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  chunks         KnowledgeChunk[]
+
   @@unique([brandId, checksum])
   @@index([organizationId, brandId, status])
   @@map("knowledge_document")
 }
 
 model KnowledgeChunk {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  documentId String @db.Uuid
-  ordinal Int
-  content String
+  id         String                 @id @default(uuid()) @db.Uuid
+  brandId    String                 @db.Uuid
+  documentId String                 @db.Uuid
+  ordinal    Int
+  content    String
   tokenCount Int?
-  embedding Unsupported("vector")?
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  document KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  embedding  Unsupported("vector")?
+  metadata   Json?
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+  brand      Brand                  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  document   KnowledgeDocument      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
   @@unique([documentId, ordinal])
   @@index([brandId, documentId])
   @@map("knowledge_chunk")
 }
 
 model ResearchInboxItem {
-  id String @id @default(uuid()) @db.Uuid
-  organizationId String @db.Uuid
-  brandId String @db.Uuid
-  kind String
-  title String
-  content String?
-  sourceUrl String?
-  checksum String
-  status ResearchInboxStatus @default(NEW)
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  id             String              @id @default(uuid()) @db.Uuid
+  organizationId String              @db.Uuid
+  brandId        String              @db.Uuid
+  kind           String
+  title          String
+  content        String?
+  sourceUrl      String?
+  checksum       String
+  status         ResearchInboxStatus @default(NEW)
+  metadata       Json?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  brand          Brand               @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
   @@unique([brandId, checksum])
   @@index([organizationId, brandId, status])
   @@map("research_inbox_item")
 }
 
 model ResearchSource {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
+  id           String         @id @default(uuid()) @db.Uuid
+  brandId      String         @db.Uuid
   canonicalUrl String
-  domain String
-  sourceType String
-  title String?
-  author String?
-  publishedAt DateTime?
-  capturedAt DateTime @default(now())
-  metadata Json?
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  items ResearchItem[]
+  domain       String
+  sourceType   String
+  title        String?
+  author       String?
+  publishedAt  DateTime?
+  capturedAt   DateTime       @default(now())
+  metadata     Json?
+  brand        Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  items        ResearchItem[]
+
   @@unique([brandId, canonicalUrl])
   @@index([brandId, domain])
   @@map("research_source")
 }
 
 model ResearchItem {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  sourceId String? @db.Uuid
-  title String
-  summary String?
+  id                   String             @id @default(uuid()) @db.Uuid
+  brandId              String             @db.Uuid
+  sourceId             String?            @db.Uuid
+  title                String
+  summary              String?
   rawContentStorageKey String?
-  rawContent String?
-  contentHash String
-  publishedAt DateTime?
-  capturedAt DateTime @default(now())
-  relevanceScore Float?
-  noveltyScore Float?
-  status ResearchItemStatus @default(PENDING)
-  metadata Json?
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  source ResearchSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  reports ResearchReport[]
-  evidence Evidence[]
+  rawContent           String?
+  contentHash          String
+  publishedAt          DateTime?
+  capturedAt           DateTime           @default(now())
+  relevanceScore       Float?
+  noveltyScore         Float?
+  status               ResearchItemStatus @default(PENDING)
+  metadata             Json?
+  brand                Brand              @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  source               ResearchSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  reports              ResearchReport[]
+  evidence             Evidence[]
+
   @@unique([brandId, contentHash])
   @@index([brandId, status, capturedAt])
   @@map("research_item")
 }
 
 model ResearchReport {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  researchItemId String @db.Uuid
-  summary String
+  id             String       @id @default(uuid()) @db.Uuid
+  brandId        String       @db.Uuid
+  researchItemId String       @db.Uuid
+  summary        String
   classification String?
   relevanceScore Float?
-  noveltyScore Float?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  researchItem ResearchItem @relation(fields: [researchItemId], references: [id], onDelete: Cascade)
+  noveltyScore   Float?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  brand          Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  researchItem   ResearchItem @relation(fields: [researchItemId], references: [id], onDelete: Cascade)
+
   @@unique([researchItemId])
   @@index([brandId, createdAt])
   @@map("research_report")
 }
 
 model ContentOpportunity {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  pillarId String? @db.Uuid
-  title String
-  angle String
-  whyNow String?
-  audience String?
+  id                  String                   @id @default(uuid()) @db.Uuid
+  brandId             String                   @db.Uuid
+  pillarId            String?                  @db.Uuid
+  title               String
+  angle               String
+  whyNow              String?
+  audience            String?
   commercialRelevance String?
-  relevanceScore Float?
-  noveltyScore Float?
-  evidenceScore Float?
-  overallScore Float?
-  status ContentOpportunityStatus @default(NEW)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  contentProjects ContentProject[]
+  relevanceScore      Float?
+  noveltyScore        Float?
+  evidenceScore       Float?
+  overallScore        Float?
+  status              ContentOpportunityStatus @default(NEW)
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  brand               Brand                    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  contentProjects     ContentProject[]
+
   @@index([brandId, status, overallScore])
   @@map("content_opportunity")
 }
 
 model ContentProject {
-  id String @id @default(uuid()) @db.Uuid
-  organizationId String @db.Uuid
-  brandId String @db.Uuid
-  pillarId String? @db.Uuid
-  opportunityId String? @db.Uuid
-  title String
-  goal String?
-  audience String?
-  contentType ContentType
-  status ContentProjectStatus @default(IDEA)
-  priority Int @default(0)
-  recipeId String?
-  targetPublishAt DateTime?
-  createdBy String? @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  pillar ContentPillar? @relation(fields: [pillarId], references: [id], onDelete: SetNull)
-  opportunity ContentOpportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
-  versions ContentVersion[]
-  variants PlatformVariant[]
-  approvals Approval[]
-  comments EditorialComment[]
-  storyboards Storyboard[]
+  id               String               @id @default(uuid()) @db.Uuid
+  organizationId   String               @db.Uuid
+  brandId          String               @db.Uuid
+  pillarId         String?              @db.Uuid
+  opportunityId    String?              @db.Uuid
+  title            String
+  goal             String?
+  audience         String?
+  contentType      ContentType
+  status           ContentProjectStatus @default(IDEA)
+  priority         Int                  @default(0)
+  recipeId         String?
+  targetPublishAt  DateTime?
+  createdBy        String?              @db.Uuid
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  brand            Brand                @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  pillar           ContentPillar?       @relation(fields: [pillarId], references: [id], onDelete: SetNull)
+  opportunity      ContentOpportunity?  @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  versions         ContentVersion[]
+  variants         PlatformVariant[]
+  approvals        Approval[]
+  comments         EditorialComment[]
+  storyboards      Storyboard[]
   videoProductions VideoProduction[]
-  providerUsages ProviderUsage[]
-  publications Publication[]
+  providerUsages   ProviderUsage[]
+  aiExecutions     AiExecution[]
+  publications     Publication[]
+
   @@index([organizationId, brandId, status, createdAt])
   @@index([opportunityId])
   @@map("content_project")
 }
 
 model MediaAsset {
-  id String @id @default(uuid()) @db.Uuid
-  organizationId String @db.Uuid
-  brandId String @db.Uuid
-  parentAssetId String? @db.Uuid
-  type String
-  mimeType String
-  filename String
-  storageKey String
-  storageDriver String
-  sizeBytes BigInt
-  width Int?
-  height Int?
-  durationMs Int?
-  checksum String
-  sourceType MediaSourceType
-  sourceUrl String?
-  licenseMetadata Json?
-  status MediaAssetStatus @default(PENDING)
-  metadata Json?
-  createdAt DateTime @default(now())
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  parentAsset MediaAsset? @relation("AssetDerivation", fields: [parentAssetId], references: [id], onDelete: SetNull)
-  derivedAssets MediaAsset[] @relation("AssetDerivation")
-  usages AssetUsage[]
-  outputFor VideoProduction[] @relation("VideoOutput")
-  transcriptAssets Transcript[] @relation("TranscriptAsset")
-  srtCaptionTracks CaptionTrack[] @relation("CaptionSrtAsset")
-  assCaptionTracks CaptionTrack[] @relation("CaptionAssAsset")
+  id               String            @id @default(uuid()) @db.Uuid
+  organizationId   String            @db.Uuid
+  brandId          String            @db.Uuid
+  parentAssetId    String?           @db.Uuid
+  type             String
+  mimeType         String
+  filename         String
+  storageKey       String
+  storageDriver    String
+  sizeBytes        BigInt
+  width            Int?
+  height           Int?
+  durationMs       Int?
+  checksum         String
+  sourceType       MediaSourceType
+  sourceUrl        String?
+  licenseMetadata  Json?
+  status           MediaAssetStatus  @default(PENDING)
+  metadata         Json?
+  createdAt        DateTime          @default(now())
+  brand            Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  parentAsset      MediaAsset?       @relation("AssetDerivation", fields: [parentAssetId], references: [id], onDelete: SetNull)
+  derivedAssets    MediaAsset[]      @relation("AssetDerivation")
+  usages           AssetUsage[]
+  outputFor        VideoProduction[] @relation("VideoOutput")
+  transcriptAssets Transcript[]      @relation("TranscriptAsset")
+  srtCaptionTracks CaptionTrack[]    @relation("CaptionSrtAsset")
+  assCaptionTracks CaptionTrack[]    @relation("CaptionAssAsset")
+
   @@unique([brandId, checksum])
   @@index([organizationId, brandId, status])
   @@map("media_asset")
 }
 
 model VideoProduction {
-  id String @id @default(uuid()) @db.Uuid
-  contentProjectId String @db.Uuid
-  storyboardId String @db.Uuid
-  videoRecipeId String @db.Uuid
-  status VideoProductionStatus @default(PLANNED)
-  aspectRatio String
-  targetDuration Int?
-  outputAssetId String? @db.Uuid
-  startedAt DateTime?
-  completedAt DateTime?
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
-  storyboard Storyboard @relation(fields: [storyboardId], references: [id], onDelete: Restrict)
-  videoRecipe VideoRecipe @relation(fields: [videoRecipeId], references: [id], onDelete: Restrict)
-  outputAsset MediaAsset? @relation("VideoOutput", fields: [outputAssetId], references: [id], onDelete: SetNull)
-  assetUsages AssetUsage[]
-  renderJobs RenderJob[]
-  transcripts Transcript[]
-  captionTracks CaptionTrack[]
-  qcReports QcReport[]
+  id               String                @id @default(uuid()) @db.Uuid
+  contentProjectId String                @db.Uuid
+  storyboardId     String                @db.Uuid
+  videoRecipeId    String                @db.Uuid
+  status           VideoProductionStatus @default(PLANNED)
+  aspectRatio      String
+  targetDuration   Int?
+  outputAssetId    String?               @db.Uuid
+  startedAt        DateTime?
+  completedAt      DateTime?
+  metadata         Json?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  contentProject   ContentProject        @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  storyboard       Storyboard            @relation(fields: [storyboardId], references: [id], onDelete: Restrict)
+  videoRecipe      VideoRecipe           @relation(fields: [videoRecipeId], references: [id], onDelete: Restrict)
+  outputAsset      MediaAsset?           @relation("VideoOutput", fields: [outputAssetId], references: [id], onDelete: SetNull)
+  assetUsages      AssetUsage[]
+  renderJobs       RenderJob[]
+  transcripts      Transcript[]
+  captionTracks    CaptionTrack[]
+  qcReports        QcReport[]
+
   @@index([contentProjectId, status])
   @@map("video_production")
 }
 
 model AssetUsage {
-  id String @id @default(uuid()) @db.Uuid
-  mediaAssetId String @db.Uuid
-  videoProductionId String @db.Uuid
-  role String
-  metadata Json?
-  createdAt DateTime @default(now())
-  mediaAsset MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
-  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  id                String          @id @default(uuid()) @db.Uuid
+  mediaAssetId      String          @db.Uuid
+  videoProductionId String          @db.Uuid
+  role              String
+  metadata          Json?
+  createdAt         DateTime        @default(now())
+  mediaAsset        MediaAsset      @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  videoProduction   VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+
   @@unique([mediaAssetId, videoProductionId, role])
   @@index([videoProductionId])
   @@map("asset_usage")
 }
 
 model Transcript {
-  id String @id @default(uuid()) @db.Uuid
-  videoProductionId String @db.Uuid
-  assetId String @db.Uuid
-  provider String
-  language String
-  text String
-  wordsJson Json
-  durationMs Int
-  createdAt DateTime @default(now())
-  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
-  asset MediaAsset @relation("TranscriptAsset", fields: [assetId], references: [id], onDelete: Cascade)
-  captionTracks CaptionTrack[]
+  id                String          @id @default(uuid()) @db.Uuid
+  videoProductionId String          @db.Uuid
+  assetId           String          @db.Uuid
+  provider          String
+  language          String
+  text              String
+  wordsJson         Json
+  durationMs        Int
+  createdAt         DateTime        @default(now())
+  videoProduction   VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  asset             MediaAsset      @relation("TranscriptAsset", fields: [assetId], references: [id], onDelete: Cascade)
+  captionTracks     CaptionTrack[]
+
   @@index([videoProductionId, createdAt])
   @@map("transcript")
 }
 
 model CaptionTrack {
-  id String @id @default(uuid()) @db.Uuid
-  videoProductionId String @db.Uuid
-  transcriptId String @db.Uuid
-  style Json
-  srtAssetId String? @db.Uuid
-  assAssetId String? @db.Uuid
-  burnedIn Boolean @default(false)
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
-  transcript Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
-  srtAsset MediaAsset? @relation("CaptionSrtAsset", fields: [srtAssetId], references: [id], onDelete: SetNull)
-  assAsset MediaAsset? @relation("CaptionAssAsset", fields: [assAssetId], references: [id], onDelete: SetNull)
+  id                String          @id @default(uuid()) @db.Uuid
+  videoProductionId String          @db.Uuid
+  transcriptId      String          @db.Uuid
+  style             Json
+  srtAssetId        String?         @db.Uuid
+  assAssetId        String?         @db.Uuid
+  burnedIn          Boolean         @default(false)
+  metadata          Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  videoProduction   VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  transcript        Transcript      @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  srtAsset          MediaAsset?     @relation("CaptionSrtAsset", fields: [srtAssetId], references: [id], onDelete: SetNull)
+  assAsset          MediaAsset?     @relation("CaptionAssAsset", fields: [assAssetId], references: [id], onDelete: SetNull)
+
   @@index([videoProductionId, createdAt])
   @@map("caption_track")
 }
 
 model QcReport {
-  id String @id @default(uuid()) @db.Uuid
-  videoProductionId String @db.Uuid
-  status QcStatus @default(PENDING)
-  technical Json?
-  visual Json?
-  content Json?
-  compliance Json?
-  createdAt DateTime @default(now())
-  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  id                String          @id @default(uuid()) @db.Uuid
+  videoProductionId String          @db.Uuid
+  status            QcStatus        @default(PENDING)
+  technical         Json?
+  visual            Json?
+  content           Json?
+  compliance        Json?
+  createdAt         DateTime        @default(now())
+  videoProduction   VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+
   @@index([videoProductionId, createdAt])
   @@map("qc_report")
 }
 
 model RenderJob {
-  id String @id @default(uuid()) @db.Uuid
-  videoProductionId String @db.Uuid
-  provider String
-  operation String
-  idempotencyKey String @default(uuid())
-  providerJobId String?
-  attempt Int @default(1)
-  status RenderJobStatus @default(QUEUED)
-  input Json?
-  output Json?
-  errorCode String?
-  errorMessage String?
-  startedAt DateTime?
-  finishedAt DateTime?
-  providerUsageId String? @db.Uuid
-  createdAt DateTime @default(now())
-  videoProduction VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
-  providerUsage ProviderUsage? @relation(fields: [providerUsageId], references: [id], onDelete: SetNull)
+  id                String          @id @default(uuid()) @db.Uuid
+  videoProductionId String          @db.Uuid
+  provider          String
+  operation         String
+  idempotencyKey    String          @default(uuid())
+  providerJobId     String?
+  attempt           Int             @default(1)
+  status            RenderJobStatus @default(QUEUED)
+  input             Json?
+  output            Json?
+  errorCode         String?
+  errorMessage      String?
+  startedAt         DateTime?
+  finishedAt        DateTime?
+  providerUsageId   String?         @db.Uuid
+  createdAt         DateTime        @default(now())
+  videoProduction   VideoProduction @relation(fields: [videoProductionId], references: [id], onDelete: Cascade)
+  providerUsage     ProviderUsage?  @relation(fields: [providerUsageId], references: [id], onDelete: SetNull)
+
   @@unique([videoProductionId, idempotencyKey])
   @@unique([videoProductionId, provider, operation, attempt])
   @@index([status, createdAt])
@@ -762,436 +793,494 @@ model RenderJob {
 }
 
 model ProviderRate {
-  id String @id @default(uuid()) @db.Uuid
-  provider String
-  operation String
-  model String
-  unit String
-  unitCost Decimal @db.Decimal(14, 4)
-  currency String
-  effectiveAt DateTime @default(now())
-  disabledAt DateTime?
-  createdAt DateTime @default(now())
+  id          String    @id @default(uuid()) @db.Uuid
+  provider    String
+  operation   String
+  model       String
+  unit        String
+  unitCost    Decimal   @db.Decimal(14, 4)
+  currency    String
+  effectiveAt DateTime  @default(now())
+  disabledAt  DateTime?
+  createdAt   DateTime  @default(now())
+
   @@unique([provider, operation, model, unit, effectiveAt])
   @@index([provider, operation, model, unit, effectiveAt])
   @@map("provider_rate")
 }
 
 model ProviderUsage {
-  id String @id @default(uuid()) @db.Uuid
-  organizationId String @db.Uuid
-  brandId String @db.Uuid
-  contentProjectId String @db.Uuid
-  provider String
-  operation String
-  model String
-  unit String
-  quantity Decimal @db.Decimal(14, 4)
-  estimatedCost Decimal @db.Decimal(14, 4)
-  actualCost Decimal? @db.Decimal(14, 4)
-  currency String
-  externalJobId String?
-  createdAt DateTime @default(now())
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
-  renderJobs RenderJob[]
+  id               String         @id @default(uuid()) @db.Uuid
+  organizationId   String         @db.Uuid
+  brandId          String         @db.Uuid
+  contentProjectId String         @db.Uuid
+  provider         String
+  operation        String
+  model            String
+  unit             String
+  quantity         Decimal        @db.Decimal(14, 4)
+  estimatedCost    Decimal        @db.Decimal(14, 4)
+  actualCost       Decimal?       @db.Decimal(14, 4)
+  currency         String
+  externalJobId    String?
+  createdAt        DateTime       @default(now())
+  brand            Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  contentProject   ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  renderJobs       RenderJob[]
+
   @@index([organizationId, brandId, createdAt])
   @@index([contentProjectId, createdAt])
   @@map("provider_usage")
 }
 
+model AiExecution {
+  id               String            @id @default(uuid()) @db.Uuid
+  organizationId   String            @db.Uuid
+  brandId          String            @db.Uuid
+  contentProjectId String            @db.Uuid
+  provider         String
+  model            String
+  operation        String
+  promptKey        String
+  promptVersion    Int
+  status           AiExecutionStatus @default(PENDING)
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  inputTokens      Int?
+  outputTokens     Int?
+  estimatedCost    Decimal?          @db.Decimal(14, 4)
+  actualCost       Decimal?          @db.Decimal(14, 4)
+  currency         String            @default("USD")
+  errorCode        String?
+  errorMessage     String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  brand            Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  contentProject   ContentProject    @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, brandId, status, createdAt])
+  @@index([contentProjectId, status, createdAt])
+  @@map("ai_execution")
+}
+
 model ContentVersion {
-  id String @id @default(uuid()) @db.Uuid
-  contentProjectId String @db.Uuid
-  version Int
-  brief String?
-  hook String?
-  body String?
-  cta String?
-  script String?
-  notes String?
-  createdByType ContentVersionAuthorType
-  createdByUserId String? @db.Uuid
-  aiExecutionId String?
-  createdAt DateTime @default(now())
-  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
-  storyboards Storyboard[]
+  id               String                   @id @default(uuid()) @db.Uuid
+  contentProjectId String                   @db.Uuid
+  version          Int
+  brief            String?
+  hook             String?
+  body             String?
+  cta              String?
+  script           String?
+  notes            String?
+  createdByType    ContentVersionAuthorType
+  createdByUserId  String?                  @db.Uuid
+  aiExecutionId    String?
+  createdAt        DateTime                 @default(now())
+  contentProject   ContentProject           @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  storyboards      Storyboard[]
+
   @@unique([contentProjectId, version])
   @@map("content_version")
 }
 
 model VideoRecipe {
-  id String @id @default(uuid()) @db.Uuid
-  key String
-  name String
-  version Int
-  description String?
-  bestFor Json?
-  notFor Json?
-  platforms String[] @default([])
-  aspectRatios String[] @default([])
-  durationConfig Json
-  stages Json
-  providerConfig Json?
-  scriptShape Json
-  visualJobs Json
-  qcRules Json
-  deliverables Json
-  status VideoRecipeStatus @default(ACTIVE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  storyboards Storyboard[]
+  id               String            @id @default(uuid()) @db.Uuid
+  key              String
+  name             String
+  version          Int
+  description      String?
+  bestFor          Json?
+  notFor           Json?
+  platforms        String[]          @default([])
+  aspectRatios     String[]          @default([])
+  durationConfig   Json
+  stages           Json
+  providerConfig   Json?
+  scriptShape      Json
+  visualJobs       Json
+  qcRules          Json
+  deliverables     Json
+  status           VideoRecipeStatus @default(ACTIVE)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  storyboards      Storyboard[]
   videoProductions VideoProduction[]
+
   @@unique([key, version])
   @@map("video_recipe")
 }
 
 model Storyboard {
-  id String @id @default(uuid()) @db.Uuid
-  contentProjectId String @db.Uuid
-  contentVersionId String @db.Uuid
-  videoRecipeId String @db.Uuid
-  version Int
-  status StoryboardStatus @default(DRAFT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
-  contentVersion ContentVersion @relation(fields: [contentVersionId], references: [id], onDelete: Cascade)
-  videoRecipe VideoRecipe @relation(fields: [videoRecipeId], references: [id], onDelete: Restrict)
-  beats StoryboardBeat[]
+  id               String            @id @default(uuid()) @db.Uuid
+  contentProjectId String            @db.Uuid
+  contentVersionId String            @db.Uuid
+  videoRecipeId    String            @db.Uuid
+  version          Int
+  status           StoryboardStatus  @default(DRAFT)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  contentProject   ContentProject    @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  contentVersion   ContentVersion    @relation(fields: [contentVersionId], references: [id], onDelete: Cascade)
+  videoRecipe      VideoRecipe       @relation(fields: [videoRecipeId], references: [id], onDelete: Restrict)
+  beats            StoryboardBeat[]
   videoProductions VideoProduction[]
+
   @@unique([contentProjectId, version])
   @@map("storyboard")
 }
 
 model StoryboardBeat {
-  id String @id @default(uuid()) @db.Uuid
-  storyboardId String @db.Uuid
-  ordinal Int
-  narration String
-  visualJob VisualJobType
+  id                String        @id @default(uuid()) @db.Uuid
+  storyboardId      String        @db.Uuid
+  ordinal           Int
+  narration         String
+  visualJob         VisualJobType
   visualInstruction String
-  evidenceId String? @db.Uuid
-  mediaAssetId String? @db.Uuid
-  durationHint Int?
-  metadata Json?
-  storyboard Storyboard @relation(fields: [storyboardId], references: [id], onDelete: Cascade)
+  evidenceId        String?       @db.Uuid
+  mediaAssetId      String?       @db.Uuid
+  durationHint      Int?
+  metadata          Json?
+  storyboard        Storyboard    @relation(fields: [storyboardId], references: [id], onDelete: Cascade)
+
   @@unique([storyboardId, ordinal])
   @@map("storyboard_beat")
 }
 
 model PlatformVariant {
-  id String @id @default(uuid()) @db.Uuid
-  contentProjectId String @db.Uuid
-  platform String
-  title String?
-  caption String?
-  description String?
-  hashtags String[] @default([])
-  cta String?
+  id                 String         @id @default(uuid()) @db.Uuid
+  contentProjectId   String         @db.Uuid
+  platform           String
+  title              String?
+  caption            String?
+  description        String?
+  hashtags           String[]       @default([])
+  cta                String?
   mediaConfiguration Json?
-  status String @default("DRAFT")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
-  publications Publication[]
+  status             String         @default("DRAFT")
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  contentProject     ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  publications       Publication[]
+
   @@unique([contentProjectId, platform])
   @@map("platform_variant")
 }
 
 model SocialAccount {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  platform SocialPlatform
+  id                String              @id @default(uuid()) @db.Uuid
+  brandId           String              @db.Uuid
+  platform          SocialPlatform
   externalAccountId String
-  name String
-  username String?
-  status SocialAccountStatus @default(CONNECTED)
-  scopes String[] @default([])
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  credential SocialCredential?
-  publications Publication[]
+  name              String
+  username          String?
+  status            SocialAccountStatus @default(CONNECTED)
+  scopes            String[]            @default([])
+  metadata          Json?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  brand             Brand               @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  credential        SocialCredential?
+  publications      Publication[]
+
   @@unique([brandId, platform, externalAccountId])
   @@index([brandId, platform, status])
   @@map("social_account")
 }
 
 model SocialCredential {
-  id String @id @default(uuid()) @db.Uuid
-  socialAccountId String @unique @db.Uuid
-  accessTokenCiphertext String
+  id                     String        @id @default(uuid()) @db.Uuid
+  socialAccountId        String        @unique @db.Uuid
+  accessTokenCiphertext  String
   refreshTokenCiphertext String?
-  expiresAt DateTime?
-  encryptionVersion String
-  updatedAt DateTime @updatedAt
-  socialAccount SocialAccount @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+  expiresAt              DateTime?
+  encryptionVersion      String
+  updatedAt              DateTime      @updatedAt
+  socialAccount          SocialAccount @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+
   @@map("social_credential")
 }
 
 model Publication {
-  id String @id @default(uuid()) @db.Uuid
-  organizationId String @db.Uuid
-  brandId String @db.Uuid
-  contentProjectId String @db.Uuid
-  platformVariantId String @db.Uuid
-  socialAccountId String @db.Uuid
-  status PublicationStatus @default(DRAFT)
-  scheduledAt DateTime?
-  publishedAt DateTime?
-  externalPostId String?
-  permalink String?
-  lastAttemptId String? @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
-  platformVariant PlatformVariant @relation(fields: [platformVariantId], references: [id], onDelete: Restrict)
-  socialAccount SocialAccount @relation(fields: [socialAccountId], references: [id], onDelete: Restrict)
-  attempts PublicationAttempt[]
-  metricSnapshots MetricSnapshot[]
+  id                String               @id @default(uuid()) @db.Uuid
+  organizationId    String               @db.Uuid
+  brandId           String               @db.Uuid
+  contentProjectId  String               @db.Uuid
+  platformVariantId String               @db.Uuid
+  socialAccountId   String               @db.Uuid
+  status            PublicationStatus    @default(DRAFT)
+  scheduledAt       DateTime?
+  publishedAt       DateTime?
+  externalPostId    String?
+  permalink         String?
+  lastAttemptId     String?              @db.Uuid
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  brand             Brand                @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  contentProject    ContentProject       @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  platformVariant   PlatformVariant      @relation(fields: [platformVariantId], references: [id], onDelete: Restrict)
+  socialAccount     SocialAccount        @relation(fields: [socialAccountId], references: [id], onDelete: Restrict)
+  attempts          PublicationAttempt[]
+  metricSnapshots   MetricSnapshot[]
+
   @@index([organizationId, brandId, status, scheduledAt])
   @@map("publication")
 }
 
 model PublicationAttempt {
-  id String @id @default(uuid()) @db.Uuid
-  publicationId String @db.Uuid
-  attempt Int
-  idempotencyKey String
-  status PublicationAttemptStatus @default(STARTED)
-  providerOperation String
-  providerJobId String?
+  id                 String                   @id @default(uuid()) @db.Uuid
+  publicationId      String                   @db.Uuid
+  attempt            Int
+  idempotencyKey     String
+  status             PublicationAttemptStatus @default(STARTED)
+  providerOperation  String
+  providerJobId      String?
   requestFingerprint String
-  response Json?
-  errorCode String?
-  errorMessage String?
-  startedAt DateTime @default(now())
-  finishedAt DateTime?
-  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  response           Json?
+  errorCode          String?
+  errorMessage       String?
+  startedAt          DateTime                 @default(now())
+  finishedAt         DateTime?
+  publication        Publication              @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+
   @@unique([publicationId, attempt])
   @@unique([publicationId, idempotencyKey])
   @@map("publication_attempt")
 }
 
 model MetricSnapshot {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  publicationId String @db.Uuid
-  capturedAt DateTime
-  views Int?
-  reach Int?
-  impressions Int?
-  likes Int?
-  comments Int?
-  shares Int?
-  saves Int?
-  clicks Int?
-  watchTimeMs Int?
+  id                 String      @id @default(uuid()) @db.Uuid
+  brandId            String      @db.Uuid
+  publicationId      String      @db.Uuid
+  capturedAt         DateTime
+  views              Int?
+  reach              Int?
+  impressions        Int?
+  likes              Int?
+  comments           Int?
+  shares             Int?
+  saves              Int?
+  clicks             Int?
+  watchTimeMs        Int?
   averageWatchTimeMs Int?
-  followersDelta Int?
-  rawMetrics Json
-  createdAt DateTime @default(now())
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  followersDelta     Int?
+  rawMetrics         Json
+  createdAt          DateTime    @default(now())
+  brand              Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  publication        Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+
   @@unique([publicationId, capturedAt])
   @@index([brandId, capturedAt])
   @@map("metric_snapshot")
 }
 
 model PerformanceInsight {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  periodStart DateTime
-  periodEnd DateTime
-  insight String
+  id             String   @id @default(uuid()) @db.Uuid
+  brandId        String   @db.Uuid
+  periodStart    DateTime
+  periodEnd      DateTime
+  insight        String
   recommendation String
-  experiment String
-  metadata Json?
-  createdAt DateTime @default(now())
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  experiment     String
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
   @@index([brandId, periodEnd])
   @@map("performance_insight")
 }
 
 model ApiKey {
-  id String @id @default(uuid()) @db.Uuid
-  organizationId String @db.Uuid
-  name String
-  tokenHash String @unique
-  scopes ApiKeyScope[] @default([])
-  expiresAt DateTime?
-  lastUsedAt DateTime?
-  revokedAt DateTime?
-  createdAt DateTime @default(now())
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id             String        @id @default(uuid()) @db.Uuid
+  organizationId String        @db.Uuid
+  actorUserId    String?       @db.Uuid
+  name           String
+  tokenHash      String        @unique
+  scopes         ApiKeyScope[] @default([])
+  expiresAt      DateTime?
+  lastUsedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actor          User?         @relation("ApiKeyActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
   @@index([organizationId, revokedAt])
+  @@index([actorUserId])
   @@map("api_key")
 }
 
 model WebhookEndpoint {
-  id String @id @default(uuid()) @db.Uuid
-  organizationId String @db.Uuid
-  url String
-  secretCiphertext String
+  id                String            @id @default(uuid()) @db.Uuid
+  organizationId    String            @db.Uuid
+  url               String
+  secretCiphertext  String
   encryptionVersion String
-  eventTypes String[] @default([])
-  disabledAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  deliveries WebhookDelivery[]
+  eventTypes        String[]          @default([])
+  disabledAt        DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  organization      Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliveries        WebhookDelivery[]
+
   @@unique([organizationId, url])
   @@index([organizationId, disabledAt])
   @@map("webhook_endpoint")
 }
 
 model WebhookDelivery {
-  id String @id @default(uuid()) @db.Uuid
-  endpointId String @db.Uuid
-  eventType String
-  payload Json
-  status WebhookDeliveryStatus @default(PENDING)
-  attempts Int @default(0)
-  lastError String?
+  id          String                @id @default(uuid()) @db.Uuid
+  endpointId  String                @db.Uuid
+  eventType   String
+  payload     Json
+  status      WebhookDeliveryStatus @default(PENDING)
+  attempts    Int                   @default(0)
+  lastError   String?
   deliveredAt DateTime?
-  createdAt DateTime @default(now())
-  endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  createdAt   DateTime              @default(now())
+  endpoint    WebhookEndpoint       @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
   @@index([endpointId, status, createdAt])
   @@map("webhook_delivery")
 }
 
 model InboundWebhookCredential {
-  id String @id @default(uuid()) @db.Uuid
-  organizationId String @db.Uuid
-  keyId String @unique
-  secretCiphertext String
+  id                String       @id @default(uuid()) @db.Uuid
+  organizationId    String       @db.Uuid
+  keyId             String       @unique
+  secretCiphertext  String
   encryptionVersion String
-  disabledAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  disabledAt        DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
   @@index([organizationId, disabledAt])
   @@map("inbound_webhook_credential")
 }
 
 model EvaluationSuite {
-  id String @id @default(uuid()) @db.Uuid
-  key String @unique
-  name String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  cases EvaluationCase[]
-  runs EvaluationRun[]
+  id        String           @id @default(uuid()) @db.Uuid
+  key       String           @unique
+  name      String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  cases     EvaluationCase[]
+  runs      EvaluationRun[]
+
   @@map("evaluation_suite")
 }
 
 model EvaluationCase {
-  id String @id @default(uuid()) @db.Uuid
-  suiteId String @db.Uuid
-  name String
-  input Json
-  expectedProperties Json
+  id                  String             @id @default(uuid()) @db.Uuid
+  suiteId             String             @db.Uuid
+  name                String
+  input               Json
+  expectedProperties  Json
   forbiddenProperties Json
-  referenceContext Json?
-  tags String[] @default([])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  suite EvaluationSuite @relation(fields: [suiteId], references: [id], onDelete: Cascade)
-  results EvaluationResult[]
+  referenceContext    Json?
+  tags                String[]           @default([])
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  suite               EvaluationSuite    @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  results             EvaluationResult[]
+
   @@unique([suiteId, name])
   @@index([suiteId])
   @@map("evaluation_case")
 }
 
 model EvaluationRun {
-  id String @id @default(uuid()) @db.Uuid
-  suiteId String @db.Uuid
-  status EvaluationRunStatus @default(PENDING)
-  oldPromptKey String?
+  id               String              @id @default(uuid()) @db.Uuid
+  suiteId          String              @db.Uuid
+  status           EvaluationRunStatus @default(PENDING)
+  oldPromptKey     String?
   oldPromptVersion Int?
-  newPromptKey String?
+  newPromptKey     String?
   newPromptVersion Int?
-  startedAt DateTime?
-  finishedAt DateTime?
-  createdAt DateTime @default(now())
-  suite EvaluationSuite @relation(fields: [suiteId], references: [id], onDelete: Cascade)
-  results EvaluationResult[]
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime            @default(now())
+  suite            EvaluationSuite     @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  results          EvaluationResult[]
+
   @@index([suiteId, status, createdAt])
   @@map("evaluation_run")
 }
 
 model EvaluationResult {
-  id String @id @default(uuid()) @db.Uuid
-  runId String @db.Uuid
-  caseId String @db.Uuid
-  passed Boolean
-  score Float?
-  output Json?
-  failures Json?
-  createdAt DateTime @default(now())
-  run EvaluationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  id             String         @id @default(uuid()) @db.Uuid
+  runId          String         @db.Uuid
+  caseId         String         @db.Uuid
+  passed         Boolean
+  score          Float?
+  output         Json?
+  failures       Json?
+  createdAt      DateTime       @default(now())
+  run            EvaluationRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
   evaluationCase EvaluationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
   @@unique([runId, caseId])
   @@index([caseId])
   @@map("evaluation_result")
 }
 
 model Approval {
-  id String @id @default(uuid()) @db.Uuid
-  contentProjectId String @db.Uuid
-  status String
-  reviewerUserId String? @db.Uuid
-  note String?
-  createdAt DateTime @default(now())
-  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  id               String         @id @default(uuid()) @db.Uuid
+  contentProjectId String         @db.Uuid
+  status           String
+  reviewerUserId   String?        @db.Uuid
+  note             String?
+  createdAt        DateTime       @default(now())
+  contentProject   ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+
   @@index([contentProjectId, createdAt])
   @@map("approval")
 }
 
 model EditorialComment {
-  id String @id @default(uuid()) @db.Uuid
-  contentProjectId String @db.Uuid
-  authorUserId String? @db.Uuid
-  body String
-  resolvedAt DateTime?
-  createdAt DateTime @default(now())
-  contentProject ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+  id               String         @id @default(uuid()) @db.Uuid
+  contentProjectId String         @db.Uuid
+  authorUserId     String?        @db.Uuid
+  body             String
+  resolvedAt       DateTime?
+  createdAt        DateTime       @default(now())
+  contentProject   ContentProject @relation(fields: [contentProjectId], references: [id], onDelete: Cascade)
+
   @@index([contentProjectId, createdAt])
   @@map("editorial_comment")
 }
 
 model Claim {
-  id String @id @default(uuid()) @db.Uuid
-  brandId String @db.Uuid
-  contentProjectId String? @db.Uuid
-  text String
-  type String
-  status ClaimStatus @default(UNVERIFIED)
-  confidence Float?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  evidence Evidence[]
+  id               String      @id @default(uuid()) @db.Uuid
+  brandId          String      @db.Uuid
+  contentProjectId String?     @db.Uuid
+  text             String
+  type             String
+  status           ClaimStatus @default(UNVERIFIED)
+  confidence       Float?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  brand            Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  evidence         Evidence[]
+
   @@index([brandId, status])
   @@map("claim")
 }
 
 model Evidence {
-  id String @id @default(uuid()) @db.Uuid
-  claimId String @db.Uuid
-  researchItemId String? @db.Uuid
-  sourceUrl String
-  sourceTitle String?
-  capturedAt DateTime @default(now())
-  excerpt String
-  mediaAssetId String? @db.Uuid
-  confidence Float?
-  metadata Json?
-  claim Claim @relation(fields: [claimId], references: [id], onDelete: Cascade)
-  researchItem ResearchItem? @relation(fields: [researchItemId], references: [id], onDelete: SetNull)
+  id             String        @id @default(uuid()) @db.Uuid
+  claimId        String        @db.Uuid
+  researchItemId String?       @db.Uuid
+  sourceUrl      String
+  sourceTitle    String?
+  capturedAt     DateTime      @default(now())
+  excerpt        String
+  mediaAssetId   String?       @db.Uuid
+  confidence     Float?
+  metadata       Json?
+  claim          Claim         @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  researchItem   ResearchItem? @relation(fields: [researchItemId], references: [id], onDelete: SetNull)
+
   @@index([claimId])
   @@index([researchItemId])
   @@map("evidence")
@@ -1207,6 +1296,7 @@ model WorkflowRun {
   payload        Json?
   result         Json?
   error          Json?
+  scheduledFor   DateTime?
   startedAt      DateTime?
   finishedAt     DateTime?
   createdAt      DateTime          @default(now())
@@ -1217,6 +1307,7 @@ model WorkflowRun {
   @@unique([organizationId, idempotencyKey])
   @@index([organizationId, status, createdAt])
   @@index([brandId, status])
+  @@index([status, scheduledFor])
   @@map("workflow_run")
 }
 

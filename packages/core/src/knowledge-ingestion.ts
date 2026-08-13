@@ -96,53 +96,101 @@ export function createKnowledgeIngestionService(
         );
       }
 
+      return processDocument({
+        organizationId,
+        brandId,
+        document,
+        text: extracted.text,
+      });
+    },
+
+    async retry(input: { context: KnowledgeWriteContext; documentId: string }) {
+      const { organizationId, brandId } = requireWriteContext(input.context);
+      const document = await repository.findFailedDocumentForRetry({
+        organizationId,
+        brandId,
+        documentId: input.documentId,
+      });
+      if (!document) {
+        throw new KnowledgeIngestionError('Knowledge document is not available for retry.');
+      }
+      if (!document.sourceText) {
+        throw new KnowledgeIntegrityError(
+          'Knowledge document has no persisted source text for retry.',
+        );
+      }
+
+      return processDocument({
+        organizationId,
+        brandId,
+        document,
+        text: validateText(document.sourceText),
+      });
+    },
+  };
+
+  async function processDocument(input: {
+    organizationId: string;
+    brandId: string;
+    document: { id: string; status: KnowledgeDocumentStatus };
+    text: string;
+  }) {
+    const { organizationId, brandId, document, text } = input;
+    if (
+      document.status !== KnowledgeDocumentStatus.PENDING &&
+      document.status !== KnowledgeDocumentStatus.FAILED
+    ) {
+      throw new KnowledgeIntegrityError(
+        `Knowledge document cannot be processed from ${document.status}.`,
+      );
+    }
+
+    await transition({
+      organizationId,
+      brandId,
+      documentId: document.id,
+      from: document.status === KnowledgeDocumentStatus.FAILED ? 'FAILED' : 'PENDING',
+      to: 'PROCESSING',
+    });
+    try {
+      await Promise.all(
+        splitIntoChunks(text).map((content, ordinal) =>
+          repository.addChunk({
+            organizationId,
+            brandId,
+            documentId: document.id,
+            ordinal,
+            content,
+          }),
+        ),
+      );
       await transition({
         organizationId,
         brandId,
         documentId: document.id,
-        from: document.status === KnowledgeDocumentStatus.FAILED ? 'FAILED' : 'PENDING',
-        to: 'PROCESSING',
+        from: 'PROCESSING',
+        to: 'READY',
       });
-      try {
-        await Promise.all(
-          splitIntoChunks(extracted.text).map((content, ordinal) =>
-            repository.addChunk({
-              organizationId,
-              brandId,
-              documentId: document.id,
-              ordinal,
-              content,
-            }),
-          ),
-        );
-        await transition({
-          organizationId,
-          brandId,
-          documentId: document.id,
-          from: 'PROCESSING',
-          to: 'READY',
-        });
-        const ready = await repository.findDocumentByChecksum({
-          organizationId,
-          brandId,
-          checksum,
-        });
-        if (!ready || ready.status !== KnowledgeDocumentStatus.READY) {
-          throw new KnowledgeIntegrityError('READY knowledge document could not be reloaded.');
-        }
-        return ready;
-      } catch (error) {
-        await transition({
-          organizationId,
-          brandId,
-          documentId: document.id,
-          from: 'PROCESSING',
-          to: 'FAILED',
-        });
-        throw error;
+      const ready = await repository.findDocumentById({
+        organizationId,
+        brandId,
+        documentId: document.id,
+      });
+      if (!ready || ready.status !== KnowledgeDocumentStatus.READY) {
+        throw new KnowledgeIntegrityError('READY knowledge document could not be reloaded.');
       }
-    },
-  };
+      return ready;
+    } catch (error) {
+      await transition({
+        organizationId,
+        brandId,
+        documentId: document.id,
+        from: 'PROCESSING',
+        to: 'FAILED',
+      });
+      throw error;
+    }
+  }
 
   async function transition(input: {
     organizationId: string;

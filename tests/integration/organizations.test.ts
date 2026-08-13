@@ -25,6 +25,7 @@ afterAll(async () => {
 
 describe('organization application service', () => {
   it('creates an owner organization, isolates lists and excludes revoked membership', async () => {
+    await prisma.organization.deleteMany({ where: { slug: { startsWith: prefix } } });
     const [owner, foreign] = await Promise.all([
       prisma.user.upsert({
         where: { email: ownerEmail },
@@ -63,6 +64,31 @@ describe('organization application service', () => {
     );
     await expect(service.createForUser(owner.id, 'x')).rejects.toBeInstanceOf(
       OrganizationInputError,
+    );
+  });
+
+  it('falls back to a unique slug after the readable collision range is exhausted', async () => {
+    await prisma.organization.deleteMany({ where: { slug: { startsWith: `${prefix}-fallback` } } });
+    const owner = await prisma.user.upsert({
+      where: { email: ownerEmail },
+      create: { email: ownerEmail, name: 'Owner' },
+      update: {},
+    });
+    const baseSlug = `${prefix}-fallback`;
+    await Promise.all(
+      Array.from({ length: 20 }, (_, index) =>
+        repository.createOrganizationWithOwner({
+          ownerUserId: owner.id,
+          name: `Reserved ${index + 1}`,
+          slug: index === 0 ? baseSlug : `${baseSlug}-${index + 1}`,
+        }),
+      ),
+    );
+
+    await expect(service.createForUser(owner.id, `${prefix} fallback`)).resolves.toEqual(
+      expect.objectContaining({
+        slug: expect.stringMatching(new RegExp(`^${baseSlug}-[a-f0-9]{12}$`)),
+      }),
     );
   });
 });

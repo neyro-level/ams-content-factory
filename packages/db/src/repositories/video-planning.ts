@@ -61,5 +61,35 @@ export function createVideoPlanningRepository(prisma: PrismaClient = getPrisma()
         include: { beats: { orderBy: { ordinal: 'asc' } } },
       });
     },
+    findApprovedStoryboardSource(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      contentVersionId: string;
+    }) {
+      return prisma.contentProject.findFirst({
+        where: {
+          id: input.contentProjectId,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          status: 'APPROVED',
+          versions: { some: { id: input.contentVersionId } },
+        },
+        select: {
+          id: true,
+          contentType: true,
+          versions: {
+            where: { id: input.contentVersionId },
+            select: { id: true, body: true, script: true, hook: true, cta: true },
+          },
+        },
+      });
+    },
+    findActiveRecipe(id: string) {
+      return prisma.videoRecipe.findFirst({
+        where: { id, status: 'ACTIVE' },
+        select: { id: true, key: true, durationConfig: true, visualJobs: true },
+      });
+    },
   };
 }

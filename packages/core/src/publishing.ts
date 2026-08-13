@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import {
   createPublishingRepository,
+  createTenantRepository,
   type PrismaClient,
   type PublicationStatus,
   type SocialPlatform,
@@ -9,9 +10,15 @@ import type { PublishingProvider } from '@ams-content-factory/providers';
 import { AccessDeniedError, requirePermission, type Permission } from './tenant-context';
 import { createTokenEncryptor, TokenEncryptionError } from './token-encryption';
 
-type Context = { organizationId: string; brandId?: string; permissions: Set<Permission> };
+type Context = {
+  userId: string;
+  organizationId: string;
+  brandId?: string;
+  permissions: Set<Permission>;
+};
 type Encryptor = ReturnType<typeof createTokenEncryptor>;
 type PublishingRepository = ReturnType<typeof createPublishingRepository>;
+type TenantRepository = ReturnType<typeof createTenantRepository>;
 
 /**
  * Transitions that may be requested by normal application operations.
@@ -94,10 +101,12 @@ function fingerprint(input: { text: string; mediaKeys: string[]; accountId: stri
 export function createPublishingService(options: {
   prisma?: PrismaClient;
   repository?: PublishingRepository;
+  tenantRepository?: TenantRepository;
   encryptor: Encryptor;
   providers: Record<SocialPlatform, PublishingProvider>;
 }) {
   const repository = options.repository ?? createPublishingRepository(options.prisma);
+  const tenants = options.tenantRepository ?? createTenantRepository(options.prisma);
   const load = async (context: Context, id: string) => {
     const publication = await repository.findPublication({ ...scope(context), id });
     if (!publication) throw new AccessDeniedError('Publication is outside the active tenant.');
@@ -151,7 +160,7 @@ export function createPublishingService(options: {
     return load(context, publicationId);
   };
 
-  return {
+  const service = {
     async connectAccount(
       context: Context,
       input: {
@@ -180,6 +189,33 @@ export function createPublishingService(options: {
       });
       if (!credential)
         throw new AccessDeniedError('Social credentials are outside the active tenant.');
+      await tenants.appendAuditLog({
+        organizationId: activeScope.organizationId,
+        brandId: activeScope.brandId,
+        actorUserId: context.userId,
+        action: 'social.connect',
+        entityType: 'SocialAccount',
+        entityId: account.id,
+        metadata: { platform: account.platform },
+      });
+      return account;
+    },
+    async disconnectAccount(context: Context, socialAccountId: string) {
+      const activeScope = scope(context);
+      const account = await repository.disconnectSocialAccount({
+        ...activeScope,
+        id: socialAccountId,
+      });
+      if (!account) throw new AccessDeniedError('Social account is outside the active tenant.');
+      await tenants.appendAuditLog({
+        organizationId: activeScope.organizationId,
+        brandId: activeScope.brandId,
+        actorUserId: context.userId,
+        action: 'social.disconnect',
+        entityType: 'SocialAccount',
+        entityId: account.id,
+        metadata: { platform: account.platform },
+      });
       return account;
     },
     async create(
@@ -188,7 +224,6 @@ export function createPublishingService(options: {
         contentProjectId: string;
         platformVariantId: string;
         socialAccountId: string;
-        scheduledAt?: Date;
       },
     ) {
       const publication = await repository.createPublication({ ...scope(context), ...input });
@@ -196,9 +231,16 @@ export function createPublishingService(options: {
         throw new AccessDeniedError('Publication references are outside the active tenant.');
       return publication;
     },
-    async schedule(context: Context, id: string) {
+    async schedule(context: Context, id: string, scheduledAt: Date) {
       const publication = await load(context, id);
-      await transition(context, id, publication.status, 'QUEUED');
+      if (publication.status !== 'DRAFT') {
+        throw new PublicationTransitionError(publication.status, 'QUEUED');
+      }
+      if (Number.isNaN(scheduledAt.getTime()) || scheduledAt.getTime() <= Date.now()) {
+        throw new Error('Publication schedule time must be in the future.');
+      }
+      const result = await repository.schedulePublication({ ...scope(context), id, scheduledAt });
+      if (result.count !== 1) throw new PublicationTransitionConflictError();
       return load(context, id);
     },
     async recover(context: Context, id: string) {
@@ -327,6 +369,15 @@ export function createPublishingService(options: {
           ...(result.permalink !== undefined ? { permalink: result.permalink } : {}),
           publishedAt: new Date(),
         });
+        await tenants.appendAuditLog({
+          organizationId: context.organizationId,
+          brandId: scope(context).brandId,
+          ...(context.userId.startsWith('system:') ? {} : { actorUserId: context.userId }),
+          action: 'publication.dispatch',
+          entityType: 'Publication',
+          entityId: publication.id,
+          metadata: { provider: provider.platform, attemptId: attempt.id },
+        });
         return load(context, publication.id);
       } catch (error) {
         if (error instanceof PublicationOutcomeUnknownError) throw error;
@@ -357,6 +408,26 @@ export function createPublishingService(options: {
         throw error;
       }
     },
+    /**
+     * Only a trusted worker may call this after it atomically claims a durable
+     * publication workflow. Tenant/user context never comes from a queue payload.
+     */
+    async publishFromWorker(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      idempotencyKey: string;
+    }) {
+      return service.publish(
+        {
+          userId: 'system:publication-dispatch',
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+          permissions: new Set<Permission>(['content:write']),
+        },
+        { id: input.id, idempotencyKey: input.idempotencyKey },
+      );
+    },
     async investigate(context: Context, id: string) {
       const publication = await load(context, id);
       if (publication.status !== 'OUTCOME_UNKNOWN' && publication.status !== 'PUBLISHING') {
@@ -373,9 +444,19 @@ export function createPublishingService(options: {
         throw new Error(
           `No publishing provider is configured for ${publication.socialAccount.platform}.`,
         );
+      const credential = publication.socialAccount.credential;
+      if (!credential)
+        throw new Error('Social account credentials are required before investigation.');
       const status = await provider.getStatus({
         providerOperation: attempt.providerOperation,
         ...(attempt.providerJobId !== null ? { providerJobId: attempt.providerJobId } : {}),
+        credentials: {
+          accessToken: options.encryptor.decrypt(credential.accessTokenCiphertext),
+          ...(credential.refreshTokenCiphertext !== null
+            ? { refreshToken: options.encryptor.decrypt(credential.refreshTokenCiphertext) }
+            : {}),
+          ...(credential.expiresAt !== null ? { expiresAt: credential.expiresAt } : {}),
+        },
       });
       if (status.status === 'PUBLISHED') {
         await repository.updateAttempt({
@@ -419,7 +500,17 @@ export function createPublishingService(options: {
           },
         );
       }
+      await tenants.appendAuditLog({
+        organizationId: context.organizationId,
+        brandId: scope(context).brandId,
+        ...(context.userId.startsWith('system:') ? {} : { actorUserId: context.userId }),
+        action: 'publication.reconcile',
+        entityType: 'Publication',
+        entityId: publication.id,
+        metadata: { provider: provider.platform, attemptId: attempt.id, outcome: status.status },
+      });
       return load(context, publication.id);
     },
   };
+  return service;
 }

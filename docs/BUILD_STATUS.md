@@ -3,15 +3,16 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W6.2 — safe text/URL/file intake (`DONE`); next: W6.3 controlled document retry.
-- **Last verification:** 2026-08-12: Prisma validation, lint, formatting, typecheck, 26 unit tests,
-  30 integration contracts, 7 browser E2E flows and production build passed.
+- **Current task:** W16 observability and audit is `FOUNDATION`: structured logging, recursive secret redaction,
+  durable audit events for critical actions and a redacting error reporter are present. Next: W17 bounded performance
+  hardening.
+- **Last verification:** 2026-08-13: Prisma validation, lint, formatting, workspace typecheck, 65 unit tests,
+  75 PostgreSQL integration contracts and production web/worker builds passed. No schema or migration changes.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a
   PostgreSQL + pgvector integration gate in SourceCraft CI exist.
-- **NOT_IMPLEMENTED:** knowledge retry and hybrid search UI; real product workflows, live provider runtime,
-  durable scheduling, end-to-end content operations and release-gate proof.
+- **NOT_IMPLEMENTED:** complete platform media upload, end-to-end content operations and release-gate proof.
 - **Remote:** private SourceCraft repository `integrator-p/ams-content-factory` is canonical `origin`;
   protected `main` and `verify` CI are active. GitHub is a non-canonical legacy mirror.
 
@@ -38,6 +39,55 @@ in the Timeweb instance configuration and the PostgreSQL package is available, b
 installed in `default_db`: the provider-controlled database owner retains that permission. The Timeweb API
 has no separate extension-install action, so database schema deployment is specifically `BLOCKED_EXTERNAL`
 until Timeweb installs `vector` or supplies an extension-capable operator connection.
+
+Knowledge hybrid retrieval is also `BLOCKED_EXTERNAL`: the application has a real OpenAI embedding adapter
+and a protected UI entry point, but this workspace has no `OPENAI_API_KEY`. It intentionally returns an
+explicit unavailable status and never substitutes mock embeddings for a live result.
+
+Research search and URL extraction are `BLOCKED_EXTERNAL`: a protected workspace and a production
+Firecrawl adapter are implemented, but this workspace has no `FIRECRAWL_API_KEY`. Text intake remains
+available through the repository-bound application service; external search and extraction never report
+mock success when the provider is not configured.
+
+Text generation is `BLOCKED_EXTERNAL`: the application-facing provider contract and one OpenAI Responses
+API adapter exist, but no `OPENAI_API_KEY` is configured. The adapter uses a bounded request and `store:
+false`; missing credentials, upstream errors and empty output are fail-closed. No user-facing generation
+result is presented as live until the credential is supplied and a later execution workflow is implemented.
+
+Media upload is `BLOCKED_EXTERNAL`: the protected brand media library is available and test contracts use
+an explicit test-only storage double, but the product path has no local-storage fallback. It does not create
+an asset record or report a successful upload until the private S3 endpoint, bucket and credentials are
+configured through the production runtime.
+
+Storyboard generation is `BLOCKED_EXTERNAL`: approved-script and active-recipe validation are implemented
+behind the existing OpenAI provider boundary, but the runtime has no `OPENAI_API_KEY`. An unavailable
+provider creates no storyboard; test-only mock generation is not part of the product path.
+
+VK publishing is `BLOCKED_EXTERNAL`: the provider layer contains a bounded VK API v5.199 client for text-only
+`wall.post` and post reconciliation. It needs an encrypted per-account OAuth token, `VK_API_VERSION` and the
+not-yet-implemented VK media upload path; absent inputs, API errors, timeouts and internal storage keys fail
+closed and never report a published post.
+
+Instagram publishing is `BLOCKED_EXTERNAL`: the provider layer contains bounded Graph API v22.0 image-container
+and publish calls, but private storage keys, local/private URLs, missing OAuth tokens and unsupported media shapes
+are rejected. A public delivery/upload boundary and connected Instagram OAuth account are required before a real
+post can be attempted; authenticated status reconciliation is implemented but live operation remains blocked.
+
+VK analytics is `BLOCKED_EXTERNAL`: a bounded VK `wall.getById` runtime adapter validates that the requested
+post belongs to the connected account and stores only returned views, likes, comments and reposts (as shares).
+The adapter has no live worker entry point yet and requires the encrypted account OAuth token and `VK_API_VERSION`;
+missing configuration, malformed ids, API errors, timeouts and absent posts fail closed.
+
+Instagram analytics is `BLOCKED_EXTERNAL`: a bounded Graph media adapter reads direct like/comment counters and
+the documented Media Insights values for impressions, reach, shares and saved media. It requires the encrypted
+account OAuth token and `INSTAGRAM_GRAPH_API_VERSION`; it does not fabricate unavailable metrics or preserve a
+token in raw metrics/errors, and missing configuration, malformed ids, Graph errors, timeouts and absent media
+fail closed. W14.4 registers the actual worker handler, while live collection remains blocked without credentials.
+
+Analytics workflow execution is `FOUNDATION`: W14.4 registers `analytics.collect` in the actual worker dispatcher.
+It invokes the scoped core service only after validating the durable workflow's type, brand, payload and due time;
+foreign, malformed or premature runs persist `FAILED` without a snapshot. Live provider collection remains
+`BLOCKED_EXTERNAL` until an encrypted connected account credential and provider runtime configuration exist.
 
 The AMS Server artifact pipeline is a `FOUNDATION`: it has not been built from a merged main commit or
 installed on the server. It intentionally does not bypass the missing `vector` SQL object, runtime

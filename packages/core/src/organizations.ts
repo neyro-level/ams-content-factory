@@ -3,6 +3,7 @@ import {
   OrganizationSlugConflictError,
   type TenantRepository,
 } from '@ams-content-factory/db';
+import { randomUUID } from 'node:crypto';
 
 export class OrganizationInputError extends Error {
   constructor(message: string) {
@@ -39,6 +40,15 @@ export function createOrganizationService(repository: TenantRepository = createT
       const baseSlug = toSlug(name);
       for (let suffix = 1; suffix <= 20; suffix += 1) {
         const slug = suffix === 1 ? baseSlug : `${baseSlug}-${suffix}`;
+        try {
+          return await repository.createOrganizationWithOwner({ ownerUserId: userId, name, slug });
+        } catch (error) {
+          if (!(error instanceof OrganizationSlugConflictError)) throw error;
+        }
+      }
+
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const slug = `${baseSlug}-${randomUUID().replaceAll('-', '').slice(0, 12)}`;
         try {
           return await repository.createOrganizationWithOwner({ ownerUserId: userId, name, slug });
         } catch (error) {

@@ -20,7 +20,18 @@ const slug = 'analytics-contract';
 const email = `${slug}@local`;
 const encryptor = createTokenEncryptor(Buffer.alloc(32, 9).toString('base64'));
 
+async function approveProject(
+  content: ReturnType<typeof createContentService>,
+  context: Awaited<ReturnType<typeof resolveTenantContext>>,
+  id: string,
+) {
+  for (const status of ['RESEARCHING', 'DRAFT', 'FACT_CHECK', 'REVIEW', 'APPROVED'] as const) {
+    await content.transition(context, id, status);
+  }
+}
+
 afterAll(async () => {
+  await prisma.auditLog.deleteMany({ where: { organization: { slug } } });
   await prisma.organization.deleteMany({ where: { slug } });
   await prisma.user.deleteMany({ where: { email } });
   await prisma.$disconnect();
@@ -28,6 +39,7 @@ afterAll(async () => {
 
 describe('analytics foundation', () => {
   it('collects nullable normalized snapshots and isolates brands', async () => {
+    await prisma.auditLog.deleteMany({ where: { organization: { slug } } });
     await prisma.organization.deleteMany({ where: { slug } });
     const user = await prisma.user.upsert({
       where: { email },
@@ -62,6 +74,7 @@ describe('analytics foundation', () => {
       title: 'Analytics project',
       contentType: 'SOCIAL_POST',
     });
+    await approveProject(content, firstContext, project!.id);
     const variant = await prisma.platformVariant.create({
       data: { contentProjectId: project!.id, platform: 'VK', caption: 'Analytics caption' },
     });

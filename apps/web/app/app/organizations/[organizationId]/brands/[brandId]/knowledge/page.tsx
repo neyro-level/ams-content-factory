@@ -6,7 +6,14 @@ import {
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
-import { KnowledgeIntakeForms } from '../../../../../../../components/knowledge-intake-forms';
+import {
+  KnowledgeIntakeForms,
+  KnowledgeRetryButton,
+} from '../../../../../../../components/knowledge-intake-forms';
+import {
+  KnowledgeIndexButton,
+  KnowledgeSearchForm,
+} from '../../../../../../../components/knowledge-search';
 
 export default async function KnowledgePage({
   params,
@@ -38,7 +45,7 @@ export default async function KnowledgePage({
           <h1 id="knowledge-title">Документы бренда</h1>
           <p className="muted">
             Здесь отображаются только документы активного бренда. Добавление источников, повторная
-            обработка и поиск будут доступны в следующих шагах W6.
+            обработка неудачных документов и поиск развиваются в рамках W6.
           </p>
         </div>
         <Link className="text-link" href={`/app/organizations/${organizationId}/brands`}>
@@ -58,7 +65,23 @@ export default async function KnowledgePage({
                       {document.type} · {document._count.chunks} фрагм.
                     </p>
                   </div>
-                  <span className="badge">{document.status}</span>
+                  <div className="knowledge-document-actions">
+                    <span className="badge">{document.status}</span>
+                    {document.status === 'FAILED' ? (
+                      <KnowledgeRetryButton
+                        organizationId={organizationId}
+                        brandId={brandId}
+                        documentId={document.id}
+                      />
+                    ) : null}
+                    {document.status === 'READY' ? (
+                      <KnowledgeIndexButton
+                        organizationId={organizationId}
+                        brandId={brandId}
+                        documentId={document.id}
+                      />
+                    ) : null}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -68,6 +91,9 @@ export default async function KnowledgePage({
         </section>
         <section className="panel">
           <KnowledgeIntakeForms organizationId={organizationId} brandId={brandId} />
+        </section>
+        <section className="panel">
+          <KnowledgeSearchForm organizationId={organizationId} brandId={brandId} />
         </section>
       </div>
     </main>

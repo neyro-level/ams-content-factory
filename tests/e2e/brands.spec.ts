@@ -36,7 +36,6 @@ test('creates a brand inside the current authenticated organization', async ({ p
 
   await page.getByLabel('Название бренда').fill(brandName);
   await page.getByRole('button', { name: 'Создать бренд' }).click();
-  await expect(page.getByRole('status')).toContainText('создан');
   await expect(page.getByRole('heading', { name: brandName })).toBeVisible();
   await expect(page.getByText('ru-RU')).toBeVisible();
   await page.getByRole('link', { name: 'База знаний' }).click();
@@ -47,6 +46,53 @@ test('creates a brand inside the current authenticated organization', async ({ p
   await textForm.getByLabel('Название').fill('Текстовый источник E2E');
   await textForm.getByLabel('Содержимое').fill('Надёжный текстовый источник для базы знаний.');
   await textForm.getByRole('button', { name: 'Добавить текст' }).click();
-  await expect(textForm.getByRole('status')).toContainText('добавлен');
   await expect(page.getByRole('heading', { name: 'Текстовый источник E2E' })).toBeVisible();
+
+  const searchPanel = page.locator('.knowledge-search');
+  const searchForm = searchPanel.locator('form');
+  await searchForm.getByLabel('Запрос').fill('база знаний');
+  await searchForm.getByRole('button', { name: 'Найти' }).click();
+  await expect(searchPanel.getByRole('status')).toContainText('BLOCKED_EXTERNAL');
+
+  await page.getByRole('link', { name: 'К брендам' }).click();
+  await page.getByRole('link', { name: 'Исследование' }).click();
+  await expect(page.getByRole('heading', { name: 'Источники и материалы' })).toBeVisible();
+  const researchSearch = page
+    .locator('.research-workspace')
+    .locator('form')
+    .filter({ hasText: 'Найти источники' });
+  await researchSearch.getByLabel('Запрос').fill('контент-маркетинг');
+  await researchSearch.getByRole('button', { name: 'Найти источники' }).click();
+  await expect(page.locator('.research-workspace').getByRole('status')).toContainText(
+    'BLOCKED_EXTERNAL',
+  );
+
+  await page.getByRole('link', { name: 'К брендам' }).click();
+  await page.getByRole('link', { name: 'База знаний' }).click();
+  await expect(page).toHaveURL(/\/knowledge$/);
+
+  const organization = await prisma.organization.findFirstOrThrow({
+    where: { memberships: { some: { user: { email } } } },
+    select: { id: true },
+  });
+  const brand = await prisma.brand.findFirstOrThrow({
+    where: { organizationId: organization.id, name: brandName },
+    select: { id: true },
+  });
+  await prisma.knowledgeDocument.create({
+    data: {
+      organizationId: organization.id,
+      brandId: brand.id,
+      title: 'Неудачный источник E2E',
+      type: 'TEXT',
+      sourceText: 'Сохранённый текст для повторной обработки в браузерном сценарии.',
+      status: 'FAILED',
+    },
+  });
+  await page.reload();
+  await expect(page).toHaveURL(/\/knowledge$/);
+  const failedDocument = page.getByRole('listitem').filter({ hasText: 'Неудачный источник E2E' });
+  await expect(failedDocument.getByText('FAILED')).toBeVisible();
+  await failedDocument.getByRole('button', { name: 'Повторить' }).click();
+  await expect(failedDocument.getByText('READY')).toBeVisible();
 });

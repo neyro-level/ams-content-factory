@@ -18,6 +18,9 @@ importers:
       '@eslint/js':
         specifier: ^9.39.1
         version: 9.39.5
+      '@modelcontextprotocol/sdk':
+        specifier: 1.30.0
+        version: 1.30.0(zod@4.4.3)
       '@playwright/test':
         specifier: ^1.58.0
         version: 1.62.1
@@ -106,12 +109,18 @@ importers:
       '@ams-content-factory/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@ams-content-factory/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@ams-content-factory/db':
         specifier: workspace:*
         version: link:../../packages/db
       '@ams-content-factory/jobs':
         specifier: workspace:*
         version: link:../../packages/jobs
+      '@ams-content-factory/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
       tsx:
         specifier: 4.21.0
         version: 4.21.0

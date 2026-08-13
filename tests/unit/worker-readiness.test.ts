@@ -26,6 +26,8 @@ describe('worker readiness', () => {
         calls.push('reconcile');
         return { requeued: 3 };
       },
+      createPublicationDispatchHandler: () => async () => ({ outcome: 'SKIPPED' }),
+      createAnalyticsCollectionHandler: () => async () => ({ outcome: 'COLLECTED' }),
       reportReady: (signal) => events.push(JSON.stringify(signal)),
     });
 
@@ -35,6 +37,7 @@ describe('worker readiness', () => {
       'reconcile',
       'work:system.health',
       'work:workflow.run',
+      'work:publication.dispatch',
     ]);
     expect(result.readiness).toMatchObject({
       event: 'worker.ready',
@@ -62,6 +65,8 @@ describe('worker readiness', () => {
         startQueue: async () => queue as never,
         createRepository: () => ({}) as never,
         reconcile: async () => ({ requeued: 0 }),
+        createPublicationDispatchHandler: () => async () => ({ outcome: 'SKIPPED' }),
+        createAnalyticsCollectionHandler: () => async () => ({ outcome: 'COLLECTED' }),
         reportReady: () => {
           reported = true;
         },
@@ -76,7 +81,7 @@ describe('worker readiness', () => {
     expect(createWorkerReadinessSignal(0)).toMatchObject({
       event: 'worker.ready',
       ready: true,
-      registeredQueues: ['system.health', 'workflow.run'],
+      registeredQueues: ['system.health', 'workflow.run', 'publication.dispatch'],
       requeuedWorkflowRuns: 0,
     });
   });

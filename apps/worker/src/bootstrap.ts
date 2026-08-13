@@ -3,7 +3,9 @@ import { assertRuntimeEnvironment } from '@ams-content-factory/config';
 import { jobNames, startJobQueue } from '@ams-content-factory/jobs';
 import { reconcileQueuedWorkflowRuns } from './queue-reconciliation';
 import { createWorkerReadinessSignal, reportWorkerReadiness } from './readiness';
-import { processWorkflowRun } from './workflow-run-handler';
+import { processWorkflowRun, registeredWorkflowHandlers } from './workflow-run-handler';
+import { createProductionPublicationDispatchHandler } from './publication-dispatch-handler';
+import { createProductionAnalyticsCollectionHandler } from './analytics-collection-handler';
 
 type Queue = Awaited<ReturnType<typeof startJobQueue>>;
 type WorkflowRepository = ReturnType<typeof createWorkflowRunRepository>;
@@ -14,6 +16,8 @@ type WorkerDependencies = {
   createRepository?: () => WorkflowRepository;
   reconcile?: typeof reconcileQueuedWorkflowRuns;
   reportReady?: typeof reportWorkerReadiness;
+  createPublicationDispatchHandler?: typeof createProductionPublicationDispatchHandler;
+  createAnalyticsCollectionHandler?: typeof createProductionAnalyticsCollectionHandler;
 };
 
 export async function startWorker(dependencies: WorkerDependencies = {}) {
@@ -22,6 +26,10 @@ export async function startWorker(dependencies: WorkerDependencies = {}) {
   const createRepository = dependencies.createRepository ?? createWorkflowRunRepository;
   const reconcile = dependencies.reconcile ?? reconcileQueuedWorkflowRuns;
   const reportReady = dependencies.reportReady ?? reportWorkerReadiness;
+  const createPublicationDispatchHandler =
+    dependencies.createPublicationDispatchHandler ?? createProductionPublicationDispatchHandler;
+  const createAnalyticsCollectionHandler =
+    dependencies.createAnalyticsCollectionHandler ?? createProductionAnalyticsCollectionHandler;
 
   assertEnvironment();
   let queue: Queue | undefined;
@@ -29,16 +37,35 @@ export async function startWorker(dependencies: WorkerDependencies = {}) {
     queue = await startQueue();
     const repository = createRepository();
     const reconciliation = await reconcile(repository, queue);
+    const publicationDispatchHandler = createPublicationDispatchHandler();
+    const analyticsCollectionHandler = createAnalyticsCollectionHandler();
+    const workflowHandlers = {
+      ...registeredWorkflowHandlers,
+      'analytics.collect': analyticsCollectionHandler,
+    };
 
     await queue.work(jobNames.health, async () => ({ healthy: true }));
     await queue.work<{ workflowRunId: string; organizationId: string }>(
       jobNames.workflowRun,
       async ([job]) => {
         if (!job) return { skipped: true };
-        return processWorkflowRun(repository, {
-          organizationId: job.data.organizationId,
-          id: job.data.workflowRunId,
-        });
+        return processWorkflowRun(
+          repository,
+          { organizationId: job.data.organizationId, id: job.data.workflowRunId },
+          workflowHandlers,
+        );
+      },
+    );
+    await queue.work<{ workflowRunId: string; organizationId: string; publicationId: string }>(
+      jobNames.publicationDispatch,
+      async ([job]) => {
+        if (!job) return { skipped: true };
+        if (!job.data.publicationId) return { skipped: true };
+        return processWorkflowRun(
+          repository,
+          { organizationId: job.data.organizationId, id: job.data.workflowRunId },
+          { 'publication.dispatch': publicationDispatchHandler },
+        );
       },
     );
 

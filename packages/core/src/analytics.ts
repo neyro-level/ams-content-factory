@@ -150,7 +150,13 @@ export function createAnalyticsService(options: {
     },
     list(
       context: Context,
-      input: { publicationId?: string; periodStart?: Date; periodEnd?: Date } = {},
+      input: {
+        publicationId?: string;
+        periodStart?: Date;
+        periodEnd?: Date;
+        take?: number;
+        cursor?: string;
+      } = {},
     ) {
       return analytics.listSnapshots({ ...scope(context), ...input });
     },
@@ -172,8 +178,8 @@ export function createAnalyticsService(options: {
         throw new AccessDeniedError('Performance insight is outside the active tenant.');
       return insight;
     },
-    listInsights(context: Context) {
-      return analytics.listInsights(scope(context));
+    listInsights(context: Context, input: { take?: number; cursor?: string } = {}) {
+      return analytics.listInsights({ ...scope(context), ...input });
     },
   };
 }

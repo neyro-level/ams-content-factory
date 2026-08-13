@@ -290,6 +290,41 @@ h2 {
 .organization-list .muted {
   margin-top: 4px;
 }
+.knowledge-document-actions,
+.knowledge-retry {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+.knowledge-index {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+.knowledge-search {
+  display: grid;
+  gap: 14px;
+}
+.knowledge-search .organization-form {
+  margin-top: 0;
+}
+.knowledge-search-results {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 0;
+  padding-left: 22px;
+}
+.knowledge-search-results li {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.knowledge-search-results p {
+  white-space: pre-wrap;
+}
+.form-blocked {
+  color: #8a4b00;
+  font-weight: 700;
+}
 .organization-form {
   display: grid;
   gap: 16px;
@@ -339,6 +374,85 @@ h2 {
   color: var(--muted);
   line-height: 1.6;
 }
+.analytics-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.analytics-metric-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.analytics-metric-card p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.analytics-metric-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.5rem;
+}
+.analytics-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  padding-bottom: 48px;
+}
+.analytics-layout > :first-child {
+  grid-column: 1 / -1;
+}
+.analytics-table-wrap {
+  overflow-x: auto;
+  margin-top: 18px;
+}
+.analytics-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  text-align: left;
+}
+.analytics-table th,
+.analytics-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.analytics-table th {
+  font-size: 0.9rem;
+}
+.analytics-list {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding-left: 22px;
+}
+.analytics-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.analytics-list h3 {
+  font-size: 1rem;
+}
+.analytics-list .muted {
+  margin-top: 4px;
+}
+.analytics-list__metric {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.content-preview {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  margin: 0;
+}
 .notice {
   border-left: 4px solid var(--accent);
 }
@@ -369,6 +483,13 @@ h2 {
   }
   .organization-layout {
     grid-template-columns: 1fr;
+  }
+  .analytics-metrics,
+  .analytics-layout {
+    grid-template-columns: 1fr;
+  }
+  .analytics-layout > :first-child {
+    grid-column: auto;
   }
   .app-header,
   .organization-list li {

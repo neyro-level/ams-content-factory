@@ -6,6 +6,13 @@ export interface EmbeddingProvider {
   embed(input: string): Promise<number[]>;
 }
 
+export class EmbeddingProviderUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'EmbeddingProviderUnavailableError';
+  }
+}
+
 export class MockEmbeddingProvider implements EmbeddingProvider {
   async embed(input: string) {
     const values = new Array<number>(EMBEDDING_DIMENSIONS);
@@ -25,7 +32,9 @@ export class OpenAiEmbeddingProvider implements EmbeddingProvider {
 
   async embed(input: string) {
     if (!this.apiKey) {
-      throw new Error('BLOCKED_EXTERNAL: OPENAI_API_KEY is required for OpenAI embeddings.');
+      throw new EmbeddingProviderUnavailableError(
+        'BLOCKED_EXTERNAL: OPENAI_API_KEY is required for OpenAI embeddings.',
+      );
     }
 
     const response = await fetch('https://api.openai.com/v1/embeddings', {

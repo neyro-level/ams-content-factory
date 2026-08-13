@@ -80,7 +80,7 @@ export const videoProductionTransitions: Readonly<
   WAITING_APPROVAL: ['GENERATING', 'CANCELLED'],
   GENERATING: ['COMPOSING', 'FAILED', 'CANCELLED'],
   COMPOSING: ['QC', 'FAILED', 'CANCELLED'],
-  QC: ['READY', 'FAILED', 'COMPOSING'],
+  QC: ['FAILED', 'COMPOSING'],
   READY: [],
   FAILED: ['GENERATING', 'CANCELLED'],
   CANCELLED: [],
@@ -192,6 +192,51 @@ export function createVideoProductionService(options: { prisma?: PrismaClient } 
         throw new Error(`Invalid video production transition: ${input.from} -> ${input.to}`);
       }
       return repository.transitionProduction({ ...scoped(context), ...input });
+    },
+    find: (context: Context, id: string) => repository.findProduction({ ...scoped(context), id }),
+  };
+}
+
+/** Product-path lifecycle: only an approved storyboard of an approved project can enter production. */
+export function createVideoProductionWorkflowService(options: { prisma?: PrismaClient } = {}) {
+  const repository = createMediaRepository(options.prisma);
+  return {
+    create(
+      context: Context,
+      input: {
+        contentProjectId: string;
+        storyboardId: string;
+        videoRecipeId: string;
+        aspectRatio: string;
+        targetDuration?: number;
+      },
+    ) {
+      return repository.createProductionFromApprovedStoryboard({ ...scoped(context), ...input });
+    },
+    async advance(context: Context, input: { id: string; to: VideoProductionStatus }) {
+      const scope = scoped(context);
+      const production = await repository.findProduction({ ...scope, id: input.id });
+      if (!production) throw new AccessDeniedError('Video production is outside the active brand.');
+      if (!videoProductionTransitions[production.status].includes(input.to)) {
+        throw new Error(`Invalid video production transition: ${production.status} -> ${input.to}`);
+      }
+      if (input.to === 'SCRIPT_READY' && production.contentProject.status !== 'APPROVED') {
+        throw new Error('Production script is not approved.');
+      }
+      if (
+        input.to === 'STORYBOARD_READY' &&
+        (production.storyboard.status !== 'APPROVED' || production.storyboard.beats.length === 0)
+      ) {
+        throw new Error('Production storyboard is not approved and complete.');
+      }
+      const transition = await repository.transitionProduction({
+        ...scope,
+        id: input.id,
+        from: production.status,
+        to: input.to,
+      });
+      if (transition.count !== 1) throw new Error('Video production transition was rejected.');
+      return repository.findProduction({ ...scope, id: input.id });
     },
     find: (context: Context, id: string) => repository.findProduction({ ...scoped(context), id }),
   };

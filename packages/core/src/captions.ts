@@ -1,5 +1,10 @@
-import { createCaptionsRepository, type PrismaClient } from '@ams-content-factory/db';
-import type { FfmpegProvider } from '@ams-content-factory/providers';
+import { createHash } from 'node:crypto';
+import {
+  createCaptionsRepository,
+  createMediaRepository,
+  type PrismaClient,
+} from '@ams-content-factory/db';
+import type { FfmpegProvider, StorageProvider } from '@ams-content-factory/providers';
 import { AccessDeniedError, requirePermission, type Permission } from './tenant-context';
 export type CaptionWord = { word: string; startMs: number; endMs: number };
 export type QcSection = { passed: boolean; issues: string[] };
@@ -84,6 +89,111 @@ export function createCaptionBurnInService(options: { ffmpeg: FfmpegProvider }) 
       });
     },
   };
+}
+
+export function createCaptionSerializationService(options: {
+  storage: StorageProvider;
+  storageDriver: string;
+  prisma?: PrismaClient;
+}) {
+  const captions = createCaptionsRepository(options.prisma);
+  const media = createMediaRepository(options.prisma);
+  const encoder = new TextEncoder();
+
+  async function store(
+    scope: { organizationId: string; brandId: string },
+    input: { filename: string; content: string; mimeType: string },
+  ) {
+    const bytes = encoder.encode(input.content);
+    const checksum = createHash('sha256').update(bytes).digest('hex');
+    const extension = input.filename.endsWith('.srt') ? 'srt' : 'ass';
+    const storageKey = `captions/${scope.organizationId}/${scope.brandId}/${checksum}.${extension}`;
+    const result = await media.createOrGetPendingAsset({
+      ...scope,
+      type: 'CAPTION',
+      mimeType: input.mimeType,
+      filename: input.filename,
+      storageKey,
+      storageDriver: options.storageDriver,
+      sizeBytes: BigInt(bytes.byteLength),
+      checksum,
+      sourceType: 'DERIVED',
+    });
+    if (!result) throw new AccessDeniedError('Caption asset is outside the active brand.');
+    if (result.asset.status === 'READY') return result.asset;
+    try {
+      if (!(await options.storage.get(storageKey))) {
+        await options.storage.put({ key: storageKey, content: bytes, contentType: input.mimeType });
+      }
+      const updated = await media.updateAssetStatus({
+        ...scope,
+        id: result.asset.id,
+        from: 'PENDING',
+        to: 'READY',
+        mimeType: input.mimeType,
+      });
+      if (updated.count !== 1) throw new Error('Caption asset status transition was rejected.');
+      return (await media.findAsset({ ...scope, id: result.asset.id }))!;
+    } catch (error) {
+      await options.storage.delete(storageKey).catch(() => undefined);
+      await media.updateAssetStatus({
+        ...scope,
+        id: result.asset.id,
+        from: 'PENDING',
+        to: 'FAILED',
+      });
+      throw error;
+    }
+  }
+
+  return {
+    async serialize(
+      context: Context,
+      input: { videoProductionId: string; transcriptId: string; style: object },
+    ) {
+      const scope = scoped(context);
+      const transcript = await captions.findTranscriptForProduction({ ...scope, ...input });
+      if (!transcript)
+        throw new AccessDeniedError('Transcript is outside the active video production.');
+      const words = parseWords(transcript.wordsJson);
+      if (!words.length) throw new Error('Transcript has no timestamped words for captions.');
+      const [srt, ass] = await Promise.all([
+        store(scope, {
+          filename: `${transcript.id}.srt`,
+          content: toSrt(words),
+          mimeType: 'application/x-subrip',
+        }),
+        store(scope, {
+          filename: `${transcript.id}.ass`,
+          content: toAss(words),
+          mimeType: 'text/x-ass',
+        }),
+      ]);
+      const track = await captions.createCaptionTrack({
+        ...scope,
+        videoProductionId: input.videoProductionId,
+        transcriptId: transcript.id,
+        style: input.style,
+        srtAssetId: srt.id,
+        assAssetId: ass.id,
+      });
+      if (!track) throw new Error('Caption track persistence was rejected.');
+      return track;
+    },
+  };
+}
+
+function parseWords(value: unknown): CaptionWord[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((word): word is CaptionWord =>
+    Boolean(
+      word &&
+      typeof word === 'object' &&
+      typeof (word as CaptionWord).word === 'string' &&
+      Number.isFinite((word as CaptionWord).startMs) &&
+      Number.isFinite((word as CaptionWord).endMs),
+    ),
+  );
 }
 
 export function evaluateQc(input: {

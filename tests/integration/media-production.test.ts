@@ -3,6 +3,8 @@ import {
   createContentService,
   createCaptionsService,
   createMediaService,
+  createMediaWorkspaceService,
+  MediaStorageBlockedExternalError,
   createStoryboardService,
   createVideoProductionService,
   resolveTenantContext,
@@ -317,5 +319,75 @@ describe('media production', () => {
     });
     expect(persistenceFailed.status).toBe('FAILED');
     await expect(dbFailureStorage.get(persistenceFailed.storageKey)).resolves.toBeNull();
+  });
+
+  it('lists only the active brand media and blocks UI uploads without production S3', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug } });
+    const owner = await prisma.user.findUniqueOrThrow({ where: { email } });
+    const one = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'one' },
+    });
+    const two = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'two' },
+    });
+    const oneContext = await resolveTenantContext(
+      { userId: owner.id, organizationId: organization.id, brandId: one.id },
+      tenants,
+    );
+    const twoContext = await resolveTenantContext(
+      { userId: owner.id, organizationId: organization.id, brandId: two.id },
+      tenants,
+    );
+    const storage = new MockStorageProvider();
+    const service = createMediaService({ prisma, storage, storageDriver: 'test-private' });
+    const visible = await service.store(oneContext, {
+      type: 'IMAGE',
+      filename: 'workspace.png',
+      content: new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      sourceType: 'RESEARCH',
+    });
+    await service.store(twoContext, {
+      type: 'VIDEO',
+      filename: 'other.mp4',
+      content: new Uint8Array([...mp4Bytes, 44]),
+      sourceType: 'AI_GENERATED',
+    });
+    const workspace = createMediaWorkspaceService({
+      tenantRepository: tenants,
+      mediaRepository: createMediaRepository(prisma),
+      mediaService: service,
+    });
+    const listed = await workspace.list({
+      userId: owner.id,
+      organizationId: organization.id,
+      brandId: one.id,
+    });
+    expect(listed.map((asset) => asset.id)).toContain(visible.id);
+    expect(listed.every((asset) => asset.brandId === one.id)).toBe(true);
+
+    const blockedWorkspace = createMediaWorkspaceService({
+      tenantRepository: tenants,
+      mediaRepository: createMediaRepository(prisma),
+    });
+    await expect(
+      blockedWorkspace.upload(
+        { userId: owner.id, organizationId: organization.id, brandId: one.id },
+        {
+          type: 'VIDEO',
+          filename: 'production-upload.mp4',
+          content: new Uint8Array([...mp4Bytes, 45]),
+          sourceType: 'UPLOAD',
+        },
+      ),
+    ).rejects.toBeInstanceOf(MediaStorageBlockedExternalError);
+    await expect(
+      prisma.mediaAsset.count({
+        where: {
+          organizationId: organization.id,
+          brandId: one.id,
+          filename: 'production-upload.mp4',
+        },
+      }),
+    ).resolves.toBe(0);
   });
 });

@@ -5,6 +5,7 @@ export function createMcpRepository(prisma: PrismaClient = getPrisma()) {
   return {
     async createApiKey(input: {
       organizationId: string;
+      actorUserId: string;
       name: string;
       tokenHash: string;
       scopes: ApiKeyScope[];
@@ -23,6 +24,7 @@ export function createMcpRepository(prisma: PrismaClient = getPrisma()) {
           tokenHash,
           revokedAt: null,
           OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+          actorUserId: { not: null },
         },
       });
     },
@@ -38,9 +40,9 @@ export function createMcpRepository(prisma: PrismaClient = getPrisma()) {
         data: { revokedAt: new Date() },
       });
     },
-    listApiKeys(organizationId: string) {
+    listApiKeys(input: { organizationId: string; take?: number; cursor?: string }) {
       return prisma.apiKey.findMany({
-        where: { organizationId },
+        where: { organizationId: input.organizationId },
         select: {
           id: true,
           name: true,
@@ -50,7 +52,9 @@ export function createMcpRepository(prisma: PrismaClient = getPrisma()) {
           revokedAt: true,
           createdAt: true,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
       });
     },
     createWebhookEndpoint(input: {

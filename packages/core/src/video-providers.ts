@@ -71,6 +71,11 @@ export function createVideoProviderService(options: {
       if (!production || production.contentProjectId !== input.contentProjectId) {
         throw new AccessDeniedError('Video production is outside the active content project.');
       }
+      if (production.status !== 'GENERATING') {
+        throw new Error(
+          'Video production must be GENERATING before a provider render is submitted.',
+        );
+      }
       const existing = await media.findRenderJobByIdempotency({
         ...scope,
         videoProductionId: input.videoProductionId,
@@ -185,7 +190,10 @@ export function createVideoProviderService(options: {
     ) {
       const scope = scoped(context);
       const production = await media.findProduction({ ...scope, id: input.videoProductionId });
-      const render = production?.renderJobs.find((job) => job.id === input.renderJobId);
+      if (!production) {
+        throw new AccessDeniedError('Render job is outside the active tenant or is not submitted.');
+      }
+      const render = production.renderJobs.find((job) => job.id === input.renderJobId);
       if (!render || !render.providerJobId || !render.providerUsageId) {
         throw new AccessDeniedError('Render job is outside the active tenant or is not submitted.');
       }
@@ -211,6 +219,17 @@ export function createVideoProviderService(options: {
           id: render.providerUsageId,
           actualCost: providerJob.actualCost,
         });
+      }
+      if (providerJob.status === 'COMPLETED' && production.status === 'GENERATING') {
+        const transitioned = await media.transitionProduction({
+          ...scope,
+          id: production.id,
+          from: 'GENERATING',
+          to: 'COMPOSING',
+        });
+        if (transitioned.count !== 1) {
+          throw new Error('Completed render could not advance video production to COMPOSING.');
+        }
       }
       return providerJob;
     },

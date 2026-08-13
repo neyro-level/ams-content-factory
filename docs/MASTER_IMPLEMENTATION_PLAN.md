@@ -405,40 +405,235 @@ parallel request
 
 ## Статус исполнения
 
-| Задача | Статус | Результат                                                                                             |
-| ------ | ------ | ----------------------------------------------------------------------------------------------------- |
-| PR 0.1 | `DONE` | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                           |
-| PR 0.2 | `DONE` | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`.         |
-| PR 1.1 | `DONE` | QC fail-closed: типизированные секции и вычисляемый persisted status.                                 |
-| PR 1.2 | `DONE` | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                             |
-| PR 1.3 | `DONE` | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields.       |
-| PR 1.4 | `DONE` | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                        |
-| PR 2.1 | `DONE` | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                          |
-| PR 2.2 | `DONE` | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.         |
-| PR 2.3 | `DONE` | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.             |
-| PR 2.4 | `DONE` | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.             |
-| PR 3.1 | `DONE` | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.                 |
-| PR 3.2 | `DONE` | Research ingestion has explicit duplicate, processing and failed-retry transitions.                   |
-| PR 3.3 | `DONE` | Knowledge ingestion has retry-safe document and chunk persistence.                                    |
-| PR 3.4 | `DONE` | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery.    |
-| PR 3.5 | `DONE` | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.              |
-| PR 3.6 | `DONE` | Publication attempts are atomically acquired per idempotency key under parallel dispatch.             |
-| PR 3.7 | `DONE` | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.        |
-| PR 3.8 | `DONE` | Content-project pillar and opportunity links are validated against the active brand graph.            |
-| PR 3.9 | `DONE` | Storyboard creation is bound to verified tenant context and `content:write`.                          |
-| PR 4.1 | `DONE` | Worker fails unsupported workflow types instead of recording false success.                           |
-| PR 4.2 | `DONE` | Worker dispatches only registered handlers selected by workflow type.                                 |
-| PR 4.3 | `DONE` | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                      |
-| PR 4.4 | `DONE` | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.             |
-| PR 4.5 | `DONE` | Worker emits `worker.ready` only after queue, recovery and handler registration complete.             |
-| PR 5.1 | `DONE` | Better Auth login and server-protected `/app` shell are live with a browser E2E flow.                 |
-| PR 5.2 | `DONE` | Authenticated users can list and create their active owner organizations in `/app/organizations`.     |
-| PR 5.3 | `DONE` | Brand list/create is scoped to a verified organization context with owner MANAGE access.              |
-| PR 5.4 | `DONE` | Route-aware application navigation and Better Auth session exit are available in the protected shell. |
-| PR 5.5 | `DONE` | Browser-to-PostgreSQL owner/brand lifecycle is covered as one real authenticated flow.                |
-| PR 6.1 | `DONE` | Brand-scoped knowledge document list has a protected application entry point.                         |
-| PR 6.2 | `DONE` | Safe text, URL and UTF-8 text-file intake is connected to the protected Knowledge UI.                 |
-| Next   | `W6.3` | Controlled retry of failed knowledge documents.                                                       |
+| Задача   | Статус             | Результат                                                                                                                                                       |
+| -------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PR 0.1   | `DONE`             | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                                                                                     |
+| PR 0.2   | `DONE`             | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`.                                                                   |
+| PR 1.1   | `DONE`             | QC fail-closed: типизированные секции и вычисляемый persisted status.                                                                                           |
+| PR 1.2   | `DONE`             | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                                                                                       |
+| PR 1.3   | `DONE`             | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields.                                                                 |
+| PR 1.4   | `DONE`             | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                                                                                  |
+| PR 2.1   | `DONE`             | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                                                                                    |
+| PR 2.2   | `DONE`             | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.                                                                   |
+| PR 2.3   | `DONE`             | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.                                                                       |
+| PR 2.4   | `DONE`             | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.                                                                       |
+| PR 3.1   | `DONE`             | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.                                                                           |
+| PR 3.2   | `DONE`             | Research ingestion has explicit duplicate, processing and failed-retry transitions.                                                                             |
+| PR 3.3   | `DONE`             | Knowledge ingestion has retry-safe document and chunk persistence.                                                                                              |
+| PR 3.4   | `DONE`             | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery.                                                              |
+| PR 3.5   | `DONE`             | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.                                                                        |
+| PR 3.6   | `DONE`             | Publication attempts are atomically acquired per idempotency key under parallel dispatch.                                                                       |
+| PR 3.7   | `DONE`             | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.                                                                  |
+| PR 3.8   | `DONE`             | Content-project pillar and opportunity links are validated against the active brand graph.                                                                      |
+| PR 3.9   | `DONE`             | Storyboard creation is bound to verified tenant context and `content:write`.                                                                                    |
+| PR 4.1   | `DONE`             | Worker fails unsupported workflow types instead of recording false success.                                                                                     |
+| PR 4.2   | `DONE`             | Worker dispatches only registered handlers selected by workflow type.                                                                                           |
+| PR 4.3   | `DONE`             | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                                                                                |
+| PR 4.4   | `DONE`             | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.                                                                       |
+| PR 4.5   | `DONE`             | Worker emits `worker.ready` only after queue, recovery and handler registration complete.                                                                       |
+| PR 5.1   | `DONE`             | Better Auth login and server-protected `/app` shell are live with a browser E2E flow.                                                                           |
+| PR 5.2   | `DONE`             | Authenticated users can list and create their active owner organizations in `/app/organizations`.                                                               |
+| PR 5.3   | `DONE`             | Brand list/create is scoped to a verified organization context with owner MANAGE access.                                                                        |
+| PR 5.4   | `DONE`             | Route-aware application navigation and Better Auth session exit are available in the protected shell.                                                           |
+| PR 5.5   | `DONE`             | Browser-to-PostgreSQL owner/brand lifecycle is covered as one real authenticated flow.                                                                          |
+| PR 6.1   | `DONE`             | Brand-scoped knowledge document list has a protected application entry point.                                                                                   |
+| PR 6.2   | `DONE`             | Safe text, URL and UTF-8 text-file intake is connected to the protected Knowledge UI.                                                                           |
+| PR 6.3   | `DONE`             | Failed knowledge documents are retried from their persisted safe source within the active brand.                                                                |
+| PR 6.4   | `BLOCKED_EXTERNAL` | Brand-scoped hybrid retrieval is wired to OpenAI; live execution requires `OPENAI_API_KEY`.                                                                     |
+| PR 7.1   | `BLOCKED_EXTERNAL` | Firecrawl research search/extraction and a protected workspace exist; live execution requires `FIRECRAWL_API_KEY`.                                              |
+| PR 8.1   | `FOUNDATION`       | Provider-neutral `TextGenerationProvider` contract is available; it has no production SDK dependency.                                                           |
+| PR 8.2   | `BLOCKED_EXTERNAL` | One OpenAI Responses API adapter exists; live execution requires `OPENAI_API_KEY`.                                                                              |
+| PR 8.3   | `FOUNDATION`       | Tenant-scoped AI execution records track provider lifecycle, prompt version, usage, costs and errors.                                                           |
+| PR 8.4   | `FOUNDATION`       | The approved v1 prompt keys are versioned in code and unknown keys fail closed.                                                                                 |
+| PR 8.5   | `FOUNDATION`       | Context assembler returns only verified brand/project, evidence and optional retrieval context.                                                                 |
+| PR 8.6   | `DONE`             | Persisted AI draft generation through the execution boundary.                                                                                                   |
+| PR 8.7   | `DONE`             | Immutable rewrite creates a new version and independently tracked execution.                                                                                    |
+| PR 8.8   | `DONE`             | Fact-check persists claims and stops before editorial review.                                                                                                   |
+| PR 8.9   | `DONE`             | Protected content list/detail UI exposes only scoped project data.                                                                                              |
+| PR 9.1   | `DONE`             | Content state controls expose only valid next actions and fail visibly without OpenAI.                                                                          |
+| PR 9.2   | `DONE`             | Editorial request/review/comment actions are actor- and permission-scoped.                                                                                      |
+| PR 9.3   | `DONE`             | Human-only manual approval atomically records the reviewer and decision.                                                                                        |
+| PR 10.1  | `FOUNDATION`       | Protected brand media library lists scoped assets; live upload is `BLOCKED_EXTERNAL` until private S3 is configured.                                            |
+| PR 10.2  | `FOUNDATION`       | Storyboard generation accepts only an approved scoped script and validates generated beats against an active recipe.                                            |
+| PR 10.3  | `FOUNDATION`       | VideoProduction lifecycle is guarded from an approved storyboard; valid, invalid and recovery transitions are covered.                                          |
+| PR 10.4  | `BLOCKED_EXTERNAL` | HeyGen V2 runtime client is implemented; live calls require API key plus configured avatar and voice identifiers.                                               |
+| PR 10.5  | `FOUNDATION`       | Provider submissions require `GENERATING`, persist RenderJob before calls and completed polling advances to `COMPOSING`.                                        |
+| PR 10.6  | `FOUNDATION`       | Transcription is gated on the checked `COMPOSING` production's durable `READY` output asset.                                                                    |
+| PR 10.7  | `FOUNDATION`       | Scoped persisted transcripts serialize to private derived SRT/ASS assets linked by CaptionTrack.                                                                |
+| PR 10.8  | `FOUNDATION`       | `QC → READY` is available only through a gate that reads the latest scoped `PASSED` QC report.                                                                  |
+| PR 11.1  | `FOUNDATION`       | The protected active-brand social workspace lists VK/Instagram account status without returning credentials or token UI.                                        |
+| PR 11.2  | `FOUNDATION`       | VK/Instagram OAuth contracts, PKCE parameters and runtime-client adapters are isolated in the provider layer.                                                   |
+| PR 11.3  | `FOUNDATION`       | Due encrypted credentials refresh only through a scoped provider contract; success rotates ciphertext, failures persist account status.                         |
+| PR 11.4  | `FOUNDATION`       | Connect, disconnect, expiry and refresh failures persist scoped AuditLog events without tokens; disconnect removes credentials.                                 |
+| PR 12.1  | `FOUNDATION`       | A Publication starts only as DRAFT from an APPROVED project, matching PlatformVariant and connected scoped social account.                                      |
+| PR 12.2  | `FOUNDATION`       | Protected week/month calendar shows only active-brand scheduled publications and unscheduled DRAFT items.                                                       |
+| PR 12.3  | `FOUNDATION`       | A future `scheduledAt` atomically moves only the active-brand DRAFT Publication to QUEUED through the protected calendar action.                                |
+| PR 12.4  | `FOUNDATION`       | Due QUEUED records are read from PostgreSQL, create/reuse an idempotent dispatch WorkflowRun and enqueue a singleton pg-boss intent.                            |
+| PR 12.5  | `FOUNDATION`       | Only a QUEUED active-brand publication without an attempt can move its scheduledAt; the same record and provider boundary are retained.                         |
+| PR 12.6  | `FOUNDATION`       | A scoped QUEUED publication without an attempt atomically becomes CANCELLED; calendar reads exclude cancelled records.                                          |
+| PR 13.1  | `BLOCKED_EXTERNAL` | VK API `wall.post`/`wall.getById` adapter is fail-closed; real posting needs OAuth account tokens and a separate media-upload path.                             |
+| PR 13.2  | `BLOCKED_EXTERNAL` | Instagram Graph image container/publish adapter is fail-closed; needs OAuth token and public media delivery instead of private keys.                            |
+| PR 13.3  | `FOUNDATION`       | Worker claims due QUEUED publication atomically, then invokes a scoped provider through one durable workflow/attempt idempotency key.                           |
+| PR 13.4  | `FOUNDATION`       | Outcome investigation decrypts account credentials only at the provider boundary; VK and Instagram status checks preserve uncertainty on errors.                |
+| PR 13.5  | `FOUNDATION`       | Concurrent duplicate dispatches acquire one attempt and issue at most one provider mutation; uncertainty blocks all repeats until reconciliation.               |
+| PR 13.6  | `FOUNDATION`       | The scoped calendar surfaces FAILED, OUTCOME_UNKNOWN and expired/error accounts with safe codes and next steps, never provider credentials.                     |
+| PR 14.1  | `FOUNDATION`       | Published active-brand records create idempotent analytics.collect intents for +24/+72/+168h; future workflows stay out of the worker queue.                    |
+| PR 14.2  | `BLOCKED_EXTERNAL` | A bounded, fail-closed VK wall analytics adapter normalizes only available views/likes/comments/shares and never discloses an OAuth token.                      |
+| PR 14.3  | `BLOCKED_EXTERNAL` | A bounded, fail-closed Instagram Media Insights adapter normalizes only returned metrics and never discloses an OAuth token.                                    |
+| PR 14.4  | `FOUNDATION`       | A real worker dispatcher processes due `analytics.collect` workflows through scoped core/repository layers and fails closed.                                    |
+| PR 14.5  | `FOUNDATION`       | Tenant-scoped history repositories use bounded `take` and deterministic `cursor` pagination before dashboard reads.                                             |
+| PR 14.6  | `FOUNDATION`       | Protected per-brand dashboard aggregates only the latest normalized snapshot per publication; unavailable metrics remain explicit and never become mock zeroes. |
+| PR 15.1  | `FOUNDATION`       | Each MCP tool handler receives an authenticated, token-free `McpAuthContext`; malformed or insufficient bearer keys fail closed before handler creation.        |
+| PR 15.2  | `FOUNDATION`       | Every MCP brand tool passes a shared active brand-in-organization guard before its handler can execute.                                                         |
+| PR 15.3  | `FOUNDATION`       | API-key authentication is pure; `lastUsedAt` mutates only through a separate post-auth context-bound action.                                                    |
+| PR 15.4  | `FOUNDATION`       | A startable stdio MCP process resolves a read-scoped key before constructing its server; the first business tools remain W15.5.                                 |
+| PR 15.5a | `FOUNDATION`       | MCP keys are bound to an active organization actor; legacy unbound keys and suspended actors fail closed before any tool can call an application service.       |
+| PR 15.5b | `FOUNDATION`       | The complete first tool catalogue is bound to tenant-scoped application services; tool permissions are enforced at the MCP edge before handlers.                |
+| PR 15.6  | `FOUNDATION`       | Negative MCP protocol and PostgreSQL contracts cover revoked, expired, wrong-scope, foreign-brand and unknown-tool paths.                                       |
+| PR 16.1  | `FOUNDATION`       | Structured logger emits only approved correlation and outcome fields with deterministic timestamps for tests.                                                   |
+| PR 16.2  | `FOUNDATION`       | Recursive redaction removes credential fields and bearer/API-key values from arbitrary error/context payloads.                                                  |
+| PR 16.3  | `FOUNDATION`       | Durable AuditLog covers brand/API-key actions, editorial approval/rejection, publication scheduling, dispatch and reconciliation without secrets.               |
+| PR 16.4  | `FOUNDATION`       | Infrastructure-compatible error reporter redacts error/context values before forwarding them to an optional sink.                                               |
+| Next     | `W17`              | Start bounded performance hardening from the approved plan.                                                                                                     |
+
+### W6.4 — hybrid retrieval
+
+The protected Knowledge UI now has an explicit indexing action for each ready document and a hybrid search
+form. Both actions rebuild the Better Auth actor and tenant context before reaching application services;
+indexing additionally requires `content:write`. Search and embedding use `OpenAiEmbeddingProvider` only in
+the live application path. Test-only `MockEmbeddingProvider` proves active-brand retrieval and rejects a
+foreign document without embedding it. The current environment has no `OPENAI_API_KEY`, so the UI returns a
+visible `BLOCKED_EXTERNAL` status rather than pretending that search succeeded. Live indexing and search
+remain blocked until a valid provider credential is supplied.
+
+### W7 — protected research workspace
+
+The application now exposes a brand-scoped research workspace only below a verified organization and
+brand. Better Auth session data is rebuilt into a tenant context in every Server Action and the application
+service owns list, text intake, URL intake and external search. The production `FirecrawlResearchProvider`
+uses the documented `/v2/search` and `/v2/scrape` endpoints, while URL fetches still pass the core
+SSRF-safe URL guard before any provider call. Results, extracted content and persisted research items stay
+inside organization-and-brand repository predicates. No fallback turns an unavailable provider into a
+successful result: without `FIRECRAWL_API_KEY`, URL ingestion and search visibly return
+`BLOCKED_EXTERNAL`. Provider mapping, workspace isolation and the browser path are covered without a live
+provider request.
+
+### W8.1 — text generation boundary
+
+`TextGenerationProvider` is the only application-facing contract for a text generation request and its
+response. It contains no provider SDK dependency, model routing, fallback matrix or product-path mock.
+`MockTextGenerationProvider` is a deterministic test double only; the production adapter is the next
+separate task and will remain `BLOCKED_EXTERNAL` until its credential is available.
+
+### W8.2 — one production LLM adapter
+
+`OpenAiTextGenerationProvider` implements the provider-neutral contract through the Responses API only.
+It has no model routing or fallback behavior, uses a bounded request signal and sends `store: false`.
+Missing `OPENAI_API_KEY`, invalid upstream HTTP responses and empty output never become a generated draft.
+The local environment has no key, so all live text generation remains `BLOCKED_EXTERNAL`.
+
+### W8.3 — AI execution model
+
+`AiExecution` persists a content-project-bound provider intent and its lifecycle with organization and
+brand predicates, prompt key/version, token usage, estimated/actual costs and an error record. The
+repository rejects a project from another brand and every state write is constrained by organization,
+brand, project, execution id and expected current status. The migration is additive; no existing content
+record changes.
+
+### W8.5 — context assembler
+
+The application service resolves the actor before reading a content project, brand profile, brand voices,
+active pillars and bounded evidence. It can invoke hybrid retrieval only through an injected retrieval
+boundary for the same resolved brand; neither arbitrary route data nor a tenant-wide dump is accepted.
+
+### W8.6 — persisted AI draft generation
+
+The generation application service verifies the actor and assembles only the resolved brand context before
+it creates and starts an `AiExecution`. After a provider response, it appends an immutable AI-authored
+`ContentVersion`, records token usage and moves the content project from `RESEARCHING` to `DRAFT`. A missing
+live credential creates no draft: its execution is retained as `FAILED` with `BLOCKED_EXTERNAL`, while the
+project remains available for a later configured generation attempt. A persistence failure after provider
+success is intentionally not relabelled as a provider failure; the execution remains the reconciliation
+signal for the integrity/recovery work.
+
+### W8.7 — immutable rewrite loop
+
+A rewrite is accepted only for a `DRAFT` project and a source version that belongs to the same checked
+organization, brand and content project. It creates a separate AI-authored version and tracks a distinct
+`AiExecution`; the selected source is never modified. Missing provider credentials and provider failures
+leave the draft untouched and preserve a failed execution record for diagnosis.
+
+### W8.8 — fact-check gate
+
+The fact-check service accepts only a checked `DRAFT` project, extracts its version assertions into
+tenant-scoped claims and evaluates the evidence already attached to each claim. It persists supported or
+unverified status and returns unsupported findings to the caller before leaving the project in `FACT_CHECK`.
+This first version deliberately surfaces rather than silently suppresses unsupported claims; a separate
+editorial request is required to enter `REVIEW`, and it never moves content to `APPROVED`.
+
+### W8.9 — content project UI
+
+The protected content workspace lists only projects for the resolved organization and brand. Its project view
+shows the current immutable version, status, version/approval counts and persisted fact-check claims with
+their evidence. Empty states distinguish absent projects, versions and findings; the UI has no direct Prisma
+access and does not expose a cross-brand project.
+
+### W9.3 — manual approval invariant
+
+The only approval application service resolves a human actor and requires `content:review`. It atomically
+creates an approval record and performs the guarded `REVIEW → APPROVED` transition. A writer, non-review
+status or repeated request is denied; provider and worker code have no approval entry point.
+
+### W9.2 — editorial review actions
+
+The protected content-project entry point exposes only valid status actions: a writer can request
+`FACT_CHECK → REVIEW` and add a scoped comment; a reviewer can approve, return the project to `DRAFT` or
+reject it from `REVIEW`. Every server action reconstructs the session and delegates to the same checked
+application service. The browser contract proves the full `FACT_CHECK → REVIEW → APPROVED` path.
+
+### W9.1 — content state UI
+
+The protected workspace can create a brand-scoped content project and exposes only its next valid action:
+`IDEA → RESEARCHING`, live generation from `RESEARCHING`, and `DRAFT → FACT_CHECK`. The web layer calls
+core application factories only. In the current credential-free environment, the production generation
+request visibly returns `BLOCKED_EXTERNAL` and leaves the project in `RESEARCHING`; it never fabricates a
+mock draft.
+
+### W10.1 — protected media library
+
+The media route rebuilds the authenticated actor and lists assets only through an organization-and-brand
+repository predicate. It represents upload, AI-generated, research and derived source types without
+claiming that a missing asset exists. The upload entry point delegates to the media application boundary;
+in the current environment it explicitly returns `BLOCKED_EXTERNAL` before any database or object-storage
+write because private S3-compatible production storage is not configured. `MockStorageProvider` remains
+test-only and proves checksum storage plus active-brand isolation.
+
+### W10.2 — storyboard generation from an approved script
+
+Storyboard generation resolves the actor and a `content:write` tenant context before it reads a content
+project. The repository requires the project to be `APPROVED`, the selected version to belong to it and the
+video recipe to be active. The LLM output must be JSON with bounded narration, allowed visual job, visual
+instruction and duration per beat; jobs and total duration are checked against the selected recipe before
+the storyboard is persisted. The production composition root uses the existing OpenAI provider boundary;
+without a configured credential it returns `BLOCKED_EXTERNAL`, while `MockTextGenerationProvider` is only
+used by the integration contract.
+
+### W10.3 — VideoProduction lifecycle
+
+The product-path workflow creates a production only from an `APPROVED` storyboard of an `APPROVED` scoped
+content project and an active recipe. Its transitions load the actual persisted state rather than accepting a
+client-provided source state, apply the lifecycle table atomically and record start/terminal timestamps.
+Invalid skips are rejected; a failed production can re-enter `GENERATING` with its old completion timestamp
+cleared for an auditable recovery attempt.
+
+### W6.3 — controlled knowledge retry
+
+Only a document selected by all four predicates — active organization, active brand, document id and
+`FAILED` status — can enter recovery. The application service replays the already persisted, validated
+source text into the same document through the existing `FAILED → PROCESSING → READY` transition service
+and chunk upserts; it never refetches a URL, trusts route data as authority or creates a second document.
+A foreign-brand, pending or otherwise non-failed document is rejected without a status write. The browser
+scenario exercises the visible retry control against a real failed database record.
 
 ### W6.2 — knowledge intake
 

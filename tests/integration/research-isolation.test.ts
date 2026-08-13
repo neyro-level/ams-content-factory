@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import {
   createResearchService,
+  createResearchWorkspaceService,
   ResearchInProgressError,
   resolveTenantContext,
 } from '../../packages/core/src/index.js';
@@ -189,5 +190,52 @@ describe('research isolation', () => {
     await expect(service.ingest(input)).rejects.toBeInstanceOf(ResearchInProgressError);
     releasePersistence!();
     await expect(first).resolves.toEqual(expect.objectContaining({ title: input.title }));
+  });
+
+  it('binds the workspace to the verified brand for URL ingestion, list, and search', async () => {
+    const organization = await prisma.organization.findUniqueOrThrow({ where: { slug: suffix } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: `${suffix}@local` } });
+    const brand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'first' },
+    });
+    const otherBrand = await prisma.brand.findFirstOrThrow({
+      where: { organizationId: organization.id, slug: 'second' },
+    });
+    const fetchedUrls: string[] = [];
+    const workspace = createResearchWorkspaceService({
+      provider: {
+        async fetchPage(url) {
+          fetchedUrls.push(url);
+          return {
+            title: 'Verified URL source',
+            content: 'Extracted content remains inside the verified brand boundary.',
+            finalUrl: url,
+          };
+        },
+        async search(query) {
+          return [{ title: `Result for ${query}`, url: 'https://example.com/research' }];
+        },
+      },
+    });
+    const actor = { userId: user.id, organizationId: organization.id, brandId: brand.id };
+
+    await expect(
+      workspace.ingestUrl(actor, {
+        title: 'URL source',
+        sourceUrl: 'https://example.com/research',
+      }),
+    ).resolves.toEqual(expect.objectContaining({ title: 'Verified URL source' }));
+    expect(fetchedUrls).toEqual(['https://example.com/research']);
+    const visibleItems = await workspace.list(actor);
+    expect(visibleItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ title: 'Verified URL source', brandId: brand.id }),
+      ]),
+    );
+    expect(visibleItems.every((item) => item.brandId === brand.id)).toBe(true);
+    await expect(workspace.list({ ...actor, brandId: otherBrand.id })).resolves.toEqual([]);
+    await expect(workspace.search(actor, 'tenant isolation')).resolves.toEqual([
+      { title: 'Result for tenant isolation', url: 'https://example.com/research' },
+    ]);
   });
 });

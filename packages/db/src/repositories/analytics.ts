@@ -70,6 +70,8 @@ export function createAnalyticsRepository(prisma: PrismaClient = getPrisma()) {
       publicationId?: string;
       periodStart?: Date;
       periodEnd?: Date;
+      take?: number;
+      cursor?: string;
     }) {
       return prisma.metricSnapshot.findMany({
         where: {
@@ -85,8 +87,24 @@ export function createAnalyticsRepository(prisma: PrismaClient = getPrisma()) {
               }
             : {}),
         },
-        include: { publication: { include: { socialAccount: true } } },
-        orderBy: { capturedAt: 'asc' },
+        include: {
+          publication: {
+            include: {
+              socialAccount: true,
+              contentProject: {
+                select: {
+                  id: true,
+                  title: true,
+                  pillar: { select: { name: true } },
+                  opportunity: { select: { title: true } },
+                },
+              },
+            },
+          },
+        },
+        orderBy: [{ capturedAt: 'asc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 100, 1), 250),
       });
     },
     async createInsight(input: {
@@ -116,10 +134,17 @@ export function createAnalyticsRepository(prisma: PrismaClient = getPrisma()) {
         },
       });
     },
-    listInsights(input: { organizationId: string; brandId: string }) {
+    listInsights(input: {
+      organizationId: string;
+      brandId: string;
+      take?: number;
+      cursor?: string;
+    }) {
       return prisma.performanceInsight.findMany({
         where: { brandId: input.brandId, brand: { organizationId: input.organizationId } },
-        orderBy: { periodEnd: 'desc' },
+        orderBy: [{ periodEnd: 'desc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
       });
     },
   };

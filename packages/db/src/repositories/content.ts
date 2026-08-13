@@ -80,6 +80,7 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
       contentProjectId: string;
       createdByType: ContentVersionAuthorType;
       createdByUserId?: string;
+      aiExecutionId?: string;
       brief?: string;
       hook?: string;
       body?: string;
@@ -108,6 +109,7 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
           ...(input.createdByUserId !== undefined
             ? { createdByUserId: input.createdByUserId }
             : {}),
+          ...(input.aiExecutionId !== undefined ? { aiExecutionId: input.aiExecutionId } : {}),
           ...(input.brief !== undefined ? { brief: input.brief } : {}),
           ...(input.hook !== undefined ? { hook: input.hook } : {}),
           ...(input.body !== undefined ? { body: input.body } : {}),
@@ -143,10 +145,132 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
         },
       });
     },
+    async approveManual(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      reviewerUserId: string;
+      note?: string;
+    }) {
+      return prisma.$transaction(async (tx) => {
+        const transitioned = await tx.contentProject.updateMany({
+          where: {
+            id: input.contentProjectId,
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+            status: 'REVIEW',
+          },
+          data: { status: 'APPROVED' },
+        });
+        if (transitioned.count !== 1) return null;
+        return tx.approval.create({
+          data: {
+            contentProjectId: input.contentProjectId,
+            status: 'APPROVED',
+            reviewerUserId: input.reviewerUserId,
+            ...(input.note === undefined ? {} : { note: input.note }),
+          },
+        });
+      });
+    },
+    async recordEditorialDecision(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      reviewerUserId: string;
+      from: ContentProjectStatus;
+      to: ContentProjectStatus;
+      status: string;
+      note?: string;
+    }) {
+      return prisma.$transaction(async (tx) => {
+        const transitioned = await tx.contentProject.updateMany({
+          where: {
+            id: input.contentProjectId,
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+            status: input.from,
+          },
+          data: { status: input.to },
+        });
+        if (transitioned.count !== 1) return null;
+        return tx.approval.create({
+          data: {
+            contentProjectId: input.contentProjectId,
+            status: input.status,
+            reviewerUserId: input.reviewerUserId,
+            ...(input.note === undefined ? {} : { note: input.note }),
+          },
+        });
+      });
+    },
+    async addComment(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      authorUserId: string;
+      body: string;
+    }) {
+      const project = await prisma.contentProject.findFirst({
+        where: {
+          id: input.contentProjectId,
+          organizationId: input.organizationId,
+          brandId: input.brandId,
+        },
+        select: { id: true },
+      });
+      if (!project) return null;
+      return prisma.editorialComment.create({
+        data: {
+          contentProjectId: input.contentProjectId,
+          authorUserId: input.authorUserId,
+          body: input.body,
+        },
+      });
+    },
     findProject(input: { organizationId: string; brandId: string; id: string }) {
       return prisma.contentProject.findFirst({
         where: { id: input.id, organizationId: input.organizationId, brandId: input.brandId },
-        include: { versions: { orderBy: { version: 'asc' } }, variants: true, approvals: true },
+        include: {
+          versions: { orderBy: { version: 'asc' } },
+          variants: true,
+          approvals: true,
+          comments: { orderBy: { createdAt: 'desc' }, take: 100 },
+        },
+      });
+    },
+    listProjects(input: {
+      organizationId: string;
+      brandId: string;
+      take?: number;
+      cursor?: string;
+    }) {
+      return prisma.contentProject.findMany({
+        where: { organizationId: input.organizationId, brandId: input.brandId },
+        include: {
+          versions: { orderBy: { version: 'desc' }, take: 1 },
+          _count: { select: { versions: true, approvals: true } },
+        },
+        orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: Math.min(Math.max(input.take ?? 50, 1), 100),
+      });
+    },
+    findVersion(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      id: string;
+    }) {
+      return prisma.contentVersion.findFirst({
+        where: {
+          id: input.id,
+          contentProjectId: input.contentProjectId,
+          contentProject: {
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+          },
+        },
       });
     },
   };

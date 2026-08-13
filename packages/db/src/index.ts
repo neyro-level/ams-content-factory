@@ -9,6 +9,7 @@ export { createWorkflowRunRepository } from './repositories/workflow-run';
 export { createKnowledgeRepository } from './repositories/knowledge';
 export { createResearchRepository } from './repositories/research';
 export { createContentRepository } from './repositories/content';
+export { createAiExecutionRepository } from './repositories/ai-executions';
 export { createVideoPlanningRepository } from './repositories/video-planning';
 export { createMediaRepository } from './repositories/media';
 export { createProviderUsageRepository } from './repositories/provider-usage';

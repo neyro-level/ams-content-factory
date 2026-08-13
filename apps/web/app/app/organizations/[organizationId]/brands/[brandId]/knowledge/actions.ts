@@ -4,11 +4,17 @@ import {
   createKnowledgeWorkspaceService,
   getAuth,
   KnowledgeIngestionError,
+  KnowledgeRetrievalBlockedExternalError,
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 
 export type KnowledgeIntakeState = { error?: string; success?: string };
+export type KnowledgeSearchState = {
+  error?: string;
+  blockedExternal?: boolean;
+  hits?: Array<{ chunkId: string; documentId: string; content: string; score: number }>;
+};
 
 type RouteContext = { organizationId: string; brandId: string };
 
@@ -58,12 +64,81 @@ export async function createKnowledgeFileAction(
   );
 }
 
+export async function retryKnowledgeDocumentAction(
+  route: RouteContext,
+  documentId: string,
+  _previous: KnowledgeIntakeState,
+  _formData: FormData,
+): Promise<KnowledgeIntakeState> {
+  return ingest(
+    route,
+    async (service, actor) => service.retry(actor, documentId),
+    (document) => `Документ «${document.title}» повторно обработан.`,
+  );
+}
+
+export async function searchKnowledgeAction(
+  route: RouteContext,
+  _previous: KnowledgeSearchState,
+  formData: FormData,
+): Promise<KnowledgeSearchState> {
+  const session = await getAuth().api.getSession({ headers: await headers() });
+  if (!session?.user) return { error: 'Сессия истекла. Войдите снова.' };
+
+  const query = String(formData.get('query') ?? '').trim();
+  if (!query || query.length > 500)
+    return { error: 'Введите поисковый запрос длиной до 500 символов.' };
+
+  try {
+    const hits = await createKnowledgeWorkspaceService().search(
+      {
+        userId: session.user.id,
+        organizationId: route.organizationId,
+        brandId: route.brandId,
+      },
+      { query },
+    );
+    return { hits };
+  } catch (error) {
+    if (error instanceof KnowledgeRetrievalBlockedExternalError)
+      return { error: error.message, blockedExternal: true };
+    return { error: 'Не удалось выполнить поиск. Проверьте доступ к бренду и повторите попытку.' };
+  }
+}
+
+export async function indexKnowledgeDocumentAction(
+  route: RouteContext,
+  documentId: string,
+  _previous: KnowledgeIntakeState,
+  _formData: FormData,
+): Promise<KnowledgeIntakeState> {
+  const session = await getAuth().api.getSession({ headers: await headers() });
+  if (!session?.user) return { error: 'Сессия истекла. Войдите снова.' };
+
+  try {
+    const chunks = await createKnowledgeWorkspaceService().indexDocument(
+      {
+        userId: session.user.id,
+        organizationId: route.organizationId,
+        brandId: route.brandId,
+      },
+      documentId,
+    );
+    return { success: `В поисковый индекс добавлено фрагментов: ${chunks}.` };
+  } catch (error) {
+    if (error instanceof KnowledgeRetrievalBlockedExternalError) return { error: error.message };
+    return { error: genericError };
+  }
+}
+
 async function ingest(
   route: RouteContext,
   operation: (
     service: ReturnType<typeof createKnowledgeWorkspaceService>,
     actor: { userId: string; organizationId: string; brandId: string },
   ) => Promise<{ title: string }>,
+  successMessage: (document: { title: string }) => string = (document) =>
+    `Документ «${document.title}» добавлен в базу знаний.`,
 ): Promise<KnowledgeIntakeState> {
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return { error: 'Сессия истекла. Войдите снова.' };
@@ -75,7 +150,7 @@ async function ingest(
       brandId: route.brandId,
     });
     revalidatePath(`/app/organizations/${route.organizationId}/brands/${route.brandId}/knowledge`);
-    return { success: `Документ «${document.title}» добавлен в базу знаний.` };
+    return { success: successMessage(document) };
   } catch (error) {
     if (error instanceof KnowledgeIngestionError) return { error: error.message };
     return { error: genericError };

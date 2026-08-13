@@ -11,6 +11,10 @@ on:
 
 workflows:
   verify:
+    settings:
+      # The gate starts a fresh pgvector database and installs the locked workspace before
+      # migrations, tests and both production builds; the platform default is five minutes.
+      max_cube_duration: 20m
     tasks:
       - name: quality-gate
         cubes:

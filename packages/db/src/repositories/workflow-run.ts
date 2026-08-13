@@ -8,9 +8,13 @@ export function createWorkflowRunRepository(prisma: PrismaClient = getPrisma()) 
         where: { id: input.id, organizationId: input.organizationId },
       });
     },
-    findQueued() {
+    findQueued(input: { now?: Date } = {}) {
+      const now = input.now ?? new Date();
       return prisma.workflowRun.findMany({
-        where: { status: WorkflowRunStatus.QUEUED },
+        where: {
+          status: WorkflowRunStatus.QUEUED,
+          OR: [{ scheduledFor: null }, { scheduledFor: { lte: now } }],
+        },
         select: { id: true, organizationId: true },
         orderBy: { createdAt: 'asc' },
         take: 100,
@@ -22,6 +26,7 @@ export function createWorkflowRunRepository(prisma: PrismaClient = getPrisma()) 
       type: string;
       idempotencyKey: string;
       payload?: object;
+      scheduledFor?: Date;
     }) {
       try {
         return await prisma.workflowRun.upsert({
