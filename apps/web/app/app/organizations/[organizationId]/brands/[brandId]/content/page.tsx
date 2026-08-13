@@ -3,6 +3,7 @@ import {
   AccessDeniedError,
   createContentWorkspaceService,
   getAuth,
+  isTextGenerationAvailable,
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
@@ -18,6 +19,7 @@ export default async function ContentProjectsPage({
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user)
     redirect(`/login?next=/app/organizations/${organizationId}/brands/${brandId}/content`);
+  const generationAvailable = isTextGenerationAvailable();
   try {
     const projects = await createContentWorkspaceService().list({
       userId: session.user.id,
@@ -38,6 +40,16 @@ export default async function ContentProjectsPage({
             К брендам
           </Link>
         </section>
+        {!generationAvailable ? (
+          <section className="panel" aria-labelledby="content-generation-limited-title">
+            <p className="eyebrow">Ограниченный режим</p>
+            <h2 id="content-generation-limited-title">AI-генерация пока не подключена</h2>
+            <p className="muted">
+              Вы можете создавать проекты, вести версии, редактировать текст и согласовывать готовый
+              материал. Генерация и AI-rewrite станут доступны после безопасного подключения модели.
+            </p>
+          </section>
+        ) : null}
         <section className="panel" aria-labelledby="create-content-project-title">
           <h2 id="create-content-project-title">Новый контент-проект</h2>
           <ContentProjectForm organizationId={organizationId} brandId={brandId} />

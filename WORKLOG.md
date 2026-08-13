@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-14 — V0.1 Content entry capability notice
+
+- The direct Content workspace now also shows the same product-level `LIMITED` explanation when a real
+  text-generation credential is absent. This prevents a user who opens the route by URL from discovering the
+  limitation only after creating or opening a project; manual editorial work remains available.
+
 ## 2026-08-14 — V0.1 truthful AI runtime capability
 
 - Added a server-only capability boundary for real text generation. Without `OPENAI_API_KEY`, Content is shown as

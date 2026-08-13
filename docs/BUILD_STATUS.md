@@ -25,7 +25,8 @@
   service-level failure details, while status transitions stay within the application service.
 - **V0.1 AI capability:** without a real server-side generation credential, Content is visibly `LIMITED`; draft
   editing, review and manual finalisation remain available, while generation/rewrite controls are disabled with
-  product-level guidance. The credential value never reaches the browser.
+  product-level guidance. The direct Content route shows the same state, not only the dashboard/navigation. The
+  credential value never reaches the browser.
 - **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, five critical browser flows
   and three worker contracts passed. The Release Gate remains `BLOCKED_EXTERNAL`: DNS/ports resolve, but the public
   hostname still serves generic Nginx and trusted project TLS/vhost, Timeweb `vector`, live providers and owner
