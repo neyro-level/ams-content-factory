@@ -506,7 +506,8 @@ parallel request
 | PR 18.6  | `FOUNDATION`       | Web and both Nginx profiles apply `nosniff`, DENY frame policy, strict referrer/permissions policy and a same-origin CSP; application-level contracts cover the response policy without relying on the proxy. |
 | PR 19.1  | `FOUNDATION`       | Portable Compose retains only web, worker and proxy as long-lived services; PostgreSQL/pgvector and S3 are external, maintenance clients require an explicit profile, and worker health uses real readiness.  |
 | PR 19.2  | `FOUNDATION`       | The `db:migration-drill` command creates a disposable pgvector database, applies `migrate deploy`, seeds, starts the production web process and proves `/api/health/ready` before cleanup.                    |
-| Next     | `W19.3`            | Create and verify an actual logical backup using only a disposable non-production database.                                                                                                                   |
+| PR 19.3  | `FOUNDATION`       | The `db:backup-drill` command creates a non-empty custom-format `pg_dump` archive from a disposable pgvector database and verifies schema/seed entities through `pg_restore --list` before cleanup.           |
+| Next     | `W19.4`            | Restore the verified disposable archive into a separate clean database and prove application readiness plus critical entities.                                                                                |
 
 ### W6.4 — hybrid retrieval
 

@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-13 — W19.3 logical backup drill
+
+- Added `pnpm db:backup-drill`: it builds a disposable pgvector schema with `migrate deploy` and seed, streams a
+  real `pg_dump --format=custom --no-owner` archive into a private temporary file, then requires a non-empty archive
+  and `pg_restore --list` evidence for migration history plus seeded recipes/evaluation suites.
+- The archive, container and volume are removed in cleanup. The drill does not read `.env`, use Timeweb or create a
+  production backup; its scope and remaining retention/restore boundaries are in `docs/BACKUP_DRILL.md`.
+- Next: W19.4 restore/application-smoke drill. Production deployment remains prohibited.
+
 ## 2026-08-13 — W19.2 clean-database migration drill
 
 - Added `pnpm db:migration-drill`: it creates one disposable local pgvector Compose project, runs `prisma migrate
