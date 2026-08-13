@@ -12,7 +12,18 @@ import {
   ResearchInboxStatus,
 } from '../../packages/db/src/index.js';
 import { createHash } from 'node:crypto';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
+
+vi.mock('node:dns/promises', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:dns/promises')>();
+  return {
+    ...actual,
+    lookup: async (hostname: string) => {
+      if (hostname === 'example.com') return [{ address: '93.184.216.34', family: 4 }];
+      return actual.lookup(hostname, { all: true, verbatim: true });
+    },
+  };
+});
 
 const prisma = createPrismaClient();
 const tenants = createTenantRepository(prisma);

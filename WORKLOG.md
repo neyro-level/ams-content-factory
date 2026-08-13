@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — CI deterministic research URL isolation
+
+- Made the research URL-isolation contract independent of external DNS: its `example.com` lookup is a test-only
+  public-address fixture. Production SSRF validation and the page-fetch boundary are unchanged, so a CI resolver
+  cannot turn a valid tenant-isolation contract into a non-deterministic failure.
+- SourceCraft quality gate is split into bounded database, install/migrate/seed, static, test and build cubes after
+  the platform's five-minute cube limit blocked the previous monolithic gate. The full local gate and the repaired
+  main verify remain required before W17 begins. Local validation passed: Prisma validation, lint, formatting,
+  workspace typecheck, 65 unit tests, 75 PostgreSQL integration contracts and production web/worker builds.
+
 ## 2026-08-13 — W16.3–W16.4 audit expansion and error reporter
 
 - Added durable audit records for brand/API-key create/revoke, editorial approve/reject, publication scheduling,
