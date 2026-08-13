@@ -10,6 +10,13 @@ import { editorialAction } from './actions';
 import { ContentStateControls } from '../../../../../../../../components/content-state-controls';
 import { ContentVersionControls } from '../../../../../../../../components/content-version-controls';
 
+const claimStatusLabel: Record<string, string> = {
+  UNVERIFIED: 'Нужна проверка',
+  SUPPORTED: 'Подтверждено источниками',
+  CONFLICTING: 'Источники противоречат',
+  REJECTED: 'Не подтверждено',
+};
+
 export default async function ContentProjectPage({
   params,
 }: {
@@ -148,7 +155,9 @@ export default async function ContentProjectPage({
                       <h3>{claim.text}</h3>
                       <p className="muted">Evidence: {claim.evidence.length}</p>
                     </div>
-                    <span className="badge">{claim.status}</span>
+                    <span className="badge">
+                      {claimStatusLabel[claim.status] ?? 'Статус проверки неизвестен'}
+                    </span>
                   </li>
                 ))}
               </ul>

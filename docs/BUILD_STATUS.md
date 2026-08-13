@@ -15,7 +15,8 @@
   tenant-scoped transaction persists both the ContentProject and immutable first `USER` version. Critical E2E and
   integration contracts assert version 1, actor attribution and the next-version counter before generation begins.
 - **V0.1 product language:** Knowledge document types and lifecycle states render as Russian product labels; raw
-  database enums are retained only as an internal contract.
+  database enums are retained only as an internal contract. Fact-check claim results use the same product-language
+  rule instead of exposing raw `ClaimStatus` values.
 - **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, five critical browser flows
   and three worker contracts passed. The Release Gate remains `BLOCKED_EXTERNAL`: DNS/ports resolve, but the public
   hostname still serves generic Nginx and trusted project TLS/vhost, Timeweb `vector`, live providers and owner
