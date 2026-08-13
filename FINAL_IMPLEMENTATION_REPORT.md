@@ -1,35 +1,43 @@
-# Foundation implementation report — AMS Content Factory
+# AMS Content Factory — implementation report
 
-**Статус документа:** historical snapshot. Текущая очередность и Definition of Done —
+**Статус документа:** фактический снимок V0.1 на 2026-08-14. Текущая очередность и Definition of Done —
+[`docs/V0_1_USER_TEST_PLAN.md`](docs/V0_1_USER_TEST_PLAN.md) и
 [`docs/MASTER_IMPLEMENTATION_PLAN.md`](docs/MASTER_IMPLEMENTATION_PLAN.md).
 
-## FOUNDATION
+## READY
 
-- Multi-tenant model, RBAC, audit trail, tenant-scoped repositories и Prisma migrations.
-- Brand/knowledge, research, content, video, publishing, analytics, MCP и evaluation domain models,
-  application services, provider contracts и integration contracts.
-- Safe URL/text/file ingestion, encryption boundaries, health endpoints, pg-boss foundation, SourceCraft CI
-  и production artifact/runbook templates.
+- Authentication, Organizations и Brands: защищённый tenant-scoped пользовательский путь.
+- Brand Context: profile, voice, offers и constraints сохраняются через application service с audit trail и не
+  пересекают границы organization/brand.
+- Knowledge: tenant-scoped добавление text/URL/file, retry и ограниченные готовые chunks в content context.
+- Content: topic, goal, audience и неизменяемые brief/version; атомарный claim generation и выделение версий;
+  ручное edit/rewrite, fact-check, review, approval, `READY` и gate копирования финального текста.
+- SourceCraft verify включает PostgreSQL + pgvector, migrations, статические проверки, unit/integration suites,
+  build и детерминированные critical browser flows.
 
-Это фундамент, а не сквозная пользовательская реализация: models, repositories, mocks и contract tests не
-считаются готовой функцией без entry point, полезной операции и recovery-покрытия.
+## LIMITED
 
-## NOT_IMPLEMENTED
+- Research — безопасное brand-scoped рабочее пространство. Provider-dependent поиск и извлечение страницы
+  недоступны до настройки production provider.
+- Реальная text generation требует безопасно настроенный `OPENAI_API_KEY`. Детерминированный provider строго
+  test-only; поэтому V0.1 остаётся `NOT READY FOR USER TESTING` до одного реального owner generation smoke.
 
-- Protected application shell, организация и бренд как реальные UI flows.
-- Рабочие web/worker workflows knowledge → research → draft → review → approval.
-- Реальные AI generation, calendar/scheduler, video production, OAuth/social publishing, analytics и MCP
-  runtime.
-- Production deployment и release-gate proof.
+## PLANNED
+
+- Media, Video, Calendar, Publishing, Social Accounts, Analytics, Automation и MCP/Integrations в V0.1 показывают
+  только product-state страницы; их provider, storage и mutation entry points владельцу недоступны.
 
 ## BLOCKED_EXTERNAL
 
 - Timeweb должен установить SQL object `vector` в production database или предоставить отдельное
   extension-capable operator connection.
-- Для live adapters нужны официальные credentials/authorization внешних провайдеров.
+- Для live AI, research, social and media adapters нужны официальные credentials/authorization внешних
+  провайдеров.
+- Production требует TLS/vhost, runtime secrets, backup policy и отдельное подтверждение владельца.
 
 ## Проверенная база
 
-На 2026-08-12 в чистом окружении были зелёными Prisma validation, lint, formatting, typecheck, unit и
-integration contracts, E2E shell contracts и production build. Эти проверки доказывают стабильность
-фундамента, но не заменяют будущие реальные E2E сценарии продукта.
+На 2026-08-14 в чистом SourceCraft окружении зелёными были Prisma validation/migrations, lint, formatting,
+typecheck, 76 unit tests, 86 integration contracts, production build и critical browser flow Brand Context →
+Knowledge → Content → Review → `READY` → Copy plus tenant isolation. Проверки не заменяют единственный
+оставшийся live V0.1 proof: owner smoke с безопасно подключённым `OPENAI_API_KEY`.

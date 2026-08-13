@@ -1,5 +1,13 @@
 # Worklog
 
+## 2026-08-14 — V0.1 product-status documentation reconciliation
+
+- Reconciled README, implementation report and execution/status records with the actual V0.1 owner flow. They now
+  distinguish `READY` core editorial work, `LIMITED` provider-dependent Research/AI and `PLANNED` future modules,
+  while preserving the independent production `BLOCKED_EXTERNAL` boundary.
+- Recorded canonical SourceCraft `main` evidence through `355dabf`; the remaining V0.1 user-test blocker is exactly
+  one secure live `OPENAI_API_KEY` plus an owner smoke, not the deterministic test provider.
+
 ## 2026-08-13 — V0.1 editorial action feedback
 
 - Request-review, approval, return-to-draft, rejection and comment controls now use a client-side action state with

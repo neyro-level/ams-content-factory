@@ -59,7 +59,7 @@ owner deployment confirmation remain independent release blockers.
 - Verified locally: Prisma validation and migration deploy, clean-database migration drill, lint, formatting,
   typecheck, 76 unit tests, 86 integration tests, deterministic browser smoke covering initial generation, manual
   version and rewrite, tenant isolation, and production build.
-- SourceCraft `verify` passed on the implementation PR and again on canonical `main` (`b9a094b`), including
+- SourceCraft `verify` passed on the implementation PRs and again on canonical `main` (`355dabf`), including
   PostgreSQL + pgvector, migrations, unit/integration tests, build and both deterministic browser contracts.
 - Editorial integrity follow-up: manual brief and text versions now retain their creating user, and AI rewrite
   finalisation creates the immutable version and marks its execution successful in one database transaction. A
