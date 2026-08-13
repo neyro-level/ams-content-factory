@@ -73,6 +73,9 @@ owner deployment confirmation remain independent release blockers.
   `ClaimStatus` enum values.
 - Product-language follow-up: Content project cards and detail pages share one label catalog for content types and
   lifecycle states, including the actual `REVIEW` state rather than an obsolete status name.
+- Product-language follow-up: Research maps internal material lifecycle enums to Russian editorial labels. Its
+  unavailable provider path tells the user which capability will appear after configuration and never exposes a
+  technical `BLOCKED_EXTERNAL` marker.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.

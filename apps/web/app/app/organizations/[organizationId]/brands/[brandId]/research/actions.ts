@@ -75,7 +75,10 @@ export async function searchResearchAction(
     return { results };
   } catch (error) {
     if (error instanceof ResearchWorkspaceBlockedExternalError)
-      return { error: error.message, blockedExternal: true };
+      return {
+        error: 'Поиск источников будет доступен после подключения исследовательского провайдера.',
+        blockedExternal: true,
+      };
     return { error: genericError };
   }
 }
@@ -106,7 +109,11 @@ async function ingest(
     return { success: `Материал «${item.title}» добавлен в исследование.` };
   } catch (error) {
     if (error instanceof ResearchWorkspaceBlockedExternalError)
-      return { error: error.message, blockedExternal: true };
+      return {
+        error:
+          'Добавление страницы по URL будет доступно после подключения исследовательского провайдера.',
+        blockedExternal: true,
+      };
     return { error: genericError };
   }
 }

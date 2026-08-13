@@ -8,6 +8,14 @@ import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { ResearchWorkspace } from '../../../../../../../components/research-workspace';
 
+const researchStatusLabel: Record<string, string> = {
+  PENDING: 'Готовится',
+  READY: 'Готово к использованию',
+  REJECTED: 'Не используется',
+  ARCHIVED: 'В архиве',
+  FAILED: 'Не удалось обработать',
+};
+
 export default async function ResearchPage({
   params,
 }: {
@@ -55,7 +63,9 @@ export default async function ResearchPage({
                       {item.source?.domain ?? 'Текст'} · {item.summary ?? 'Без краткого описания'}
                     </p>
                   </div>
-                  <span className="badge">{item.status}</span>
+                  <span className="badge">
+                    {researchStatusLabel[item.status] ?? 'Статус уточняется'}
+                  </span>
                 </li>
               ))}
             </ul>
