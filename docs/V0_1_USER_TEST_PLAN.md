@@ -67,6 +67,8 @@ owner deployment confirmation remain independent release blockers.
 - Project creation integrity follow-up: the required topic, goal, audience and brief are now persisted through one
   tenant-scoped transaction. The initial brief is the immutable user-authored version 1, so a failed version write
   rolls back the project rather than leaving an empty editorial card.
+- Product-language follow-up: Knowledge renders document types and lifecycle states as Russian product labels;
+  database enums remain an internal contract and are not ordinary user-facing statuses.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.

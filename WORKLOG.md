@@ -1,5 +1,10 @@
 # Worklog
 
+## 2026-08-13 — V0.1 Knowledge product language
+
+- Replaced raw Knowledge document enums in the owner-facing list with Russian document-type and lifecycle labels.
+  Database values and retry/index state-machine conditions are unchanged.
+
 ## 2026-08-13 — V0.1 atomic project brief
 
 - Owner entry point now requires topic, goal, audience and brief. The tenant-scoped repository creates the project
