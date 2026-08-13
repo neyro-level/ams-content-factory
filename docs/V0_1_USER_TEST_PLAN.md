@@ -39,6 +39,8 @@ video, social OAuth, provider publishing, analytics, MCP и n8n не входя�
 - Version allocation is transactionally monotonic per ContentProject; `MAX(version) + 1` is forbidden.
 - Provider success followed by a known persistence failure leaves no `AiExecution` permanently `RUNNING`.
 - All context, knowledge, project and execution access remains organization- and brand-scoped.
+- A V0.1 project requires topic, goal, audience and brief. Its immutable first `USER` ContentVersion
+  is stored with the project in one transaction; it is version 1 and the project counter begins at 2.
 
 ## Verification and release boundary
 
@@ -62,6 +64,9 @@ owner deployment confirmation remain independent release blockers.
 - Editorial integrity follow-up: manual brief and text versions now retain their creating user, and AI rewrite
   finalisation creates the immutable version and marks its execution successful in one database transaction. A
   persistence failure records `REWRITE_PERSISTENCE_FAILED` without leaving a partial version or a running execution.
+- Project creation integrity follow-up: the required topic, goal, audience and brief are now persisted through one
+  tenant-scoped transaction. The initial brief is the immutable user-authored version 1, so a failed version write
+  rolls back the project rather than leaving an empty editorial card.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.

@@ -3,6 +3,7 @@ import type {
   ContentProjectStatus,
   ContentType,
   ContentVersionAuthorType,
+  Prisma,
   PrismaClient,
 } from '../generated/prisma/client';
 
@@ -17,11 +18,37 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
     contentProjectId: input.contentProjectId,
     contentProject: { organizationId: input.organizationId, brandId: input.brandId },
   });
-  const brandExists = (organizationId: string, brandId: string) =>
-    prisma.brand.findFirst({
-      where: { id: brandId, organizationId, deletedAt: null },
-      select: { id: true },
-    });
+  const validateProjectGraph = async (
+    client: PrismaClient | Prisma.TransactionClient,
+    input: {
+      organizationId: string;
+      brandId: string;
+      pillarId?: string;
+      opportunityId?: string;
+    },
+  ) => {
+    const [brand, pillar, opportunity] = await Promise.all([
+      client.brand.findFirst({
+        where: { id: input.brandId, organizationId: input.organizationId, deletedAt: null },
+        select: { id: true },
+      }),
+      input.pillarId
+        ? client.contentPillar.findFirst({
+            where: { id: input.pillarId, brandId: input.brandId },
+            select: { id: true },
+          })
+        : Promise.resolve({ id: null }),
+      input.opportunityId
+        ? client.contentOpportunity.findFirst({
+            where: { id: input.opportunityId, brandId: input.brandId },
+            select: { id: true, pillarId: true },
+          })
+        : Promise.resolve({ id: null, pillarId: null }),
+    ]);
+    if (!brand || (input.pillarId && !pillar) || (input.opportunityId && !opportunity))
+      return false;
+    return !(input.pillarId && opportunity?.pillarId && opportunity.pillarId !== input.pillarId);
+  };
   return {
     async createProject(input: {
       organizationId: string;
@@ -34,25 +61,7 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
       audience?: string;
       createdBy?: string;
     }) {
-      const [brand, pillar, opportunity] = await Promise.all([
-        brandExists(input.organizationId, input.brandId),
-        input.pillarId
-          ? prisma.contentPillar.findFirst({
-              where: { id: input.pillarId, brandId: input.brandId },
-              select: { id: true },
-            })
-          : Promise.resolve({ id: null }),
-        input.opportunityId
-          ? prisma.contentOpportunity.findFirst({
-              where: { id: input.opportunityId, brandId: input.brandId },
-              select: { id: true, pillarId: true },
-            })
-          : Promise.resolve({ id: null, pillarId: null }),
-      ]);
-      if (!brand || (input.pillarId && !pillar) || (input.opportunityId && !opportunity))
-        return null;
-      if (input.pillarId && opportunity?.pillarId && opportunity.pillarId !== input.pillarId)
-        return null;
+      if (!(await validateProjectGraph(prisma, input))) return null;
       return prisma.contentProject.create({
         data: {
           organizationId: input.organizationId,
@@ -65,6 +74,47 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
           ...(input.audience !== undefined ? { audience: input.audience } : {}),
           ...(input.createdBy !== undefined ? { createdBy: input.createdBy } : {}),
         },
+      });
+    },
+    async createProjectWithBrief(input: {
+      organizationId: string;
+      brandId: string;
+      title: string;
+      contentType: ContentType;
+      goal: string;
+      audience: string;
+      brief: string;
+      createdBy: string;
+      pillarId?: string;
+      opportunityId?: string;
+    }) {
+      return prisma.$transaction(async (tx) => {
+        if (!(await validateProjectGraph(tx, input))) return null;
+        const project = await tx.contentProject.create({
+          data: {
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+            title: input.title,
+            contentType: input.contentType,
+            goal: input.goal,
+            audience: input.audience,
+            createdBy: input.createdBy,
+            nextVersion: 2,
+            ...(input.pillarId !== undefined ? { pillarId: input.pillarId } : {}),
+            ...(input.opportunityId !== undefined ? { opportunityId: input.opportunityId } : {}),
+          },
+        });
+        const briefVersion = await tx.contentVersion.create({
+          data: {
+            contentProjectId: project.id,
+            version: 1,
+            createdByType: 'USER',
+            createdByUserId: input.createdBy,
+            brief: input.brief,
+            body: input.brief,
+          },
+        });
+        return { project, briefVersion };
       });
     },
     transition(input: {

@@ -62,8 +62,25 @@ test('V0.1 editorial flow: context, knowledge, draft, review, READY and copy', a
 
   await page.goto(`${base}/content`);
   await page.getByLabel('Название проекта').fill('Первый V0.1 материал');
+  await page.getByLabel('Цель').fill('Показать рабочий редакционный процесс.');
+  await page.getByLabel('Аудитория').fill('Владельцы B2B-команд.');
   await page.getByLabel('Brief').fill('Расскажите, как начать работать с контентом.');
   await page.getByRole('button', { name: 'Создать проект' }).click();
+  await expect(page.getByRole('link', { name: 'Открыть' })).toBeVisible();
+  const project = await prisma.contentProject.findFirstOrThrow({
+    where: { organizationId: organization.id, brandId: brand.id, title: 'Первый V0.1 материал' },
+    include: { versions: { orderBy: { version: 'asc' } } },
+  });
+  expect(project.nextVersion).toBe(2);
+  expect(project.versions).toEqual([
+    expect.objectContaining({
+      version: 1,
+      createdByType: 'USER',
+      createdByUserId: user.id,
+      brief: 'Расскажите, как начать работать с контентом.',
+      body: 'Расскажите, как начать работать с контентом.',
+    }),
+  ]);
   await page.getByRole('link', { name: 'Открыть' }).click();
   await page.getByRole('button', { name: 'Сгенерировать черновик' }).click();
   await expect(page.locator('pre.content-preview')).toHaveText(

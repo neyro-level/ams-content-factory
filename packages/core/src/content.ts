@@ -48,6 +48,21 @@ export function createContentService(options: { prisma?: PrismaClient } = {}) {
     ) {
       return repository.createProject({ ...scoped(context), ...input });
     },
+    async createWithBrief(
+      context: Context,
+      input: {
+        title: string;
+        contentType: ContentType;
+        goal: string;
+        audience: string;
+        brief: string;
+        createdBy: string;
+        opportunityId?: string;
+        pillarId?: string;
+      },
+    ) {
+      return repository.createProjectWithBrief({ ...scoped(context), ...input });
+    },
     async transition(context: Context, id: string, to: ContentProjectStatus) {
       const scope = scoped(context);
       const project = await repository.findProject({ ...scope, id });
