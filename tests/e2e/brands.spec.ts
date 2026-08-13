@@ -10,6 +10,8 @@ const organizationName = 'Организация бренда E2E';
 const brandName = 'Первый бренд E2E';
 const origin = `http://127.0.0.1:${process.env.E2E_PORT ?? '3000'}`;
 
+test.use({ extraHTTPHeaders: { 'x-real-ip': '198.18.0.14' } });
+
 test.afterAll(async () => {
   await prisma.user.deleteMany({ where: { email } });
   await prisma.$disconnect();

@@ -14,6 +14,8 @@ const email = `w9-editorial-${randomUUID()}@ams-content-factory.local`;
 const password = 'w9-editorial-password';
 const origin = `http://127.0.0.1:${process.env.E2E_PORT ?? '3000'}`;
 
+test.use({ extraHTTPHeaders: { 'x-real-ip': '198.18.0.16' } });
+
 test.afterAll(async () => {
   await prisma.user.deleteMany({ where: { email } });
   await prisma.$disconnect();

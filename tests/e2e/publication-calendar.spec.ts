@@ -8,7 +8,19 @@ const tenants = createTenantRepository(prisma);
 const email = `w12-calendar-${randomUUID()}@ams-content-factory.local`;
 const password = 'w12-calendar-password';
 const origin = `http://127.0.0.1:${process.env.E2E_PORT ?? '3000'}`;
-const rescheduledLocalTime = '2026-08-13T09:00';
+test.use({ extraHTTPHeaders: { 'x-real-ip': '198.18.0.19' } });
+
+function localDateTime(daysFromNow: number) {
+  const value = new Date();
+  value.setDate(value.getDate() + daysFromNow);
+  value.setHours(9, 0, 0, 0);
+  const pad = (part: number) => String(part).padStart(2, '0');
+  return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T09:00`;
+}
+
+const initialScheduledLocalTime = localDateTime(1);
+const rescheduledLocalTime = localDateTime(2);
+const calendarDate = initialScheduledLocalTime.slice(0, 10);
 
 test.afterAll(async () => {
   await prisma.user.deleteMany({ where: { email } });
@@ -63,7 +75,7 @@ test('shows protected week and month publication calendar views for the active b
       platformVariantId: variant.id,
       socialAccountId: account.id,
       status: 'QUEUED',
-      scheduledAt: new Date('2026-08-12T09:00:00.000Z'),
+      scheduledAt: new Date(initialScheduledLocalTime),
     },
   });
   const unscheduled = await prisma.publication.create({
@@ -77,7 +89,7 @@ test('shows protected week and month publication calendar views for the active b
   });
 
   await page.goto(
-    `/login?next=/app/organizations/${organization.id}/brands/${brand.id}/calendar?view=week%26date=2026-08-12`,
+    `/login?next=/app/organizations/${organization.id}/brands/${brand.id}/calendar?view=week%26date=${calendarDate}`,
   );
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Пароль').fill(password);
@@ -98,7 +110,7 @@ test('shows protected week and month publication calendar views for the active b
   await expect(
     page.getByLabel('Черновики без времени публикации').getByText('Calendar E2E publication'),
   ).toBeVisible();
-  await page.getByLabel('Время публикации', { exact: true }).fill('2099-01-01T09:00');
+  await page.getByLabel('Время публикации', { exact: true }).fill(rescheduledLocalTime);
   await page.getByRole('button', { name: 'Запланировать' }).click();
   await expect
     .poll(
@@ -110,8 +122,10 @@ test('shows protected week and month publication calendar views for the active b
   await expect(page.getByRole('link', { name: 'Неделя' })).toBeVisible();
   await page.getByRole('link', { name: 'Месяц' }).click();
   await expect(page).toHaveURL(/view=month/);
-  await expect(page.getByText('Calendar E2E publication')).toBeVisible();
-  await page.getByRole('button', { name: 'Отменить публикацию' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Calendar E2E publication' }).first(),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Отменить публикацию' }).first().click();
   await expect
     .poll(
       async () =>
@@ -121,7 +135,7 @@ test('shows protected week and month publication calendar views for the active b
   await page.reload();
   await expect(
     page.getByLabel('Запланированные публикации').getByText('Calendar E2E publication'),
-  ).not.toBeVisible();
+  ).toHaveCount(1);
   await prisma.publication.update({
     where: { id: scheduled.id },
     data: { status: 'OUTCOME_UNKNOWN' },

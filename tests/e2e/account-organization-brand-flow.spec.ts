@@ -11,6 +11,8 @@ const organizationName = `W5 flow ${suffix}`;
 const brandName = `W5 brand ${suffix}`;
 const origin = `http://127.0.0.1:${process.env.E2E_PORT ?? '3000'}`;
 
+test.use({ extraHTTPHeaders: { 'x-real-ip': '198.18.0.11' } });
+
 test.afterAll(async () => {
   await prisma.user.deleteMany({ where: { email } });
   await prisma.$disconnect();

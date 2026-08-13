@@ -3,24 +3,25 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W19.5 TLS/domain is `BLOCKED_EXTERNAL`: DNS and public ports resolve to AMS Server, but both
-  protocols serve generic Nginx and TLS is not trusted for `fabrika.ams24.ru`. No certificate, vhost or deployment
-  was changed. Next: W19.6 non-destructive release smoke suite.
-- **Last verification:** 2026-08-13: the disposable restore drill passed; independent public DNS/TCP/HTTP/TLS
-  inspection confirmed the stated TLS/domain block. The application gate passed lint, formatting, workspace typecheck,
-  75 unit tests, 77 PostgreSQL integration contracts and production web/worker builds.
+- **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, five critical browser flows
+  and three worker contracts passed. The Release Gate remains `BLOCKED_EXTERNAL`: DNS/ports resolve, but the public
+  hostname still serves generic Nginx and trusted project TLS/vhost, Timeweb `vector`, live providers and owner
+  authorization are unavailable. No certificate, vhost or deployment was changed.
+- **Last verification:** 2026-08-13: `pnpm release:smoke` applied 24 migrations and seed data to a disposable
+  pgvector database, passed five browser and three worker contracts, and removed its containers/volume. Its external
+  provider environment was intentionally empty and the research/text-generation paths required `BLOCKED_EXTERNAL`.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a
   PostgreSQL + pgvector integration gate in SourceCraft CI exist.
-- **NOT_IMPLEMENTED:** complete platform media upload, end-to-end content operations and release-gate proof.
+- **NOT_IMPLEMENTED:** live provider production operations and final Release Gate proof.
 - **Remote:** private SourceCraft repository `integrator-p/ams-content-factory` is canonical `origin`;
   protected `main` and `verify` CI are active. GitHub is a non-canonical legacy mirror.
 
 ## Production boundary
 
 ```text
-APPLICATION: NOT_IMPLEMENTED
+APPLICATION: FOUNDATION
 DEPLOYMENT_PACKAGE: FOUNDATION
 PRODUCTION_DEPLOYMENT: BLOCKED_EXTERNAL
 ```

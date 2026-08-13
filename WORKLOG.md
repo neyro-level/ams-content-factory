@@ -1,5 +1,19 @@
 # Worklog
 
+## 2026-08-13 — W19.6 non-destructive release smoke suite
+
+- Added `pnpm release:smoke`: it creates a disposable local pgvector database, applies all committed migrations and
+  seed data, then passes five authenticated browser flows (organization/brand/knowledge, fail-closed research and
+  generation, editorial approval, calendar and analytics) plus three worker contracts.
+- The child environment removes provider credentials. Research and generation must visibly remain
+  `BLOCKED_EXTERNAL`; publication and analytics mocks are documented as sandbox-only transaction/worker evidence,
+  never live-provider readiness. The database container and volume are removed on both success and failure.
+- Stabilized the calendar E2E fixture for clean runs: each browser scenario uses its own synthetic proxy IP for the
+  existing auth limiter, schedules only future dates, and selects the intended card when two scheduled publications
+  share a title. The production auth policy was not weakened.
+- W19 implementation evidence is complete, but the Release Gate remains `BLOCKED_EXTERNAL` for Timeweb `vector`,
+  trusted project TLS/vhost, live provider credentials and separate owner authorization. Production remains prohibited.
+
 ## 2026-08-13 — W19.5 TLS/domain external-input audit
 
 - Performed read-only public checks for `fabrika.ams24.ru`: the A record resolves to AMS Server and ports 80/443

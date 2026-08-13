@@ -509,7 +509,8 @@ parallel request
 | PR 19.3  | `FOUNDATION`       | The `db:backup-drill` command creates a non-empty custom-format `pg_dump` archive from a disposable pgvector database and verifies schema/seed entities through `pg_restore --list` before cleanup.           |
 | PR 19.4  | `FOUNDATION`       | The `db:restore-drill` command restores a real source archive into a separate clean pgvector database, verifies migrations/critical seed entities and proves standalone web readiness on the restored target. |
 | PR 19.5  | `BLOCKED_EXTERNAL` | Read-only DNS/TCP checks pass, but public HTTP/HTTPS serve generic Nginx and TLS is not trusted for `fabrika.ams24.ru`; vhost, certificate and release inputs remain external and unmodified.                 |
-| Next     | `W19.6`            | Implement a non-destructive release smoke suite and record which checks remain unavailable until infrastructure is authorized.                                                                                |
+| PR 19.6  | `FOUNDATION`       | `release:smoke` proves the local authenticated/browser/worker path on a disposable pgvector database and requires explicit `BLOCKED_EXTERNAL` paths for unavailable research and text generation.             |
+| Next     | `Release Gate`     | Remains `BLOCKED_EXTERNAL` until the documented Timeweb, TLS/vhost, live-provider and owner-authorization inputs are independently completed.                                                                 |
 
 ### W6.4 — hybrid retrieval
 

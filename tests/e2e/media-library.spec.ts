@@ -9,6 +9,8 @@ const email = `w10-media-${randomUUID()}@ams-content-factory.local`;
 const password = 'w10-media-password';
 const origin = `http://127.0.0.1:${process.env.E2E_PORT ?? '3000'}`;
 
+test.use({ extraHTTPHeaders: { 'x-real-ip': '198.18.0.17' } });
+
 test.afterAll(async () => {
   await prisma.user.deleteMany({ where: { email } });
   await prisma.$disconnect();

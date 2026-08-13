@@ -14,7 +14,9 @@
 > outbound webhook SSRF validation, W18.4 Docker runtime hardening, W18.5 dependency hygiene and W18.6 security
 > headers, W19.1 final portable production Compose audit, W19.2 clean-database migration drill and W19.3 logical
 > backup drill and W19.4 restore/application-smoke drill are `FOUNDATION`. W19.5 TLS/domain is
-> `BLOCKED_EXTERNAL` after read-only verification; Next: W19.6 non-destructive release smoke suite.
+> `BLOCKED_EXTERNAL` after read-only verification. W19.6 release smoke is `FOUNDATION`: disposable pgvector,
+> five critical browser flows and three worker contracts pass while unavailable provider paths explicitly remain
+> `BLOCKED_EXTERNAL`. The Release Gate remains `BLOCKED_EXTERNAL`; no production deployment is authorized.
 
 ## Protocol
 

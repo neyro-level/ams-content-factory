@@ -17,6 +17,9 @@
 
 - [ ] Пройдены `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`,
       `pnpm test:integration`, `pnpm test:e2e`, `pnpm build`.
+- [x] Локальный `pnpm release:smoke` прошёл на disposable pgvector: пять browser и три worker контракта;
+      external provider paths зафиксированы как `BLOCKED_EXTERNAL`. Это не production release proof — см.
+      `docs/RELEASE_SMOKE_SUITE.md`.
 - [ ] Собран и проверен immutable Linux-артефакт exact SourceCraft `main`; `current` переключён только
       после его аудита.
 - [ ] В Timeweb DBaaS cluster доступен, а systemd `web` и `worker` healthy.

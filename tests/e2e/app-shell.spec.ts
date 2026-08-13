@@ -8,6 +8,8 @@ const email = `w5-shell-${randomUUID()}@ams-content-factory.local`;
 const password = 'w5-shell-password';
 const origin = `http://127.0.0.1:${process.env.E2E_PORT ?? '3000'}`;
 
+test.use({ extraHTTPHeaders: { 'x-real-ip': '198.18.0.13' } });
+
 test.afterAll(async () => {
   await prisma.user.deleteMany({ where: { email } });
   await prisma.$disconnect();
