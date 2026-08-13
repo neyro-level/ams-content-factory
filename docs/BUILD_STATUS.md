@@ -19,6 +19,8 @@
   rule instead of exposing raw `ClaimStatus` values. Content type and project state labels are shared between list
   and detail screens, including the actual review state. Research materials now use Russian lifecycle labels, and
   unconfigured research provider capabilities communicate a product-level limitation without a technical marker.
+- **V0.1 manual-publication gate:** the final-text copy control is absent before the manual editorial path reaches
+  `READY`; drafts remain editable but are not presented as output ready for manual distribution.
 - **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, five critical browser flows
   and three worker contracts passed. The Release Gate remains `BLOCKED_EXTERNAL`: DNS/ports resolve, but the public
   hostname still serves generic Nginx and trusted project TLS/vhost, Timeweb `vector`, live providers and owner

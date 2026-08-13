@@ -92,6 +92,12 @@ test('V0.1 editorial flow: context, knowledge, draft, review, READY and copy', a
   await expect(page.locator('pre.content-preview')).toHaveText(
     'Детерминированный тестовый черновик.',
   );
+  await expect(page.getByRole('button', { name: 'Скопировать финальный текст' })).toHaveCount(0);
+  await expect(
+    page.getByText(
+      'Копирование для ручной публикации станет доступно после редакционного согласования.',
+    ),
+  ).toBeVisible();
   await page.getByLabel('Отредактированный текст').fill('Ручная редакторская версия.');
   await page.getByRole('button', { name: 'Сохранить новой версией' }).click();
   await expect(page.locator('pre.content-preview')).toHaveText('Ручная редакторская версия.');
@@ -108,6 +114,7 @@ test('V0.1 editorial flow: context, knowledge, draft, review, READY and copy', a
   await page.getByRole('button', { name: 'Одобрить вручную' }).click();
   await page.getByRole('button', { name: 'Подготовить финальный текст' }).click();
   await expect(page.getByText('текущий статус: Готово для ручной публикации')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Скопировать финальный текст' })).toBeVisible();
   await page.getByRole('button', { name: 'Скопировать финальный текст' }).click();
   await expect(page.getByText('Текст скопирован для ручной публикации.')).toBeVisible();
 });

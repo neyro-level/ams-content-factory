@@ -76,6 +76,8 @@ owner deployment confirmation remain independent release blockers.
 - Product-language follow-up: Research maps internal material lifecycle enums to Russian editorial labels. Its
   unavailable provider path tells the user which capability will appear after configuration and never exposes a
   technical `BLOCKED_EXTERNAL` marker.
+- Workflow-gate follow-up: copying for manual publication is available only after the project reaches `READY`;
+  drafts remain editable but cannot be presented as final output.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.
