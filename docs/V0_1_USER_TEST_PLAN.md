@@ -45,7 +45,8 @@ video, social OAuth, provider publishing, analytics, MCP и n8n не входя�
 ## Verification and release boundary
 
 The V0.1 code gate requires Prisma validation and migration verification, lint, format, typecheck,
-unit, integration, build and deterministic Playwright happy-path plus tenant-isolation smoke.
+unit, integration, build and deterministic Playwright happy-path, tenant-isolation smoke and a separate browser
+contract for the no-credential limited Content mode.
 
 Real user-facing AI generation additionally requires a securely configured `OPENAI_API_KEY`. Until it
 exists, Content is rendered as a product-level limited capability: editing, review and manual finalisation remain
@@ -86,6 +87,9 @@ owner deployment confirmation remain independent release blockers.
   isolated local Playwright runtime.
 - Runtime-capability entry-point follow-up: the direct Content workspace shows the same limited-capability notice,
   so this truthful state is visible even when the owner bypasses dashboard navigation with a saved URL.
+- Limited-capability browser follow-up: a separate Playwright server runs without the deterministic generation
+  provider and proves the navigation marker, direct Content notice and disabled generation control. This is not a
+  substitute for the required live provider smoke.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.

@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-14 — V0.1 no-credential capability browser contract
+
+- Added a separate critical Playwright runtime without the deterministic text provider. It proves that Content is
+  marked `LIMITED` in navigation, explains the restriction on the direct workspace route and keeps draft generation
+  disabled. This prevents test-only generation from masking the ordinary no-credential product state.
+
 ## 2026-08-14 — V0.1 canonical verification evidence
 
 - SourceCraft `verify #184` completed successfully on canonical `main` commit `1681e50`, including PostgreSQL +
