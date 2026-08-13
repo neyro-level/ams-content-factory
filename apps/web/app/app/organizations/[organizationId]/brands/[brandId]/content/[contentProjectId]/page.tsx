@@ -9,6 +9,7 @@ import { notFound, redirect } from 'next/navigation';
 import { editorialAction } from './actions';
 import { ContentStateControls } from '../../../../../../../../components/content-state-controls';
 import { ContentVersionControls } from '../../../../../../../../components/content-version-controls';
+import { contentStatusLabel, contentTypeLabel } from '../../../../../../../../lib/content-labels';
 
 const claimStatusLabel: Record<string, string> = {
   UNVERIFIED: 'Нужна проверка',
@@ -43,8 +44,8 @@ export default async function ContentProjectPage({
             <p className="eyebrow">Контент-проект</p>
             <h1 id="content-project-title">{project.title}</h1>
             <p className="muted">
-              {project.contentType} · текущий статус:{' '}
-              {statusLabel[project.status] ?? project.status}
+              {contentTypeLabel[project.contentType] ?? 'Материал'} · текущий статус:{' '}
+              {contentStatusLabel[project.status] ?? 'Статус обновляется'}
             </p>
             <ContentStateControls
               organizationId={organizationId}
@@ -205,16 +206,3 @@ export default async function ContentProjectPage({
     throw error;
   }
 }
-
-const statusLabel: Record<string, string> = {
-  IDEA: 'Идея',
-  RESEARCHING: 'Подготовка генерации',
-  DRAFT: 'Черновик',
-  FACT_CHECK: 'Проверка фактов',
-  REVIEW: 'На согласовании',
-  APPROVED: 'Одобрено',
-  READY: 'Готово для ручной публикации',
-  FAILED: 'Требуется повторить',
-  REJECTED: 'Отклонено',
-  CANCELLED: 'Отменено',
-};

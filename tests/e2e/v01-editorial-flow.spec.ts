@@ -70,6 +70,8 @@ test('V0.1 editorial flow: context, knowledge, draft, review, READY and copy', a
   await page.getByLabel('Brief').fill('Расскажите, как начать работать с контентом.');
   await page.getByRole('button', { name: 'Создать проект' }).click();
   await expect(page.getByRole('link', { name: 'Открыть' })).toBeVisible();
+  await expect(page.getByText('Пост · версий: 1 · согласований: 0')).toBeVisible();
+  await expect(page.getByText('SOCIAL_POST', { exact: true })).toHaveCount(0);
   const project = await prisma.contentProject.findFirstOrThrow({
     where: { organizationId: organization.id, brandId: brand.id, title: 'Первый V0.1 материал' },
     include: { versions: { orderBy: { version: 'asc' } } },
@@ -85,6 +87,7 @@ test('V0.1 editorial flow: context, knowledge, draft, review, READY and copy', a
     }),
   ]);
   await page.getByRole('link', { name: 'Открыть' }).click();
+  await expect(page.getByText('Пост · текущий статус: Новая тема')).toBeVisible();
   await page.getByRole('button', { name: 'Сгенерировать черновик' }).click();
   await expect(page.locator('pre.content-preview')).toHaveText(
     'Детерминированный тестовый черновик.',

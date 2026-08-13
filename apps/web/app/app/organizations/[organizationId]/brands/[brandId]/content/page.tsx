@@ -7,18 +7,7 @@ import {
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { ContentProjectForm } from '../../../../../../../components/content-project-form';
-
-const contentStatusLabel: Record<string, string> = {
-  IDEA: 'Новая тема',
-  RESEARCHING: 'Подготовка генерации',
-  DRAFT: 'Черновик',
-  FACT_CHECK: 'Проверка фактов',
-  IN_REVIEW: 'На согласовании',
-  APPROVED: 'Одобрено',
-  READY: 'Готово к ручной публикации',
-  FAILED: 'Требуется повторить генерацию',
-  CANCELLED: 'Отменено',
-};
+import { contentStatusLabel, contentTypeLabel } from '../../../../../../../lib/content-labels';
 
 export default async function ContentProjectsPage({
   params,
@@ -62,8 +51,8 @@ export default async function ContentProjectsPage({
                   <div>
                     <h3>{project.title}</h3>
                     <p className="muted">
-                      {project.contentType} · версий: {project._count.versions} · согласований:{' '}
-                      {project._count.approvals}
+                      {contentTypeLabel[project.contentType] ?? 'Материал'} · версий:{' '}
+                      {project._count.versions} · согласований: {project._count.approvals}
                     </p>
                   </div>
                   <div className="organization-item-actions">

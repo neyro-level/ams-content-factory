@@ -71,6 +71,8 @@ owner deployment confirmation remain independent release blockers.
   database enums remain an internal contract and are not ordinary user-facing statuses.
 - Product-language follow-up: Fact-check renders claim verification as Russian editorial labels rather than raw
   `ClaimStatus` enum values.
+- Product-language follow-up: Content project cards and detail pages share one label catalog for content types and
+  lifecycle states, including the actual `REVIEW` state rather than an obsolete status name.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.
