@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — W18.4 Docker/runtime hardening
+
+- Reworked the root runtime and immutable Linux release Dockerfiles into multi-stage builds. Build-only tooling is
+  removed with `pnpm prune --prod`; production payloads run as the dedicated `amscf` non-root user rather than root.
+- The Docker build context excludes Git metadata, local environments, dependencies and generated test/build output.
+  The immutable artifact additionally removes source Git metadata and the unused Next build/cache directories before
+  extraction. No server, image registry or production deployment was changed.
+- Verified both Docker targets locally: builds pass, image configuration uses `amscf` (UID 999), and runtime checks
+  prove that `.git`, `.env`, `.env.production` and cached build payloads are absent. Next: W18.5 dependency hygiene.
+
 ## 2026-08-13 — W18.3 outbound webhook SSRF guard
 
 - Outbound webhook endpoint configuration now requires HTTPS and passes the shared DNS/IP public-target validator

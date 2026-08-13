@@ -3,10 +3,12 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W18.3 outbound webhook SSRF is `FOUNDATION`: webhook endpoints need HTTPS plus the same public
-  DNS/IP validation as knowledge URLs before encrypted persistence. Next: W18.4 Docker runtime hardening.
-- **Last verification:** 2026-08-13: lint, formatting, workspace typecheck, 72 unit tests, 77 PostgreSQL integration
-  contracts and production web/worker builds passed. Health route checks now establish their own full test runtime.
+- **Current task:** W18.4 Docker runtime hardening is `FOUNDATION`: root and immutable-release images are
+  multi-stage, retain production dependencies only and run as a dedicated non-root user. Next: W18.5 dependency
+  hygiene.
+- **Last verification:** 2026-08-13: root/runtime and immutable-release Docker builds passed; both images run as
+  UID 999 (`amscf`) and exclude Git/env/cache payloads. The preceding full application gate passed lint, formatting,
+  workspace typecheck, 72 unit tests, 77 PostgreSQL integration contracts and production web/worker builds.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a
