@@ -84,6 +84,8 @@ owner deployment confirmation remain independent release blockers.
 - Runtime-capability follow-up: the dashboard, navigation and content controls present Content as `LIMITED` when
   no real text-generation credential exists. The test-only deterministic provider is recognised only inside the
   isolated local Playwright runtime.
+- Runtime-capability entry-point follow-up: the direct Content workspace shows the same limited-capability notice,
+  so this truthful state is visible even when the owner bypasses dashboard navigation with a saved URL.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.
