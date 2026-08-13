@@ -10,7 +10,7 @@ AMS Server uses the immutable SourceCraft-main artifact, host Nginx and systemd 
 
 | Service  | Network exposure                            | Responsibility                                                                     |
 | -------- | ------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `web`    | Internal only, port 3000 exposed to `nginx` | Next.js application; liveness and database-backed readiness.                       |
+| `web`    | Internal only, port 3000 exposed to `nginx` | Generated Next standalone server; liveness and database-backed readiness.          |
 | `worker` | Loopback-only internal readiness on 3205    | Durable pg-boss processing; healthy only after bootstrap and handler registration. |
 | `nginx`  | The sole public Compose port                | Reverse proxy for `web`; no database or application secrets.                       |
 

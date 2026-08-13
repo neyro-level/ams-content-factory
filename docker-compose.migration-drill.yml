@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ams_content_factory_drill
+      POSTGRES_USER: ams_content_factory_drill
+      # Deliberately disposable local-only value; never reuse it outside this drill container.
+      POSTGRES_PASSWORD: migration_drill_only
+    ports:
+      - '127.0.0.1:${MIGRATION_DRILL_PORT:-55432}:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ams_content_factory_drill -d ams_content_factory_drill']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - migration-drill-postgres:/var/lib/postgresql/data
+
+volumes:
+  migration-drill-postgres:

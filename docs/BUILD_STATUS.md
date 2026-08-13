@@ -3,11 +3,11 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W19.1 final portable Compose audit is `FOUNDATION`: only web, worker and Nginx are long-lived;
-  managed PostgreSQL/pgvector and S3 remain external, and worker health now uses its real readiness endpoint. Next:
-  W19.2 clean-database migration drill.
-- **Last verification:** 2026-08-13: portable Compose renders with the secured environment, its normal and
-  maintenance service boundaries are explicit, and the preceding application gate passed lint, formatting, workspace
+- **Current task:** W19.2 clean-database migration drill is `FOUNDATION`: a disposable pgvector database receives
+  `migrate deploy` and seed, then an actual production web process must pass `/api/health/ready` before cleanup.
+  Next: W19.3 logical backup drill.
+- **Last verification:** 2026-08-13: the disposable migration drill completed migration, seed and live readiness
+  without reading `.env` or touching Timeweb. The preceding application gate passed lint, formatting, workspace
   typecheck, 75 unit tests, 77 PostgreSQL integration contracts and production web/worker builds.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-

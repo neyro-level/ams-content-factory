@@ -12,8 +12,8 @@
 > redaction, durable audit and error reporting are `FOUNDATION`. W17 bounded provider/project/analytics reads and
 > proven-query indexes are `FOUNDATION`. W18.1 web/worker real readiness, W18.2 PostgreSQL rate limits and W18.3
 > outbound webhook SSRF validation, W18.4 Docker runtime hardening, W18.5 dependency hygiene and W18.6 security
-> headers and W19.1 final portable production Compose audit are `FOUNDATION`. Next: W19.2 clean-database migration
-> drill.
+> headers, W19.1 final portable production Compose audit and W19.2 clean-database migration drill are `FOUNDATION`.
+> Next: W19.3 logical backup drill.
 
 ## Protocol
 

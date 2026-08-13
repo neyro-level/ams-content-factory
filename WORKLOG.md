@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — W19.2 clean-database migration drill
+
+- Added `pnpm db:migration-drill`: it creates one disposable local pgvector Compose project, runs `prisma migrate
+deploy`, runs the idempotent seed, builds and starts the production web process, then requires real loopback
+  `/api/health/ready` before removing the process, containers and volume.
+- The drill has its own non-secret local credentials and loopback ports; it does not read `.env`, connect to Timeweb,
+  call providers or authorize deployment. The procedure and remaining boundaries are documented in
+  `docs/MIGRATION_DRILL.md`.
+- Next: W19.3 logical backup drill. Production deployment remains prohibited.
+
 ## 2026-08-13 — W19.1 final portable Compose audit
 
 - Confirmed that the portable Compose package has exactly three long-lived services: private `web`, private `worker`

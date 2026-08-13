@@ -15,6 +15,8 @@ ENV DATABASE_URL=postgresql://build:build@127.0.0.1:5432/ams_content_factory
 RUN pnpm install --frozen-lockfile \
   && pnpm prisma:generate \
   && BETTER_AUTH_SECRET="$(openssl rand -base64 48)" TOKEN_ENCRYPTION_KEY="$(openssl rand -base64 32)" pnpm build \
+  && mkdir -p apps/web/.next/standalone/apps/web/.next \
+  && cp -a apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static \
   && CI=true pnpm prune --prod
 
 FROM node:22.13.0-bookworm-slim AS runtime
@@ -34,4 +36,4 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 USER amscf
 EXPOSE 3000
-CMD ["pnpm", "--filter", "@ams-content-factory/web", "start"]
+CMD ["node", "apps/web/.next/standalone/apps/web/server.js"]

@@ -46,7 +46,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     env_file: .env
-    command: ['pnpm', '--filter', '@ams-content-factory/web', 'start']
+    command: ['node', 'apps/web/.next/standalone/apps/web/server.js']
     expose: ['3000']
     healthcheck:
       test:
