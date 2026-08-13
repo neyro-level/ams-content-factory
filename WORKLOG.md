@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — V0.1 editorial integrity follow-up
+
+- Manual content briefs and edited versions now retain the authenticated creating user in the immutable version
+  record. This keeps the minimum V0.1 editorial audit trail without storing any client-controlled actor identity.
+- AI rewrite completion is now a single repository transaction: it allocates the next version, persists the
+  immutable AI version and marks `AiExecution` `SUCCEEDED` together. A known persistence failure leaves no partial
+  rewrite version and records `REWRITE_PERSISTENCE_FAILED` for recovery.
+- Verified with Prisma migration deploy, workspace typecheck and 12 targeted content generation/workflow integration
+  contracts against the local pgvector database. No production or external provider operation was attempted.
+
 ## 2026-08-13 — V0.1 user-testing workflow implemented locally
 
 - Added the executable `docs/V0_1_USER_TEST_PLAN.md` and linked it from the master plan, document index,

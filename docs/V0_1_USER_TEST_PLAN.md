@@ -58,6 +58,9 @@ owner deployment confirmation remain independent release blockers.
   typecheck, 76 unit tests, 85 integration tests, two V0.1 browser smokes and production build.
 - SourceCraft `verify` passed on the implementation PR and again on canonical `main` (`b9a094b`), including
   PostgreSQL + pgvector, migrations, unit/integration tests, build and both deterministic browser contracts.
+- Editorial integrity follow-up: manual brief and text versions now retain their creating user, and AI rewrite
+  finalisation creates the immutable version and marks its execution successful in one database transaction. A
+  persistence failure records `REWRITE_PERSISTENCE_FAILED` without leaving a partial version or a running execution.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.

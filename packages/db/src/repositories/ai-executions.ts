@@ -278,6 +278,59 @@ export function createAiExecutionRepository(prisma: PrismaClient = getPrisma()) 
         return version;
       });
     },
+    async completeRewrite(
+      input: AiExecutionScope & {
+        id: string;
+        body: string;
+        inputTokens?: number;
+        outputTokens?: number;
+        actualCost?: number;
+      },
+    ) {
+      return prisma.$transaction(async (tx) => {
+        const execution = await tx.aiExecution.findFirst({
+          where: { ...scopeForUpdate(input), status: AiExecutionStatus.RUNNING },
+          select: { id: true },
+        });
+        if (!execution) return null;
+        const project = await tx.contentProject.updateMany({
+          where: {
+            id: input.contentProjectId,
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+            status: ContentProjectStatus.DRAFT,
+          },
+          data: { nextVersion: { increment: 1 } },
+        });
+        if (project.count !== 1) return null;
+        const allocated = await tx.contentProject.findUnique({
+          where: { id: input.contentProjectId },
+          select: { nextVersion: true },
+        });
+        if (!allocated) return null;
+        const version = await tx.contentVersion.create({
+          data: {
+            contentProjectId: input.contentProjectId,
+            version: allocated.nextVersion - 1,
+            createdByType: ContentVersionAuthorType.AI,
+            aiExecutionId: input.id,
+            body: input.body,
+          },
+        });
+        const succeeded = await tx.aiExecution.updateMany({
+          where: { ...scopeForUpdate(input), status: AiExecutionStatus.RUNNING },
+          data: {
+            status: AiExecutionStatus.SUCCEEDED,
+            finishedAt: new Date(),
+            ...(input.inputTokens === undefined ? {} : { inputTokens: input.inputTokens }),
+            ...(input.outputTokens === undefined ? {} : { outputTokens: input.outputTokens }),
+            ...(input.actualCost === undefined ? {} : { actualCost: input.actualCost }),
+          },
+        });
+        if (succeeded.count !== 1) throw new Error('AI rewrite success could not be persisted.');
+        return version;
+      });
+    },
     async failGeneration(
       input: AiExecutionScope & { id: string; errorCode: string; errorMessage: string },
     ) {

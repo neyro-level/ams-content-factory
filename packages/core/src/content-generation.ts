@@ -1,6 +1,5 @@
 import {
   ContentProjectStatus,
-  ContentVersionAuthorType,
   createAiExecutionRepository,
   createContentRepository,
 } from '@ams-content-factory/db';
@@ -175,28 +174,18 @@ export function createContentGenerationService(options: {
       }
 
       try {
-        const version = await content.appendVersion({
+        const version = await executions.completeRewrite({
           ...scope,
-          createdByType: ContentVersionAuthorType.AI,
-          aiExecutionId: execution.id,
+          id: execution.id,
           body: result.text,
+          ...(result.usage?.inputTokens === undefined
+            ? {}
+            : { inputTokens: result.usage.inputTokens }),
+          ...(result.usage?.outputTokens === undefined
+            ? {}
+            : { outputTokens: result.usage.outputTokens }),
         });
         if (!version) throw new Error('Rewritten content version could not be persisted.');
-        if (
-          (
-            await executions.markSucceeded({
-              ...scope,
-              id: execution.id,
-              ...(result.usage?.inputTokens === undefined
-                ? {}
-                : { inputTokens: result.usage.inputTokens }),
-              ...(result.usage?.outputTokens === undefined
-                ? {}
-                : { outputTokens: result.usage.outputTokens }),
-            })
-          ).count !== 1
-        )
-          throw new Error('AI rewrite success could not be persisted.');
         return { executionId: execution.id, version };
       } catch (error) {
         await executions.markFailed({

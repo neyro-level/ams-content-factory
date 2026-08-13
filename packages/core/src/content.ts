@@ -43,6 +43,7 @@ export function createContentService(options: { prisma?: PrismaClient } = {}) {
         pillarId?: string;
         goal?: string;
         audience?: string;
+        createdBy?: string;
       },
     ) {
       return repository.createProject({ ...scoped(context), ...input });
@@ -71,6 +72,7 @@ export function createContentService(options: { prisma?: PrismaClient } = {}) {
       id: string,
       input: {
         createdByType: ContentVersionAuthorType;
+        createdByUserId?: string;
         body?: string;
         brief?: string;
         hook?: string;

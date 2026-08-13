@@ -224,6 +224,35 @@ describe('content generation', () => {
     );
   });
 
+  it('marks a rewrite execution failed without persisting a version when the transaction fails', async () => {
+    const setup = await createProject('rewrite-persistence-failure');
+    const source = await makeDraft(setup);
+    const executions = createAiExecutionRepository(prisma);
+    vi.spyOn(executions, 'completeRewrite').mockRejectedValueOnce(
+      new Error('rewrite database write failed'),
+    );
+    const service = createContentGenerationService({
+      provider: new MockTextGenerationProvider({ text: 'Provider rewrite.', model: 'mock' }),
+      executionRepository: executions,
+    });
+
+    await expect(
+      service.rewriteDraft(setup.actor, {
+        contentProjectId: setup.project.id,
+        sourceVersionId: source.id,
+        instruction: 'Rewrite safely.',
+      }),
+    ).rejects.toThrow('rewrite database write failed');
+    await expect(
+      prisma.contentVersion.count({ where: { contentProjectId: setup.project.id } }),
+    ).resolves.toBe(1);
+    await expect(
+      prisma.aiExecution.findFirst({ where: { contentProjectId: setup.project.id } }),
+    ).resolves.toEqual(
+      expect.objectContaining({ status: 'FAILED', errorCode: 'REWRITE_PERSISTENCE_FAILED' }),
+    );
+  });
+
   it('rejects a rewrite source that belongs to another content project', async () => {
     const first = await createProject('rewrite-source-a');
     const second = await createProject('rewrite-source-b');

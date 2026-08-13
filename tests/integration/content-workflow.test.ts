@@ -137,6 +137,7 @@ describe('content workflow', () => {
     await service.transition(firstContext, project!.id, 'DRAFT');
     const one = await service.appendVersion(firstContext, project!.id, {
       createdByType: 'USER',
+      createdByUserId: user.id,
       body: 'Первая версия',
     });
     const two = await service.appendVersion(firstContext, project!.id, {
@@ -144,6 +145,7 @@ describe('content workflow', () => {
       body: 'Вторая версия',
     });
     expect([one?.version, two?.version]).toEqual([1, 2]);
+    expect(one?.createdByUserId).toBe(user.id);
     const repository = createContentRepository(prisma);
     await expect(
       repository.addApproval({

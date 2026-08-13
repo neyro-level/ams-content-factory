@@ -50,11 +50,13 @@ export async function createContentProjectAction(
       contentType: contentType as AllowedContentType,
       ...(goal ? { goal } : {}),
       ...(audience ? { audience } : {}),
+      createdBy: actor.userId,
     });
     if (!project) return { error: 'Не удалось создать проект в активном бренде.' };
     if (brief) {
       await createContentService().appendVersion(context, project.id, {
         createdByType: 'USER',
+        createdByUserId: actor.userId,
         body: brief,
         brief,
       });
@@ -117,6 +119,7 @@ export async function contentVersionAction(
       if (!body) return { error: 'Текст версии не может быть пустым.' };
       const version = await createContentService().appendVersion(context, route.contentProjectId, {
         createdByType: 'USER',
+        createdByUserId: actor.userId,
         body,
       });
       if (!version) return { error: 'Не удалось сохранить версию в активном бренде.' };
