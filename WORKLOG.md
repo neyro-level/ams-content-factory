@@ -1,5 +1,14 @@
 # Worklog
 
+## 2026-08-14 — V0.1 canonical verification evidence
+
+- SourceCraft `verify #184` completed successfully on canonical `main` commit `1681e50`, including PostgreSQL +
+  pgvector, migrations, static quality, unit/integration suites, production build and the two critical Playwright
+  contracts. The authorised GitHub mirror was synchronised to the same commit.
+- The V0.1 code gate is therefore green. The sole user-test condition remains external and unchanged: securely
+  configure a real `OPENAI_API_KEY` and complete one owner smoke of the live editorial generation path. No
+  production release has been performed or authorised.
+
 ## 2026-08-14 — V0.1 Content entry capability notice
 
 - The direct Content workspace now also shows the same product-level `LIMITED` explanation when a real
@@ -18,7 +27,7 @@
 - Reconciled README, implementation report and execution/status records with the actual V0.1 owner flow. They now
   distinguish `READY` core editorial work, `LIMITED` provider-dependent Research/AI and `PLANNED` future modules,
   while preserving the independent production `BLOCKED_EXTERNAL` boundary.
-- Recorded canonical SourceCraft `main` evidence through `355dabf`; the remaining V0.1 user-test blocker is exactly
+- Recorded canonical SourceCraft `main` evidence through `1681e50`; the remaining V0.1 user-test blocker is exactly
   one secure live `OPENAI_API_KEY` plus an owner smoke, not the deterministic test provider.
 
 ## 2026-08-13 — V0.1 editorial action feedback
