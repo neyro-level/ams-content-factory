@@ -17,6 +17,9 @@ workflows:
       max_cube_duration: 20m
     tasks:
       - name: quality-gate
+        # Explicit task-level value avoids relying on workflow-setting inheritance.
+        settings:
+          max_cube_duration: 20m
         cubes:
           - name: integration-quality-gate
             script:
