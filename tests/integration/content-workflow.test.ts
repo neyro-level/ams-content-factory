@@ -125,6 +125,50 @@ describe('content workflow', () => {
     ).resolves.toEqual(
       expect.objectContaining({ pillarId: firstPillar.id, opportunityId: firstOpportunity.id }),
     );
+    await expect(
+      service.createWithBrief(secondContext, {
+        title: 'Foreign brief denied',
+        contentType: 'SOCIAL_POST',
+        goal: 'Explain the service',
+        audience: 'B2B teams',
+        brief: 'Use only the active brand context.',
+        createdBy: user.id,
+        pillarId: firstPillar.id,
+      }),
+    ).resolves.toBeNull();
+    const authored = await service.createWithBrief(firstContext, {
+      title: 'Atomic brief project',
+      contentType: 'SOCIAL_POST',
+      goal: 'Explain the service',
+      audience: 'B2B teams',
+      brief: 'The immutable first brief.',
+      createdBy: user.id,
+      pillarId: firstPillar.id,
+      opportunityId: firstOpportunity.id,
+    });
+    expect(authored).toEqual(
+      expect.objectContaining({
+        project: expect.objectContaining({
+          status: 'IDEA',
+          nextVersion: 2,
+          pillarId: firstPillar.id,
+          opportunityId: firstOpportunity.id,
+        }),
+        briefVersion: expect.objectContaining({
+          version: 1,
+          createdByType: 'USER',
+          createdByUserId: user.id,
+          brief: 'The immutable first brief.',
+          body: 'The immutable first brief.',
+        }),
+      }),
+    );
+    const authoredFollowUp = await service.appendVersion(firstContext, authored!.project.id, {
+      createdByType: 'USER',
+      createdByUserId: user.id,
+      body: 'The second immutable version.',
+    });
+    expect(authoredFollowUp?.version).toBe(2);
     const project = await service.create(firstContext, {
       title: 'Контент',
       contentType: 'SOCIAL_POST',

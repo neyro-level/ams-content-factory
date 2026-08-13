@@ -41,26 +41,30 @@ export async function createContentProjectAction(
   const goal = String(formData.get('goal') ?? '').trim();
   const audience = String(formData.get('audience') ?? '').trim();
   const brief = String(formData.get('brief') ?? '').trim();
-  if (title.length < 2 || title.length > 200 || !allowedTypes.has(contentType))
-    return { error: 'Проверьте название и тип контента.' };
+  if (
+    title.length < 2 ||
+    title.length > 200 ||
+    goal.length < 1 ||
+    goal.length > 500 ||
+    audience.length < 1 ||
+    audience.length > 500 ||
+    brief.length < 1 ||
+    brief.length > 10_000 ||
+    !allowedTypes.has(contentType)
+  )
+    return { error: 'Заполните тему, цель, аудиторию, brief и выберите корректный тип контента.' };
   try {
     const context = await resolveTenantContext(actor);
-    const project = await createContentService().create(context, {
+    const result = await createContentService().createWithBrief(context, {
       title,
       contentType: contentType as AllowedContentType,
-      ...(goal ? { goal } : {}),
-      ...(audience ? { audience } : {}),
+      goal,
+      audience,
+      brief,
       createdBy: actor.userId,
     });
+    const project = result?.project;
     if (!project) return { error: 'Не удалось создать проект в активном бренде.' };
-    if (brief) {
-      await createContentService().appendVersion(context, project.id, {
-        createdByType: 'USER',
-        createdByUserId: actor.userId,
-        body: brief,
-        brief,
-      });
-    }
     revalidatePath(`/app/organizations/${route.organizationId}/brands/${route.brandId}/content`);
     return { success: `Проект «${project.title}» создан.` };
   } catch {

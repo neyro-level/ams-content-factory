@@ -32,16 +32,17 @@ export function ContentProjectForm({
       </label>
       <label>
         Цель
-        <input name="goal" maxLength={500} placeholder="Например: объяснить услугу" />
+        <input name="goal" required maxLength={500} placeholder="Например: объяснить услугу" />
       </label>
       <label>
         Аудитория
-        <input name="audience" maxLength={500} placeholder="Для кого создаётся материал" />
+        <input name="audience" required maxLength={500} placeholder="Для кого создаётся материал" />
       </label>
       <label>
         Brief
         <textarea
           name="brief"
+          required
           maxLength={10_000}
           placeholder="Тема, факты, пожелания к материалу"
         />

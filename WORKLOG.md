@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — V0.1 atomic project brief
+
+- Owner entry point now requires topic, goal, audience and brief. The tenant-scoped repository creates the project
+  and immutable first `USER` version in one transaction, setting the post-brief version counter to 2.
+- Added integration coverage for actor attribution, active-brand denial and contiguous follow-up allocation, plus a
+  critical browser assertion that the created project already contains its version-1 brief before generation starts.
+- The full local gate is green: Prisma migration deploy, lint, format, typecheck, 76 unit tests, 86 integration
+  tests, production build and both critical browser contracts. No schema migration, provider call, production
+  operation or external credential was involved.
+
 ## 2026-08-13 — V0.1 editorial integrity follow-up
 
 - Manual content briefs and edited versions now retain the authenticated creating user in the immutable version
