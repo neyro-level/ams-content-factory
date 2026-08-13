@@ -3,12 +3,12 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W17 performance hardening is `FOUNDATION`: publication provider loads are relation-bounded,
-  analytics and content history are cursor-bounded, and two query-pattern indexes are migrated. Next: W18 production
-  hardening.
-- **Last verification:** 2026-08-13: Prisma validation/generation, lint, formatting, workspace typecheck, 65 unit
-  tests, 75 PostgreSQL integration contracts and production web/worker builds passed. Migration
-  `20260813054003_add_performance_query_indexes` is applied locally.
+- **Current task:** W18.1 real readiness is `FOUNDATION`: web readiness fails closed on invalid runtime config or
+  unavailable PostgreSQL, and the worker exposes its loopback probe only after config, pg-boss and handler bootstrap.
+  Next: W18.2 rate limiting.
+- **Last verification:** 2026-08-13: Prisma validation/generation, lint, formatting, workspace typecheck, 68 unit
+  tests, 76 PostgreSQL integration contracts and production web/worker builds passed. The worker probe contract
+  includes a real pg-boss bootstrap against local PostgreSQL.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a

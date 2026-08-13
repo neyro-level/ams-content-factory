@@ -405,100 +405,101 @@ parallel request
 
 ## Статус исполнения
 
-| Задача   | Статус             | Результат                                                                                                                                                           |
-| -------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PR 0.1   | `DONE`             | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                                                                                         |
-| PR 0.2   | `DONE`             | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`.                                                                       |
-| PR 1.1   | `DONE`             | QC fail-closed: типизированные секции и вычисляемый persisted status.                                                                                               |
-| PR 1.2   | `DONE`             | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                                                                                           |
-| PR 1.3   | `DONE`             | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields.                                                                     |
-| PR 1.4   | `DONE`             | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                                                                                      |
-| PR 2.1   | `DONE`             | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                                                                                        |
-| PR 2.2   | `DONE`             | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.                                                                       |
-| PR 2.3   | `DONE`             | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.                                                                           |
-| PR 2.4   | `DONE`             | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.                                                                           |
-| PR 3.1   | `DONE`             | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.                                                                               |
-| PR 3.2   | `DONE`             | Research ingestion has explicit duplicate, processing and failed-retry transitions.                                                                                 |
-| PR 3.3   | `DONE`             | Knowledge ingestion has retry-safe document and chunk persistence.                                                                                                  |
-| PR 3.4   | `DONE`             | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery.                                                                  |
-| PR 3.5   | `DONE`             | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.                                                                            |
-| PR 3.6   | `DONE`             | Publication attempts are atomically acquired per idempotency key under parallel dispatch.                                                                           |
-| PR 3.7   | `DONE`             | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.                                                                      |
-| PR 3.8   | `DONE`             | Content-project pillar and opportunity links are validated against the active brand graph.                                                                          |
-| PR 3.9   | `DONE`             | Storyboard creation is bound to verified tenant context and `content:write`.                                                                                        |
-| PR 4.1   | `DONE`             | Worker fails unsupported workflow types instead of recording false success.                                                                                         |
-| PR 4.2   | `DONE`             | Worker dispatches only registered handlers selected by workflow type.                                                                                               |
-| PR 4.3   | `DONE`             | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                                                                                    |
-| PR 4.4   | `DONE`             | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.                                                                           |
-| PR 4.5   | `DONE`             | Worker emits `worker.ready` only after queue, recovery and handler registration complete.                                                                           |
-| PR 5.1   | `DONE`             | Better Auth login and server-protected `/app` shell are live with a browser E2E flow.                                                                               |
-| PR 5.2   | `DONE`             | Authenticated users can list and create their active owner organizations in `/app/organizations`.                                                                   |
-| PR 5.3   | `DONE`             | Brand list/create is scoped to a verified organization context with owner MANAGE access.                                                                            |
-| PR 5.4   | `DONE`             | Route-aware application navigation and Better Auth session exit are available in the protected shell.                                                               |
-| PR 5.5   | `DONE`             | Browser-to-PostgreSQL owner/brand lifecycle is covered as one real authenticated flow.                                                                              |
-| PR 6.1   | `DONE`             | Brand-scoped knowledge document list has a protected application entry point.                                                                                       |
-| PR 6.2   | `DONE`             | Safe text, URL and UTF-8 text-file intake is connected to the protected Knowledge UI.                                                                               |
-| PR 6.3   | `DONE`             | Failed knowledge documents are retried from their persisted safe source within the active brand.                                                                    |
-| PR 6.4   | `BLOCKED_EXTERNAL` | Brand-scoped hybrid retrieval is wired to OpenAI; live execution requires `OPENAI_API_KEY`.                                                                         |
-| PR 7.1   | `BLOCKED_EXTERNAL` | Firecrawl research search/extraction and a protected workspace exist; live execution requires `FIRECRAWL_API_KEY`.                                                  |
-| PR 8.1   | `FOUNDATION`       | Provider-neutral `TextGenerationProvider` contract is available; it has no production SDK dependency.                                                               |
-| PR 8.2   | `BLOCKED_EXTERNAL` | One OpenAI Responses API adapter exists; live execution requires `OPENAI_API_KEY`.                                                                                  |
-| PR 8.3   | `FOUNDATION`       | Tenant-scoped AI execution records track provider lifecycle, prompt version, usage, costs and errors.                                                               |
-| PR 8.4   | `FOUNDATION`       | The approved v1 prompt keys are versioned in code and unknown keys fail closed.                                                                                     |
-| PR 8.5   | `FOUNDATION`       | Context assembler returns only verified brand/project, evidence and optional retrieval context.                                                                     |
-| PR 8.6   | `DONE`             | Persisted AI draft generation through the execution boundary.                                                                                                       |
-| PR 8.7   | `DONE`             | Immutable rewrite creates a new version and independently tracked execution.                                                                                        |
-| PR 8.8   | `DONE`             | Fact-check persists claims and stops before editorial review.                                                                                                       |
-| PR 8.9   | `DONE`             | Protected content list/detail UI exposes only scoped project data.                                                                                                  |
-| PR 9.1   | `DONE`             | Content state controls expose only valid next actions and fail visibly without OpenAI.                                                                              |
-| PR 9.2   | `DONE`             | Editorial request/review/comment actions are actor- and permission-scoped.                                                                                          |
-| PR 9.3   | `DONE`             | Human-only manual approval atomically records the reviewer and decision.                                                                                            |
-| PR 10.1  | `FOUNDATION`       | Protected brand media library lists scoped assets; live upload is `BLOCKED_EXTERNAL` until private S3 is configured.                                                |
-| PR 10.2  | `FOUNDATION`       | Storyboard generation accepts only an approved scoped script and validates generated beats against an active recipe.                                                |
-| PR 10.3  | `FOUNDATION`       | VideoProduction lifecycle is guarded from an approved storyboard; valid, invalid and recovery transitions are covered.                                              |
-| PR 10.4  | `BLOCKED_EXTERNAL` | HeyGen V2 runtime client is implemented; live calls require API key plus configured avatar and voice identifiers.                                                   |
-| PR 10.5  | `FOUNDATION`       | Provider submissions require `GENERATING`, persist RenderJob before calls and completed polling advances to `COMPOSING`.                                            |
-| PR 10.6  | `FOUNDATION`       | Transcription is gated on the checked `COMPOSING` production's durable `READY` output asset.                                                                        |
-| PR 10.7  | `FOUNDATION`       | Scoped persisted transcripts serialize to private derived SRT/ASS assets linked by CaptionTrack.                                                                    |
-| PR 10.8  | `FOUNDATION`       | `QC → READY` is available only through a gate that reads the latest scoped `PASSED` QC report.                                                                      |
-| PR 11.1  | `FOUNDATION`       | The protected active-brand social workspace lists VK/Instagram account status without returning credentials or token UI.                                            |
-| PR 11.2  | `FOUNDATION`       | VK/Instagram OAuth contracts, PKCE parameters and runtime-client adapters are isolated in the provider layer.                                                       |
-| PR 11.3  | `FOUNDATION`       | Due encrypted credentials refresh only through a scoped provider contract; success rotates ciphertext, failures persist account status.                             |
-| PR 11.4  | `FOUNDATION`       | Connect, disconnect, expiry and refresh failures persist scoped AuditLog events without tokens; disconnect removes credentials.                                     |
-| PR 12.1  | `FOUNDATION`       | A Publication starts only as DRAFT from an APPROVED project, matching PlatformVariant and connected scoped social account.                                          |
-| PR 12.2  | `FOUNDATION`       | Protected week/month calendar shows only active-brand scheduled publications and unscheduled DRAFT items.                                                           |
-| PR 12.3  | `FOUNDATION`       | A future `scheduledAt` atomically moves only the active-brand DRAFT Publication to QUEUED through the protected calendar action.                                    |
-| PR 12.4  | `FOUNDATION`       | Due QUEUED records are read from PostgreSQL, create/reuse an idempotent dispatch WorkflowRun and enqueue a singleton pg-boss intent.                                |
-| PR 12.5  | `FOUNDATION`       | Only a QUEUED active-brand publication without an attempt can move its scheduledAt; the same record and provider boundary are retained.                             |
-| PR 12.6  | `FOUNDATION`       | A scoped QUEUED publication without an attempt atomically becomes CANCELLED; calendar reads exclude cancelled records.                                              |
-| PR 13.1  | `BLOCKED_EXTERNAL` | VK API `wall.post`/`wall.getById` adapter is fail-closed; real posting needs OAuth account tokens and a separate media-upload path.                                 |
-| PR 13.2  | `BLOCKED_EXTERNAL` | Instagram Graph image container/publish adapter is fail-closed; needs OAuth token and public media delivery instead of private keys.                                |
-| PR 13.3  | `FOUNDATION`       | Worker claims due QUEUED publication atomically, then invokes a scoped provider through one durable workflow/attempt idempotency key.                               |
-| PR 13.4  | `FOUNDATION`       | Outcome investigation decrypts account credentials only at the provider boundary; VK and Instagram status checks preserve uncertainty on errors.                    |
-| PR 13.5  | `FOUNDATION`       | Concurrent duplicate dispatches acquire one attempt and issue at most one provider mutation; uncertainty blocks all repeats until reconciliation.                   |
-| PR 13.6  | `FOUNDATION`       | The scoped calendar surfaces FAILED, OUTCOME_UNKNOWN and expired/error accounts with safe codes and next steps, never provider credentials.                         |
-| PR 14.1  | `FOUNDATION`       | Published active-brand records create idempotent analytics.collect intents for +24/+72/+168h; future workflows stay out of the worker queue.                        |
-| PR 14.2  | `BLOCKED_EXTERNAL` | A bounded, fail-closed VK wall analytics adapter normalizes only available views/likes/comments/shares and never discloses an OAuth token.                          |
-| PR 14.3  | `BLOCKED_EXTERNAL` | A bounded, fail-closed Instagram Media Insights adapter normalizes only returned metrics and never discloses an OAuth token.                                        |
-| PR 14.4  | `FOUNDATION`       | A real worker dispatcher processes due `analytics.collect` workflows through scoped core/repository layers and fails closed.                                        |
-| PR 14.5  | `FOUNDATION`       | Tenant-scoped history repositories use bounded `take` and deterministic `cursor` pagination before dashboard reads.                                                 |
-| PR 14.6  | `FOUNDATION`       | Protected per-brand dashboard aggregates only the latest normalized snapshot per publication; unavailable metrics remain explicit and never become mock zeroes.     |
-| PR 15.1  | `FOUNDATION`       | Each MCP tool handler receives an authenticated, token-free `McpAuthContext`; malformed or insufficient bearer keys fail closed before handler creation.            |
-| PR 15.2  | `FOUNDATION`       | Every MCP brand tool passes a shared active brand-in-organization guard before its handler can execute.                                                             |
-| PR 15.3  | `FOUNDATION`       | API-key authentication is pure; `lastUsedAt` mutates only through a separate post-auth context-bound action.                                                        |
-| PR 15.4  | `FOUNDATION`       | A startable stdio MCP process resolves a read-scoped key before constructing its server; the first business tools remain W15.5.                                     |
-| PR 15.5a | `FOUNDATION`       | MCP keys are bound to an active organization actor; legacy unbound keys and suspended actors fail closed before any tool can call an application service.           |
-| PR 15.5b | `FOUNDATION`       | The complete first tool catalogue is bound to tenant-scoped application services; tool permissions are enforced at the MCP edge before handlers.                    |
-| PR 15.6  | `FOUNDATION`       | Negative MCP protocol and PostgreSQL contracts cover revoked, expired, wrong-scope, foreign-brand and unknown-tool paths.                                           |
-| PR 16.1  | `FOUNDATION`       | Structured logger emits only approved correlation and outcome fields with deterministic timestamps for tests.                                                       |
-| PR 16.2  | `FOUNDATION`       | Recursive redaction removes credential fields and bearer/API-key values from arbitrary error/context payloads.                                                      |
-| PR 16.3  | `FOUNDATION`       | Durable AuditLog covers brand/API-key actions, editorial approval/rejection, publication scheduling, dispatch and reconciliation without secrets.                   |
-| PR 16.4  | `FOUNDATION`       | Infrastructure-compatible error reporter redacts error/context values before forwarding them to an optional sink.                                                   |
-| PR 17.1  | `FOUNDATION`       | Publication transitions load only the scoped provider fields and one relevant attempt; ordinary transition/schedule/worker reads exclude credentials and relations. |
-| PR 17.2  | `FOUNDATION`       | Analytics reads use deterministic cursor pages with a narrowed projection; dashboard aggregation advances through bounded pages.                                    |
-| PR 17.3  | `FOUNDATION`       | ContentProject detail loads bound versions/approvals/comments and expose tenant-scoped cursor methods for each history.                                             |
-| PR 17.4  | `FOUNDATION`       | Query audit added only indexes for proven project-list and due-publication queue predicates/sorts.                                                                  |
-| Next     | `W18`              | Start production hardening from the approved plan.                                                                                                                  |
+| Задача   | Статус             | Результат                                                                                                                                                                     |
+| -------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PR 0.1   | `DONE`             | Текущий master plan добавлен, предыдущий план отмечен historical/reference.                                                                                                   |
+| PR 0.2   | `DONE`             | Статусы проекта приведены к фактическим `FOUNDATION`, `NOT_IMPLEMENTED` и `BLOCKED_EXTERNAL`.                                                                                 |
+| PR 1.1   | `DONE`             | QC fail-closed: типизированные секции и вычисляемый persisted status.                                                                                                         |
+| PR 1.2   | `DONE`             | Tenant context отклоняет `SUSPENDED` organization до проверки membership.                                                                                                     |
+| PR 1.3   | `DONE`             | n8n `keyId` server-bound к organization; per-org secrets encrypted и подписаны critical fields.                                                                               |
+| PR 1.4   | `DONE`             | Tenant-owned write APIs требуют organization/brand scope вместе с resource ID.                                                                                                |
+| PR 2.1   | `DONE`             | SourceCraft CI поднимает PostgreSQL + pgvector и выполняет integration gate.                                                                                                  |
+| PR 2.2   | `DONE`             | Negative contracts покрывают foreign resources, revoked membership и insufficient permission.                                                                                 |
+| PR 2.3   | `DONE`             | Reusable adapters моделируют storage/provider/repository failure, timeout и worker crash.                                                                                     |
+| PR 2.4   | `DONE`             | Runtime валидирует core env, условные provider groups и отказывает worker/web при ошибке.                                                                                     |
+| PR 3.1   | `DONE`             | Media pipeline uses PENDING, byte inspection and controlled READY/FAILED transitions.                                                                                         |
+| PR 3.2   | `DONE`             | Research ingestion has explicit duplicate, processing and failed-retry transitions.                                                                                           |
+| PR 3.3   | `DONE`             | Knowledge ingestion has retry-safe document and chunk persistence.                                                                                                            |
+| PR 3.4   | `DONE`             | Publication dispatch bypasses unused PREPARING; legacy intermediate states have explicit recovery.                                                                            |
+| PR 3.5   | `DONE`             | Provider success followed by persistence failure becomes reconcilable `OUTCOME_UNKNOWN`.                                                                                      |
+| PR 3.6   | `DONE`             | Publication attempts are atomically acquired per idempotency key under parallel dispatch.                                                                                     |
+| PR 3.7   | `DONE`             | Video provider success with persistence failure is retained as reconcilable `OUTCOME_UNKNOWN`.                                                                                |
+| PR 3.8   | `DONE`             | Content-project pillar and opportunity links are validated against the active brand graph.                                                                                    |
+| PR 3.9   | `DONE`             | Storyboard creation is bound to verified tenant context and `content:write`.                                                                                                  |
+| PR 4.1   | `DONE`             | Worker fails unsupported workflow types instead of recording false success.                                                                                                   |
+| PR 4.2   | `DONE`             | Worker dispatches only registered handlers selected by workflow type.                                                                                                         |
+| PR 4.3   | `DONE`             | A process-lifetime pg-boss singleton replaces per-webhook connection start/stop.                                                                                              |
+| PR 4.4   | `DONE`             | Worker startup re-enqueues durable `QUEUED` workflow intents with pg-boss singleton keys.                                                                                     |
+| PR 4.5   | `DONE`             | Worker emits `worker.ready` only after queue, recovery and handler registration complete.                                                                                     |
+| PR 5.1   | `DONE`             | Better Auth login and server-protected `/app` shell are live with a browser E2E flow.                                                                                         |
+| PR 5.2   | `DONE`             | Authenticated users can list and create their active owner organizations in `/app/organizations`.                                                                             |
+| PR 5.3   | `DONE`             | Brand list/create is scoped to a verified organization context with owner MANAGE access.                                                                                      |
+| PR 5.4   | `DONE`             | Route-aware application navigation and Better Auth session exit are available in the protected shell.                                                                         |
+| PR 5.5   | `DONE`             | Browser-to-PostgreSQL owner/brand lifecycle is covered as one real authenticated flow.                                                                                        |
+| PR 6.1   | `DONE`             | Brand-scoped knowledge document list has a protected application entry point.                                                                                                 |
+| PR 6.2   | `DONE`             | Safe text, URL and UTF-8 text-file intake is connected to the protected Knowledge UI.                                                                                         |
+| PR 6.3   | `DONE`             | Failed knowledge documents are retried from their persisted safe source within the active brand.                                                                              |
+| PR 6.4   | `BLOCKED_EXTERNAL` | Brand-scoped hybrid retrieval is wired to OpenAI; live execution requires `OPENAI_API_KEY`.                                                                                   |
+| PR 7.1   | `BLOCKED_EXTERNAL` | Firecrawl research search/extraction and a protected workspace exist; live execution requires `FIRECRAWL_API_KEY`.                                                            |
+| PR 8.1   | `FOUNDATION`       | Provider-neutral `TextGenerationProvider` contract is available; it has no production SDK dependency.                                                                         |
+| PR 8.2   | `BLOCKED_EXTERNAL` | One OpenAI Responses API adapter exists; live execution requires `OPENAI_API_KEY`.                                                                                            |
+| PR 8.3   | `FOUNDATION`       | Tenant-scoped AI execution records track provider lifecycle, prompt version, usage, costs and errors.                                                                         |
+| PR 8.4   | `FOUNDATION`       | The approved v1 prompt keys are versioned in code and unknown keys fail closed.                                                                                               |
+| PR 8.5   | `FOUNDATION`       | Context assembler returns only verified brand/project, evidence and optional retrieval context.                                                                               |
+| PR 8.6   | `DONE`             | Persisted AI draft generation through the execution boundary.                                                                                                                 |
+| PR 8.7   | `DONE`             | Immutable rewrite creates a new version and independently tracked execution.                                                                                                  |
+| PR 8.8   | `DONE`             | Fact-check persists claims and stops before editorial review.                                                                                                                 |
+| PR 8.9   | `DONE`             | Protected content list/detail UI exposes only scoped project data.                                                                                                            |
+| PR 9.1   | `DONE`             | Content state controls expose only valid next actions and fail visibly without OpenAI.                                                                                        |
+| PR 9.2   | `DONE`             | Editorial request/review/comment actions are actor- and permission-scoped.                                                                                                    |
+| PR 9.3   | `DONE`             | Human-only manual approval atomically records the reviewer and decision.                                                                                                      |
+| PR 10.1  | `FOUNDATION`       | Protected brand media library lists scoped assets; live upload is `BLOCKED_EXTERNAL` until private S3 is configured.                                                          |
+| PR 10.2  | `FOUNDATION`       | Storyboard generation accepts only an approved scoped script and validates generated beats against an active recipe.                                                          |
+| PR 10.3  | `FOUNDATION`       | VideoProduction lifecycle is guarded from an approved storyboard; valid, invalid and recovery transitions are covered.                                                        |
+| PR 10.4  | `BLOCKED_EXTERNAL` | HeyGen V2 runtime client is implemented; live calls require API key plus configured avatar and voice identifiers.                                                             |
+| PR 10.5  | `FOUNDATION`       | Provider submissions require `GENERATING`, persist RenderJob before calls and completed polling advances to `COMPOSING`.                                                      |
+| PR 10.6  | `FOUNDATION`       | Transcription is gated on the checked `COMPOSING` production's durable `READY` output asset.                                                                                  |
+| PR 10.7  | `FOUNDATION`       | Scoped persisted transcripts serialize to private derived SRT/ASS assets linked by CaptionTrack.                                                                              |
+| PR 10.8  | `FOUNDATION`       | `QC → READY` is available only through a gate that reads the latest scoped `PASSED` QC report.                                                                                |
+| PR 11.1  | `FOUNDATION`       | The protected active-brand social workspace lists VK/Instagram account status without returning credentials or token UI.                                                      |
+| PR 11.2  | `FOUNDATION`       | VK/Instagram OAuth contracts, PKCE parameters and runtime-client adapters are isolated in the provider layer.                                                                 |
+| PR 11.3  | `FOUNDATION`       | Due encrypted credentials refresh only through a scoped provider contract; success rotates ciphertext, failures persist account status.                                       |
+| PR 11.4  | `FOUNDATION`       | Connect, disconnect, expiry and refresh failures persist scoped AuditLog events without tokens; disconnect removes credentials.                                               |
+| PR 12.1  | `FOUNDATION`       | A Publication starts only as DRAFT from an APPROVED project, matching PlatformVariant and connected scoped social account.                                                    |
+| PR 12.2  | `FOUNDATION`       | Protected week/month calendar shows only active-brand scheduled publications and unscheduled DRAFT items.                                                                     |
+| PR 12.3  | `FOUNDATION`       | A future `scheduledAt` atomically moves only the active-brand DRAFT Publication to QUEUED through the protected calendar action.                                              |
+| PR 12.4  | `FOUNDATION`       | Due QUEUED records are read from PostgreSQL, create/reuse an idempotent dispatch WorkflowRun and enqueue a singleton pg-boss intent.                                          |
+| PR 12.5  | `FOUNDATION`       | Only a QUEUED active-brand publication without an attempt can move its scheduledAt; the same record and provider boundary are retained.                                       |
+| PR 12.6  | `FOUNDATION`       | A scoped QUEUED publication without an attempt atomically becomes CANCELLED; calendar reads exclude cancelled records.                                                        |
+| PR 13.1  | `BLOCKED_EXTERNAL` | VK API `wall.post`/`wall.getById` adapter is fail-closed; real posting needs OAuth account tokens and a separate media-upload path.                                           |
+| PR 13.2  | `BLOCKED_EXTERNAL` | Instagram Graph image container/publish adapter is fail-closed; needs OAuth token and public media delivery instead of private keys.                                          |
+| PR 13.3  | `FOUNDATION`       | Worker claims due QUEUED publication atomically, then invokes a scoped provider through one durable workflow/attempt idempotency key.                                         |
+| PR 13.4  | `FOUNDATION`       | Outcome investigation decrypts account credentials only at the provider boundary; VK and Instagram status checks preserve uncertainty on errors.                              |
+| PR 13.5  | `FOUNDATION`       | Concurrent duplicate dispatches acquire one attempt and issue at most one provider mutation; uncertainty blocks all repeats until reconciliation.                             |
+| PR 13.6  | `FOUNDATION`       | The scoped calendar surfaces FAILED, OUTCOME_UNKNOWN and expired/error accounts with safe codes and next steps, never provider credentials.                                   |
+| PR 14.1  | `FOUNDATION`       | Published active-brand records create idempotent analytics.collect intents for +24/+72/+168h; future workflows stay out of the worker queue.                                  |
+| PR 14.2  | `BLOCKED_EXTERNAL` | A bounded, fail-closed VK wall analytics adapter normalizes only available views/likes/comments/shares and never discloses an OAuth token.                                    |
+| PR 14.3  | `BLOCKED_EXTERNAL` | A bounded, fail-closed Instagram Media Insights adapter normalizes only returned metrics and never discloses an OAuth token.                                                  |
+| PR 14.4  | `FOUNDATION`       | A real worker dispatcher processes due `analytics.collect` workflows through scoped core/repository layers and fails closed.                                                  |
+| PR 14.5  | `FOUNDATION`       | Tenant-scoped history repositories use bounded `take` and deterministic `cursor` pagination before dashboard reads.                                                           |
+| PR 14.6  | `FOUNDATION`       | Protected per-brand dashboard aggregates only the latest normalized snapshot per publication; unavailable metrics remain explicit and never become mock zeroes.               |
+| PR 15.1  | `FOUNDATION`       | Each MCP tool handler receives an authenticated, token-free `McpAuthContext`; malformed or insufficient bearer keys fail closed before handler creation.                      |
+| PR 15.2  | `FOUNDATION`       | Every MCP brand tool passes a shared active brand-in-organization guard before its handler can execute.                                                                       |
+| PR 15.3  | `FOUNDATION`       | API-key authentication is pure; `lastUsedAt` mutates only through a separate post-auth context-bound action.                                                                  |
+| PR 15.4  | `FOUNDATION`       | A startable stdio MCP process resolves a read-scoped key before constructing its server; the first business tools remain W15.5.                                               |
+| PR 15.5a | `FOUNDATION`       | MCP keys are bound to an active organization actor; legacy unbound keys and suspended actors fail closed before any tool can call an application service.                     |
+| PR 15.5b | `FOUNDATION`       | The complete first tool catalogue is bound to tenant-scoped application services; tool permissions are enforced at the MCP edge before handlers.                              |
+| PR 15.6  | `FOUNDATION`       | Negative MCP protocol and PostgreSQL contracts cover revoked, expired, wrong-scope, foreign-brand and unknown-tool paths.                                                     |
+| PR 16.1  | `FOUNDATION`       | Structured logger emits only approved correlation and outcome fields with deterministic timestamps for tests.                                                                 |
+| PR 16.2  | `FOUNDATION`       | Recursive redaction removes credential fields and bearer/API-key values from arbitrary error/context payloads.                                                                |
+| PR 16.3  | `FOUNDATION`       | Durable AuditLog covers brand/API-key actions, editorial approval/rejection, publication scheduling, dispatch and reconciliation without secrets.                             |
+| PR 16.4  | `FOUNDATION`       | Infrastructure-compatible error reporter redacts error/context values before forwarding them to an optional sink.                                                             |
+| PR 17.1  | `FOUNDATION`       | Publication transitions load only the scoped provider fields and one relevant attempt; ordinary transition/schedule/worker reads exclude credentials and relations.           |
+| PR 17.2  | `FOUNDATION`       | Analytics reads use deterministic cursor pages with a narrowed projection; dashboard aggregation advances through bounded pages.                                              |
+| PR 17.3  | `FOUNDATION`       | ContentProject detail loads bound versions/approvals/comments and expose tenant-scoped cursor methods for each history.                                                       |
+| PR 17.4  | `FOUNDATION`       | Query audit added only indexes for proven project-list and due-publication queue predicates/sorts.                                                                            |
+| PR 18.1  | `FOUNDATION`       | Web readiness fails closed for invalid runtime config or unavailable PostgreSQL; worker opens a loopback readiness probe only after config, DB/pg-boss and handler bootstrap. |
+| Next     | `W18.2`            | Add bounded fail-closed rate limiting for the approved expensive and external entry points.                                                                                   |
 
 ### W6.4 — hybrid retrieval
 

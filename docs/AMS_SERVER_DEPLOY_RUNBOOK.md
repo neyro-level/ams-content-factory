@@ -29,7 +29,7 @@ artifact, no server env and no verified database schema.
 /var/log/ams-platform/ams-content-factory/
 
 systemd web: 127.0.0.1:[reserved-port]
-systemd worker: no public port
+systemd worker: loopback-only readiness probe 127.0.0.1:3205 (no public port)
 Nginx: fabrika.ams24.ru -> systemd web
 ```
 
@@ -96,7 +96,9 @@ For local builder diagnostics only, `ALLOW_DIRTY_ARTIFACT_TEST=1` produces a `re
 3. Validate Nginx configuration, then enable the HTTPS vhost and reload Nginx.
 4. Run post-release proof:
    - `GET /api/health/live` returns 200;
-   - `GET /api/health/ready` returns 200 and confirms database readiness;
+   - `GET /api/health/ready` returns 200 and confirms validated web runtime configuration plus database readiness;
+   - `GET http://127.0.0.1:3205/health/ready` returns 200 only after worker configuration, PostgreSQL/pg-boss
+     reachability and worker handler registration;
    - homepage, CSS and static assets return 200 through HTTPS;
    - deployed release SHA and time are written to `WORKLOG.md`.
 

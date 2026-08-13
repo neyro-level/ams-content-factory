@@ -1,5 +1,17 @@
 # Worklog
 
+## 2026-08-13 — W18.1 real web and worker readiness
+
+- Web `/api/health/ready` now fails closed when either runtime configuration or PostgreSQL is unavailable; it remains
+  a safe status-only response and never exposes validation details or connection data.
+- The worker now opens a loopback-only probe on `127.0.0.1:3205` after its actual bootstrap validates configuration,
+  reaches PostgreSQL/pg-boss, reconciles durable work and registers its handlers. The AMS Server runbook records the
+  corresponding internal proof command; no server or production configuration was changed.
+- Full local gate passed: Prisma validation/generation, lint, formatting, workspace typecheck, 68 unit tests, 76
+  PostgreSQL integration contracts and production web/worker builds. The build uses one-time shell test values rather
+  than a real secret; runtime validation still rejects the empty local template. Next: SourceCraft PR, then W18.2
+  rate limiting.
+
 ## 2026-08-13 — W17 bounded query budgets and index audit
 
 - Publication transitions now distinguish a lightweight tenant-scoped summary from provider reads. Provider reads

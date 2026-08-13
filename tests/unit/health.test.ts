@@ -19,4 +19,12 @@ describe('health payload', () => {
       }),
     ).resolves.toMatchObject({ check: 'ready', ok: false });
   });
+
+  it('returns not ready when runtime configuration is invalid', async () => {
+    await expect(
+      checkApplicationReadiness({ isReady: async () => undefined }, () => {
+        throw new Error('invalid configuration');
+      }),
+    ).resolves.toMatchObject({ check: 'ready', ok: false });
+  });
 });
