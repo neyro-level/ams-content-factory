@@ -17,18 +17,13 @@ workflows:
       max_cube_duration: 20m
     tasks:
       - name: quality-gate
-        # Explicit task-level value avoids relying on workflow-setting inheritance.
-        settings:
-          max_cube_duration: 20m
         cubes:
-          - name: integration-quality-gate
+          - name: start-postgres
             script:
               - |
                 set -euo pipefail
                 database_container=ams-content-factory-ci-postgres
-                cleanup() { docker rm -f "$database_container" >/dev/null 2>&1 || true; }
-                trap cleanup EXIT
-                cleanup
+                docker rm -f "$database_container" >/dev/null 2>&1 || true
                 docker run --detach --name "$database_container" \
                   --env POSTGRES_DB=ams_content_factory \
                   --env POSTGRES_USER=ci \
@@ -42,6 +37,11 @@ workflows:
                   sleep 1
                 done
                 docker exec "$database_container" pg_isready --username=ci --dbname=ams_content_factory >/dev/null
+          - name: install-migrate-seed
+            needs: [start-postgres]
+            script:
+              - |
+                set -euo pipefail
                 docker run --rm --network host --volume "$PWD:/workspace" --workdir /workspace \
                   --env DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ams_content_factory \
                   --env NODE_ENV=production \
@@ -59,10 +59,68 @@ workflows:
                     pnpm prisma:generate
                     pnpm prisma:deploy
                     pnpm db:seed
+                  '
+          - name: static-quality-gate
+            needs: [install-migrate-seed]
+            script:
+              - |
+                set -euo pipefail
+                docker run --rm --network host --volume "$PWD:/workspace" --workdir /workspace \
+                  --env DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ams_content_factory \
+                  --env NODE_ENV=production \
+                  --env APP_URL=https://ci.ams-content-factory.invalid \
+                  --env BETTER_AUTH_SECRET=ci-only-auth-secret-that-is-at-least-32-characters \
+                  --env TOKEN_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+                  docker.io/library/node:22 bash -lc '
+                    set -euo pipefail
+                    export PNPM_HOME=/tmp/pnpm
+                    export PATH="$PNPM_HOME:$PATH"
+                    npm install --global pnpm@11.5.1
+                    pnpm config set store-dir /tmp/pnpm-store
                     pnpm lint
                     pnpm format:check
                     pnpm typecheck
+                  '
+          - name: test-quality-gate
+            needs: [static-quality-gate]
+            script:
+              - |
+                set -euo pipefail
+                docker run --rm --network host --volume "$PWD:/workspace" --workdir /workspace \
+                  --env DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ams_content_factory \
+                  --env NODE_ENV=production \
+                  --env APP_URL=https://ci.ams-content-factory.invalid \
+                  --env BETTER_AUTH_SECRET=ci-only-auth-secret-that-is-at-least-32-characters \
+                  --env TOKEN_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+                  docker.io/library/node:22 bash -lc '
+                    set -euo pipefail
+                    export PNPM_HOME=/tmp/pnpm
+                    export PATH="$PNPM_HOME:$PATH"
+                    npm install --global pnpm@11.5.1
+                    pnpm config set store-dir /tmp/pnpm-store
                     pnpm test
                     pnpm test:integration
+                  '
+          - name: build-quality-gate
+            needs: [test-quality-gate]
+            script:
+              - |
+                set -euo pipefail
+                docker run --rm --network host --volume "$PWD:/workspace" --workdir /workspace \
+                  --env DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ams_content_factory \
+                  --env NODE_ENV=production \
+                  --env APP_URL=https://ci.ams-content-factory.invalid \
+                  --env BETTER_AUTH_SECRET=ci-only-auth-secret-that-is-at-least-32-characters \
+                  --env TOKEN_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+                  docker.io/library/node:22 bash -lc '
+                    set -euo pipefail
+                    export PNPM_HOME=/tmp/pnpm
+                    export PATH="$PNPM_HOME:$PATH"
+                    npm install --global pnpm@11.5.1
+                    pnpm config set store-dir /tmp/pnpm-store
                     pnpm build
                   '
+          - name: stop-postgres
+            needs: [build-quality-gate]
+            script:
+              - docker rm -f ams-content-factory-ci-postgres >/dev/null 2>&1 || true
