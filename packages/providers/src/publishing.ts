@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 export type PublishingPlatform = 'INSTAGRAM' | 'VK';
-export type ProviderPublicationStatus = 'PUBLISHED' | 'NOT_FOUND' | 'OUTCOME_UNKNOWN';
+type ProviderPublicationStatus = 'PUBLISHED' | 'NOT_FOUND' | 'OUTCOME_UNKNOWN';
 
 export type PublishingCredentials = {
   accessToken: string;

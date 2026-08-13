@@ -4,7 +4,7 @@ type WorkflowRunRepository = ReturnType<typeof createWorkflowRunRepository>;
 type Scope = { organizationId: string; id: string };
 type WorkflowRun = NonNullable<Awaited<ReturnType<WorkflowRunRepository['find']>>>;
 
-export type WorkflowHandler = (run: WorkflowRun) => Promise<object>;
+type WorkflowHandler = (run: WorkflowRun) => Promise<object>;
 export type WorkflowHandlers = Readonly<Record<string, WorkflowHandler>>;
 
 export class UnsupportedWorkflowTypeError extends Error {

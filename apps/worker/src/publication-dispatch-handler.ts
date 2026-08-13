@@ -30,7 +30,7 @@ function configuredProvider(
   }
 }
 
-export function createProductionPublishingProviders() {
+function createProductionPublishingProviders() {
   return {
     VK: configuredProvider('VK', () => new VkPublishingProvider(new VkPublishingRuntimeClient())),
     INSTAGRAM: configuredProvider(

@@ -18,7 +18,7 @@ type WorkflowRun = NonNullable<
 >;
 type AnalyticsService = ReturnType<typeof createAnalyticsService>;
 
-export class InvalidAnalyticsCollectWorkflowPayloadError extends Error {
+class InvalidAnalyticsCollectWorkflowPayloadError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'InvalidAnalyticsCollectWorkflowPayloadError';
@@ -39,10 +39,7 @@ function configuredProvider(
   }
 }
 
-export function createProductionAnalyticsProviders(): Record<
-  'VK' | 'INSTAGRAM',
-  AnalyticsProvider
-> {
+function createProductionAnalyticsProviders(): Record<'VK' | 'INSTAGRAM', AnalyticsProvider> {
   return {
     VK: configuredProvider('VK', () => new VkAnalyticsProvider(new VkAnalyticsRuntimeClient())),
     INSTAGRAM: configuredProvider(

@@ -502,7 +502,8 @@ parallel request
 | PR 18.2  | `FOUNDATION`       | PostgreSQL atomic rate limits protect auth, inbound n8n, MCP tools, AI generation and external search/extraction/indexing without storing raw request subjects.                                              |
 | PR 18.3  | `FOUNDATION`       | Outbound webhook configuration accepts only HTTPS URLs that pass the shared public-DNS/IP SSRF guard before encrypted persistence.                                                                           |
 | PR 18.4  | `FOUNDATION`       | Root and immutable-release Docker images use multi-stage builds, a dedicated non-root runtime user and `pnpm prune --prod`; Git metadata, env files and Next build cache are excluded from runtime payloads. |
-| Next     | `W18.5`            | Audit the dependency graph, production dependency closure and unused packages without weakening locked runtime reproducibility.                                                                              |
+| PR 18.5  | `FOUNDATION`       | Dependency graph, production and full lockfile audits are clean; unused `auth` and stale internal exports were removed, and workspace-wide esbuild override resolves only the patched 0.28.1 version.        |
+| Next     | `W18.6`            | Verify web/Nginx security headers, add CSP where practical and cover the exposed response policy.                                                                                                            |
 
 ### W6.4 — hybrid retrieval
 

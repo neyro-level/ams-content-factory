@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — W18.5 dependency hygiene
+
+- Audited pnpm dependency provenance, production/full lockfile vulnerabilities and unused declarations. Removed the
+  root-only unused `auth` development package and internal-only stale exports; reviewed Prisma/pg/Tailwind analyzer
+  findings against their generated client, runtime adapter and CSS/PostCSS entry points.
+- Replaced the vulnerable transitive `esbuild@0.27.7` with a workspace-wide `esbuild: 0.28.1` override. A fresh
+  install resolves one patched version, and both audit scopes report zero vulnerabilities. The reproducible evidence
+  and policy are recorded in `docs/DEPENDENCY_HYGIENE.md`.
+- Next: W18.6 security headers. No production configuration or deployment was changed.
+
 ## 2026-08-13 — W18.4 Docker/runtime hardening
 
 - Reworked the root runtime and immutable Linux release Dockerfiles into multi-stage builds. Build-only tooling is

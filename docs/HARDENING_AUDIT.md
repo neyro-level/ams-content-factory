@@ -4,14 +4,14 @@
 
 ## Security audit
 
-| Проверка                           | Результат | Evidence                                                                                                                         |
-| ---------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Auth/session/RBAC/tenant isolation | PASS      | Existing integration contracts reject cross-organization and cross-brand access.                                                 |
-| OAuth/social tokens                | PASS      | Social credentials are AES-256-GCM ciphertext; API keys are hash-only.                                                           |
-| Plaintext secrets                  | PASS      | Source scan found only runtime inputs/decryption boundaries; no persisted plaintext secret field or logged authorization header. |
-| SSRF                               | PASS      | URL providers validate public HTTP(S) destinations and redirects.                                                                |
-| Webhooks/MCP                       | PASS      | HMAC is constant-time checked; n8n boundary is Zod-validated; keys are scoped and revocable.                                     |
-| Dependencies                       | PASS      | `pnpm audit --prod --json`: 0 vulnerabilities.                                                                                   |
+| Проверка                           | Результат | Evidence                                                                                                                                                                            |
+| ---------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth/session/RBAC/tenant isolation | PASS      | Existing integration contracts reject cross-organization and cross-brand access.                                                                                                    |
+| OAuth/social tokens                | PASS      | Social credentials are AES-256-GCM ciphertext; API keys are hash-only.                                                                                                              |
+| Plaintext secrets                  | PASS      | Source scan found only runtime inputs/decryption boundaries; no persisted plaintext secret field or logged authorization header.                                                    |
+| SSRF                               | PASS      | URL providers validate public HTTP(S) destinations and redirects.                                                                                                                   |
+| Webhooks/MCP                       | PASS      | HMAC is constant-time checked; n8n boundary is Zod-validated; keys are scoped and revocable.                                                                                        |
+| Dependencies                       | PASS      | W18.5 confirms both `pnpm audit --prod --json` and full `pnpm audit --json` report 0 vulnerabilities; evidence and reviewed analyzer findings live in `docs/DEPENDENCY_HYGIENE.md`. |
 
 ## Architecture audit
 
