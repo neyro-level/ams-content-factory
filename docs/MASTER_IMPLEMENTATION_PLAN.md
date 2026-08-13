@@ -21,6 +21,9 @@ preventing stale display-only states.
 **Manual-publication gate V0.1:** copy is a final editorial action and is exposed only from `READY`; the editable
 draft experience remains available earlier in the state machine without calling it publishable output.
 
+**Editorial feedback V0.1:** owner-facing review mutations are performed through the application service and return
+safe product feedback; raw state-machine, authorization and service errors never render in the form.
+
 ---
 
 # 0. Назначение документа

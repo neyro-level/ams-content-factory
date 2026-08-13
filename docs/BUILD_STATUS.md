@@ -21,6 +21,8 @@
   unconfigured research provider capabilities communicate a product-level limitation without a technical marker.
 - **V0.1 manual-publication gate:** the final-text copy control is absent before the manual editorial path reaches
   `READY`; drafts remain editable but are not presented as output ready for manual distribution.
+- **V0.1 editorial UX:** manual review actions return product-level success/error feedback without disclosing
+  service-level failure details, while status transitions stay within the application service.
 - **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, five critical browser flows
   and three worker contracts passed. The Release Gate remains `BLOCKED_EXTERNAL`: DNS/ports resolve, but the public
   hostname still serves generic Nginx and trusted project TLS/vhost, Timeweb `vector`, live providers and owner

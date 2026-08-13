@@ -6,9 +6,9 @@ import {
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
-import { editorialAction } from './actions';
 import { ContentStateControls } from '../../../../../../../../components/content-state-controls';
 import { ContentVersionControls } from '../../../../../../../../components/content-version-controls';
+import { EditorialControls } from '../../../../../../../../components/editorial-controls';
 import { contentStatusLabel, contentTypeLabel } from '../../../../../../../../lib/content-labels';
 
 const claimStatusLabel: Record<string, string> = {
@@ -36,7 +36,6 @@ export default async function ContentProjectPage({
         contentProjectId,
       );
     const current = project.versions[0];
-    const editorial = editorialAction.bind(null, { organizationId, brandId, contentProjectId });
     return (
       <main className="app-content" aria-labelledby="content-project-title">
         <section className="page-heading">
@@ -54,47 +53,6 @@ export default async function ContentProjectPage({
               status={project.status}
               canWrite={canWrite}
             />
-            {project.status === 'FACT_CHECK' && canWrite ? (
-              <form action={editorial}>
-                <button
-                  className="button"
-                  type="submit"
-                  name="editorialAction"
-                  value="request-review"
-                >
-                  Отправить на review
-                </button>
-              </form>
-            ) : null}
-            {project.status === 'REVIEW' && canReview ? (
-              <form action={editorial} className="editorial-actions">
-                <label>
-                  Комментарий к решению
-                  <input name="note" maxLength={5000} />
-                </label>
-                <div>
-                  <button className="button" type="submit" name="editorialAction" value="approve">
-                    Одобрить вручную
-                  </button>
-                  <button
-                    className="button button-secondary"
-                    type="submit"
-                    name="editorialAction"
-                    value="return-to-draft"
-                  >
-                    Вернуть в черновик
-                  </button>
-                  <button
-                    className="button button-secondary"
-                    type="submit"
-                    name="editorialAction"
-                    value="reject"
-                  >
-                    Отклонить
-                  </button>
-                </div>
-              </form>
-            ) : null}
           </div>
           <Link
             className="text-link"
@@ -171,22 +129,14 @@ export default async function ContentProjectPage({
           </section>
           <section className="panel" aria-labelledby="editorial-comments-title">
             <h2 id="editorial-comments-title">Редакционные комментарии</h2>
-            {canWrite ? (
-              <form action={editorial}>
-                <label>
-                  Комментарий
-                  <textarea name="note" required maxLength={5000} />
-                </label>
-                <button
-                  className="button button-secondary"
-                  type="submit"
-                  name="editorialAction"
-                  value="comment"
-                >
-                  Добавить комментарий
-                </button>
-              </form>
-            ) : null}
+            <EditorialControls
+              organizationId={organizationId}
+              brandId={brandId}
+              contentProjectId={contentProjectId}
+              status={project.status}
+              canReview={canReview}
+              canWrite={canWrite}
+            />
             {project.comments.length ? (
               <ul className="organization-list">
                 {project.comments.map((comment) => (

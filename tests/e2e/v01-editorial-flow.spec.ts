@@ -111,7 +111,11 @@ test('V0.1 editorial flow: context, knowledge, draft, review, READY and copy', a
   await expect(page.getByText('Нужна проверка')).toBeVisible();
   await expect(page.getByText('UNVERIFIED', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Отправить на review' }).click();
+  await expect(
+    page.getByText('Материал отправлен на редакционное согласование.', { exact: true }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Одобрить вручную' }).click();
+  await expect(page.getByText('Материал одобрен вручную.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Подготовить финальный текст' }).click();
   await expect(page.getByText('текущий статус: Готово для ручной публикации')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Скопировать финальный текст' })).toBeVisible();

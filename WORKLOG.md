@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-13 — V0.1 editorial action feedback
+
+- Request-review, approval, return-to-draft, rejection and comment controls now use a client-side action state with
+  safe Russian confirmation and error messages. The server action retains tenant-scoped application-service calls
+  and revalidation, but no longer leaks raw operational failures into the owner UI.
+
 ## 2026-08-13 — V0.1 final-copy workflow gate
 
 - The owner-facing copy control is now shown only after the manual review path reaches `READY`. Drafts keep their
