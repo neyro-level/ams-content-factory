@@ -8,13 +8,29 @@ import type {
 } from '../generated/prisma/client';
 
 export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
+  const publicationScope = (input: { organizationId: string; brandId: string; id: string }) => ({
+    id: input.id,
+    organizationId: input.organizationId,
+    brandId: input.brandId,
+  });
   const scopedPublication = (input: { organizationId: string; brandId: string; id: string }) =>
     prisma.publication.findFirst({
-      where: { id: input.id, organizationId: input.organizationId, brandId: input.brandId },
-      include: {
-        socialAccount: { include: { credential: true } },
-        platformVariant: true,
-        attempts: true,
+      where: publicationScope(input),
+      select: {
+        id: true,
+        organizationId: true,
+        brandId: true,
+        contentProjectId: true,
+        platformVariantId: true,
+        socialAccountId: true,
+        status: true,
+        scheduledAt: true,
+        publishedAt: true,
+        externalPostId: true,
+        permalink: true,
+        lastAttemptId: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   return {
@@ -440,6 +456,83 @@ export function createPublishingRepository(prisma: PrismaClient = getPrisma()) {
       });
     },
     findPublication: scopedPublication,
+    findPublicationForProvider(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      idempotencyKey?: string;
+    }) {
+      return prisma.publication.findFirst({
+        where: publicationScope(input),
+        select: {
+          id: true,
+          organizationId: true,
+          brandId: true,
+          socialAccountId: true,
+          status: true,
+          publishedAt: true,
+          externalPostId: true,
+          permalink: true,
+          lastAttemptId: true,
+          socialAccount: {
+            select: {
+              id: true,
+              platform: true,
+              externalAccountId: true,
+              credential: {
+                select: {
+                  accessTokenCiphertext: true,
+                  refreshTokenCiphertext: true,
+                  expiresAt: true,
+                },
+              },
+            },
+          },
+          platformVariant: { select: { caption: true, description: true } },
+          attempts: {
+            ...(input.idempotencyKey === undefined
+              ? { orderBy: { attempt: 'desc' as const }, take: 1 }
+              : { where: { idempotencyKey: input.idempotencyKey }, take: 1 }),
+            select: {
+              id: true,
+              status: true,
+              idempotencyKey: true,
+              providerOperation: true,
+              providerJobId: true,
+            },
+          },
+        },
+      });
+    },
+    findPublicationAttempt(input: {
+      organizationId: string;
+      brandId: string;
+      publicationId: string;
+      id?: string;
+      idempotencyKey?: string;
+      statuses?: PublicationAttemptStatus[];
+    }) {
+      return prisma.publicationAttempt.findFirst({
+        where: {
+          publicationId: input.publicationId,
+          publication: {
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+          },
+          ...(input.id === undefined ? {} : { id: input.id }),
+          ...(input.idempotencyKey === undefined ? {} : { idempotencyKey: input.idempotencyKey }),
+          ...(input.statuses === undefined ? {} : { status: { in: input.statuses } }),
+        },
+        orderBy: { attempt: 'desc' },
+        select: {
+          id: true,
+          status: true,
+          idempotencyKey: true,
+          providerOperation: true,
+          providerJobId: true,
+        },
+      });
+    },
     updatePublication(input: {
       organizationId: string;
       brandId: string;

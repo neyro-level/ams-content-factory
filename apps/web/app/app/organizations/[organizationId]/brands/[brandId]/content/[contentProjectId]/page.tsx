@@ -25,7 +25,7 @@ export default async function ContentProjectPage({
       { userId: session.user.id, organizationId, brandId },
       contentProjectId,
     );
-    const current = project.versions.at(-1);
+    const current = project.versions[0];
     const editorial = editorialAction.bind(null, { organizationId, brandId, contentProjectId });
     return (
       <main className="app-content" aria-labelledby="content-project-title">
@@ -103,7 +103,7 @@ export default async function ContentProjectPage({
               <p className="empty-copy">Версий пока нет.</p>
             )}
             <p className="muted">
-              Версий: {project.versions.length} · согласований: {project.approvals.length}
+              Версий: {project._count.versions} · согласований: {project._count.approvals}
             </p>
           </section>
           <section className="panel" aria-labelledby="fact-check-title">

@@ -107,8 +107,12 @@ export function createPublishingService(options: {
 }) {
   const repository = options.repository ?? createPublishingRepository(options.prisma);
   const tenants = options.tenantRepository ?? createTenantRepository(options.prisma);
-  const load = async (context: Context, id: string) => {
-    const publication = await repository.findPublication({ ...scope(context), id });
+  const load = async (context: Context, id: string, idempotencyKey?: string) => {
+    const publication = await repository.findPublicationForProvider({
+      ...scope(context),
+      id,
+      ...(idempotencyKey === undefined ? {} : { idempotencyKey }),
+    });
     if (!publication) throw new AccessDeniedError('Publication is outside the active tenant.');
     return publication;
   };
@@ -255,17 +259,15 @@ export function createPublishingService(options: {
       context: Context,
       input: { id: string; idempotencyKey: string; text?: string; mediaKeys?: string[] },
     ) {
-      let publication = await load(context, input.id);
-      const priorAttempt = publication.attempts.find(
-        (attempt) => attempt.idempotencyKey === input.idempotencyKey,
-      );
+      let publication = await load(context, input.id, input.idempotencyKey);
+      const priorAttempt = publication.attempts[0];
       if (publication.status === 'PUBLISHED' && priorAttempt?.status === 'SUCCEEDED') {
         return publication;
       }
       if (publication.status === 'OUTCOME_UNKNOWN') throw new PublicationOutcomeUnknownError();
       if (publication.status === 'DRAFT') {
         await transition(context, publication.id, 'DRAFT', 'QUEUED');
-        publication = await load(context, publication.id);
+        publication = await load(context, publication.id, input.idempotencyKey);
       }
       if (publication.status === 'QUEUED') {
         try {
@@ -273,14 +275,12 @@ export function createPublishingService(options: {
         } catch (error) {
           if (!(error instanceof PublicationTransitionConflictError)) throw error;
         }
-        publication = await load(context, publication.id);
+        publication = await load(context, publication.id, input.idempotencyKey);
       }
       if (publication.status !== 'PUBLISHING') {
         throw new Error(`Publication cannot be dispatched from ${publication.status}.`);
       }
-      const existing = publication.attempts.find(
-        (attempt) => attempt.idempotencyKey === input.idempotencyKey,
-      );
+      const existing = publication.attempts[0];
       if (existing?.status === 'OUTCOME_UNKNOWN') throw new PublicationOutcomeUnknownError();
       if (existing?.status === 'SUCCEEDED') return publication;
       const text =
@@ -321,7 +321,7 @@ export function createPublishingService(options: {
         throw new PublicationOutcomeUnknownError();
       }
       if (!attemptResult.created && attempt.status === 'SUCCEEDED') {
-        return load(context, publication.id);
+        return load(context, publication.id, input.idempotencyKey);
       }
       let providerMutationCompleted = false;
       try {
@@ -378,7 +378,7 @@ export function createPublishingService(options: {
           entityId: publication.id,
           metadata: { provider: provider.platform, attemptId: attempt.id },
         });
-        return load(context, publication.id);
+        return load(context, publication.id, input.idempotencyKey);
       } catch (error) {
         if (error instanceof PublicationOutcomeUnknownError) throw error;
         if (providerMutationCompleted) {
@@ -433,11 +433,17 @@ export function createPublishingService(options: {
       if (publication.status !== 'OUTCOME_UNKNOWN' && publication.status !== 'PUBLISHING') {
         throw new Error('Only uncertain publications can be investigated.');
       }
-      const attempt =
-        publication.attempts.find((item) => item.id === publication.lastAttemptId) ??
-        publication.attempts.find(
-          (item) => item.status === 'STARTED' || item.status === 'OUTCOME_UNKNOWN',
-        );
+      const attempt = publication.lastAttemptId
+        ? await repository.findPublicationAttempt({
+            ...scope(context),
+            publicationId: publication.id,
+            id: publication.lastAttemptId,
+          })
+        : await repository.findPublicationAttempt({
+            ...scope(context),
+            publicationId: publication.id,
+            statuses: ['STARTED', 'OUTCOME_UNKNOWN'],
+          });
       if (!attempt) throw new Error('Unknown publication has no recorded attempt.');
       const provider = options.providers[publication.socialAccount.platform];
       if (!provider)

@@ -9,7 +9,8 @@
 > W15.3 API-key usage semantics, W15.4 startable stdio runtime, W15.5a actor-bound MCP keys, W15.5b tools and
 > W15.6 negative contracts are `FOUNDATION`; live key injection is `BLOCKED_EXTERNAL`. W14.2 VK and W14.3 Instagram
 > adapters remain `BLOCKED_EXTERNAL` until connected credentials are available. W16 structured logging, secret
-> redaction, durable audit and error reporting are `FOUNDATION`. Next: W17 bounded performance hardening.
+> redaction, durable audit and error reporting are `FOUNDATION`. W17 bounded provider/project/analytics reads and
+> proven-query indexes are `FOUNDATION`. Next: W18 production hardening.
 
 ## Protocol
 

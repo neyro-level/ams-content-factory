@@ -87,10 +87,22 @@ export function createAnalyticsRepository(prisma: PrismaClient = getPrisma()) {
               }
             : {}),
         },
-        include: {
+        select: {
+          id: true,
+          publicationId: true,
+          capturedAt: true,
+          views: true,
+          reach: true,
+          impressions: true,
+          likes: true,
+          comments: true,
+          shares: true,
+          saves: true,
+          clicks: true,
+          followersDelta: true,
           publication: {
-            include: {
-              socialAccount: true,
+            select: {
+              socialAccount: { select: { platform: true } },
               contentProject: {
                 select: {
                   id: true,

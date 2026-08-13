@@ -1,5 +1,18 @@
 # Worklog
 
+## 2026-08-13 — W17 bounded query budgets and index audit
+
+- Publication transitions now distinguish a lightweight tenant-scoped summary from provider reads. Provider reads
+  select only the required social credential fields, variant copy and one relevant attempt; scheduling and worker
+  checks no longer hydrate provider relations or credentials.
+- Content detail now returns bounded current/history samples with true counts and exposes independently cursor-paged
+  versions, approvals and comments. Analytics snapshots retain deterministic cursor pagination with a narrowed
+  projection. The index audit added only the due-publication and project-list indexes, recorded in migration
+  `20260813054003_add_performance_query_indexes`.
+- Full local gate passed: Prisma validation/generation, lint, formatting, workspace typecheck, 65 unit tests,
+  75 PostgreSQL integration contracts and production web/worker builds. SourceCraft verify remains required before
+  W18.
+
 ## 2026-08-13 — CI deterministic research URL isolation
 
 - Made the research URL-isolation contract independent of external DNS: its `example.com` lookup is a test-only

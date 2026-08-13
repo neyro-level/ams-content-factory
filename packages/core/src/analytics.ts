@@ -107,7 +107,7 @@ export function createAnalyticsService(options: {
     },
     async collect(context: Context, input: { publicationId: string; capturedAt: Date }) {
       const activeScope = scope(context);
-      const publication = await publishing.findPublication({
+      const publication = await publishing.findPublicationForProvider({
         ...activeScope,
         id: input.publicationId,
       });

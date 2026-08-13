@@ -7,6 +7,16 @@ import type {
 } from '../generated/prisma/client';
 
 export function createContentRepository(prisma: PrismaClient = getPrisma()) {
+  const boundedTake = (value: number | undefined, fallback: number, maximum: number) =>
+    Math.min(Math.max(value ?? fallback, 1), maximum);
+  const projectScope = (input: {
+    organizationId: string;
+    brandId: string;
+    contentProjectId: string;
+  }) => ({
+    contentProjectId: input.contentProjectId,
+    contentProject: { organizationId: input.organizationId, brandId: input.brandId },
+  });
   const brandExists = (organizationId: string, brandId: string) =>
     prisma.brand.findFirst({
       where: { id: brandId, organizationId, deletedAt: null },
@@ -228,15 +238,66 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
         },
       });
     },
-    findProject(input: { organizationId: string; brandId: string; id: string }) {
+    findProject(input: {
+      organizationId: string;
+      brandId: string;
+      id: string;
+      commentsTake?: number;
+    }) {
       return prisma.contentProject.findFirst({
         where: { id: input.id, organizationId: input.organizationId, brandId: input.brandId },
         include: {
-          versions: { orderBy: { version: 'asc' } },
-          variants: true,
-          approvals: true,
-          comments: { orderBy: { createdAt: 'desc' }, take: 100 },
+          versions: { orderBy: { version: 'desc' }, take: 1 },
+          variants: { orderBy: { platform: 'asc' }, take: 10 },
+          approvals: { orderBy: { createdAt: 'desc' }, take: 1 },
+          comments: {
+            orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+            take: boundedTake(input.commentsTake, 20, 50),
+          },
+          _count: { select: { versions: true, approvals: true, comments: true } },
         },
+      });
+    },
+    listProjectVersions(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      take?: number;
+      cursor?: string;
+    }) {
+      return prisma.contentVersion.findMany({
+        where: projectScope(input),
+        orderBy: [{ version: 'desc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: boundedTake(input.take, 20, 50),
+      });
+    },
+    listProjectApprovals(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      take?: number;
+      cursor?: string;
+    }) {
+      return prisma.approval.findMany({
+        where: projectScope(input),
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: boundedTake(input.take, 20, 50),
+      });
+    },
+    listProjectComments(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+      take?: number;
+      cursor?: string;
+    }) {
+      return prisma.editorialComment.findMany({
+        where: projectScope(input),
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: boundedTake(input.take, 20, 50),
       });
     },
     listProjects(input: {
@@ -253,7 +314,7 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
         },
         orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
         ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
-        take: Math.min(Math.max(input.take ?? 50, 1), 100),
+        take: boundedTake(input.take, 50, 100),
       });
     },
     findVersion(input: {

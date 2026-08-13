@@ -29,7 +29,7 @@ export function createFactCheckService(
         throw new AccessDeniedError('Content project is outside the active organization.');
       if (project.status !== ContentProjectStatus.DRAFT)
         throw new Error('Content project is not ready for fact-check.');
-      const version = project.versions.at(-1);
+      const version = project.versions[0];
       if (!version) throw new Error('Content project has no version to fact-check.');
       if (
         (

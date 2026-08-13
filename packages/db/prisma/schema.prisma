@@ -631,6 +631,7 @@ model ContentProject {
   publications     Publication[]
 
   @@index([organizationId, brandId, status, createdAt])
+  @@index([organizationId, brandId, updatedAt, id])
   @@index([opportunityId])
   @@map("content_project")
 }
@@ -1024,6 +1025,7 @@ model Publication {
   metricSnapshots   MetricSnapshot[]
 
   @@index([organizationId, brandId, status, scheduledAt])
+  @@index([status, scheduledAt, createdAt, id])
   @@map("publication")
 }
 

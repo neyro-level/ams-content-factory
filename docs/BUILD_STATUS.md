@@ -3,11 +3,12 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W16 observability and audit is `FOUNDATION`: structured logging, recursive secret redaction,
-  durable audit events for critical actions and a redacting error reporter are present. Next: W17 bounded performance
+- **Current task:** W17 performance hardening is `FOUNDATION`: publication provider loads are relation-bounded,
+  analytics and content history are cursor-bounded, and two query-pattern indexes are migrated. Next: W18 production
   hardening.
-- **Last verification:** 2026-08-13: Prisma validation, lint, formatting, workspace typecheck, 65 unit tests,
-  75 PostgreSQL integration contracts and production web/worker builds passed. No schema or migration changes.
+- **Last verification:** 2026-08-13: Prisma validation/generation, lint, formatting, workspace typecheck, 65 unit
+  tests, 75 PostgreSQL integration contracts and production web/worker builds passed. Migration
+  `20260813054003_add_performance_query_indexes` is applied locally.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a
