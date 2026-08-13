@@ -55,7 +55,8 @@ owner deployment confirmation remain independent release blockers.
 - The V0.1 code scope is implemented and protected by a Prisma migration, tenant/recovery integration
   contracts, deterministic critical Playwright workflow and SourceCraft critical-E2E gate.
 - Verified locally: Prisma validation and migration deploy, clean-database migration drill, lint, formatting,
-  typecheck, 76 unit tests, 85 integration tests, two V0.1 browser smokes and production build.
+  typecheck, 76 unit tests, 86 integration tests, deterministic browser smoke covering initial generation, manual
+  version and rewrite, tenant isolation, and production build.
 - SourceCraft `verify` passed on the implementation PR and again on canonical `main` (`b9a094b`), including
   PostgreSQL + pgvector, migrations, unit/integration tests, build and both deterministic browser contracts.
 - Editorial integrity follow-up: manual brief and text versions now retain their creating user, and AI rewrite

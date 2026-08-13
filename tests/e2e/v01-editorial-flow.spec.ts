@@ -69,11 +69,20 @@ test('V0.1 editorial flow: context, knowledge, draft, review, READY and copy', a
   await expect(page.locator('pre.content-preview')).toHaveText(
     'Детерминированный тестовый черновик.',
   );
+  await page.getByLabel('Отредактированный текст').fill('Ручная редакторская версия.');
+  await page.getByRole('button', { name: 'Сохранить новой версией' }).click();
+  await expect(page.locator('pre.content-preview')).toHaveText('Ручная редакторская версия.');
+  await page.getByLabel('Инструкция для новой AI-версии').fill('Сделай текст короче.');
+  await page.getByRole('button', { name: 'Создать следующую версию' }).click();
+  await expect(page.locator('pre.content-preview')).toHaveText(
+    'Детерминированный тестовый черновик.',
+  );
+  await expect(page.getByRole('heading', { name: 'Версия 4' })).toBeVisible();
   await page.getByRole('button', { name: 'Запустить fact-check' }).click();
   await page.getByRole('button', { name: 'Отправить на review' }).click();
   await page.getByRole('button', { name: 'Одобрить вручную' }).click();
   await page.getByRole('button', { name: 'Подготовить финальный текст' }).click();
   await expect(page.getByText('текущий статус: Готово для ручной публикации')).toBeVisible();
   await page.getByRole('button', { name: 'Скопировать финальный текст' }).click();
-  await expect(page.getByRole('status')).toContainText('Текст скопирован');
+  await expect(page.getByText('Текст скопирован для ручной публикации.')).toBeVisible();
 });
