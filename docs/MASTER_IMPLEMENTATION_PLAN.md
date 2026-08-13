@@ -24,6 +24,10 @@ draft experience remains available earlier in the state machine without calling 
 **Editorial feedback V0.1:** owner-facing review mutations are performed through the application service and return
 safe product feedback; raw state-machine, authorization and service errors never render in the form.
 
+**AI capability V0.1:** the server resolves whether real text generation can be offered. Without a credential,
+Content remains usable for manual editorial work but is product-marked `LIMITED` and its generation/rewrite controls
+are disabled; deterministic test generation cannot affect the ordinary product runtime.
+
 ---
 
 # 0. Назначение документа

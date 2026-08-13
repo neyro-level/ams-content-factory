@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { authClient } from '../lib/auth-client';
-import { featureCatalog, featureHref, featureStatusLabel } from '../lib/features';
+import { featureHref, featureStatusLabel, type Feature } from '../lib/features';
 
 const navigationItems = [
   { href: '/app', label: 'Рабочее пространство', exact: true },
@@ -15,7 +15,7 @@ function isCurrentPath(pathname: string, href: string, exact: boolean) {
   return exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppNavigation() {
+export function AppNavigation({ features }: { features: Feature[] }) {
   const pathname = usePathname();
   const router = useRouter();
   const [error, setError] = useState<string>();
@@ -25,12 +25,12 @@ export function AppNavigation() {
     ? `/app/organizations/${brandMatch[1]}/brands/${brandMatch[2]}`
     : undefined;
   const featureGroups = Array.from(
-    featureCatalog.reduce((groups, feature) => {
+    features.reduce((groups, feature) => {
       const entries = groups.get(feature.group) ?? [];
       entries.push(feature);
       groups.set(feature.group, entries);
       return groups;
-    }, new Map<string, typeof featureCatalog>()),
+    }, new Map<string, Feature[]>()),
   );
 
   async function signOut() {

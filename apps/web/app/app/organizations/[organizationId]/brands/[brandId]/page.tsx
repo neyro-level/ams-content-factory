@@ -4,10 +4,15 @@ import {
   createBrandContextService,
   createContentWorkspaceService,
   getAuth,
+  isTextGenerationAvailable,
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
-import { featureCatalog, featureHref, featureStatusLabel } from '../../../../../../lib/features';
+import {
+  featureHref,
+  featureStatusLabel,
+  resolveFeatureCatalog,
+} from '../../../../../../lib/features';
 
 export default async function BrandDashboardPage({
   params,
@@ -25,6 +30,9 @@ export default async function BrandDashboardPage({
       createContentWorkspaceService().list(actor, { take: 5 }),
     ]);
     const base = `/app/organizations/${organizationId}/brands/${brandId}`;
+    const features = resolveFeatureCatalog({
+      textGenerationAvailable: isTextGenerationAvailable(),
+    });
     return (
       <main className="app-content" aria-labelledby="brand-dashboard-title">
         <section className="page-heading">
@@ -77,7 +85,7 @@ export default async function BrandDashboardPage({
         <section className="panel" aria-labelledby="features-title">
           <h2 id="features-title">Возможности платформы</h2>
           <div className="module-grid">
-            {featureCatalog.map((feature) => (
+            {features.map((feature) => (
               <Link className="panel" key={feature.key} href={featureHref(base, feature)}>
                 <p className="eyebrow">{featureStatusLabel[feature.status]}</p>
                 <h3>{feature.label}</h3>

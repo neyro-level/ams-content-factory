@@ -1,5 +1,12 @@
 # Worklog
 
+## 2026-08-14 — V0.1 truthful AI runtime capability
+
+- Added a server-only capability boundary for real text generation. Without `OPENAI_API_KEY`, Content is shown as
+  `LIMITED` in dashboard/navigation and its generation/rewrite controls are disabled with product guidance; manual
+  editorial work remains usable. The deterministic E2E provider cannot activate this capability outside the
+  isolated local test runtime.
+
 ## 2026-08-14 — V0.1 product-status documentation reconciliation
 
 - Reconciled README, implementation report and execution/status records with the actual V0.1 owner flow. They now

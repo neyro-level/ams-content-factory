@@ -3,6 +3,7 @@ import {
   AccessDeniedError,
   createContentWorkspaceService,
   getAuth,
+  isTextGenerationAvailable,
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
@@ -51,6 +52,7 @@ export default async function ContentProjectPage({
               brandId={brandId}
               contentProjectId={contentProjectId}
               status={project.status}
+              generationAvailable={isTextGenerationAvailable()}
               canWrite={canWrite}
             />
           </div>
@@ -82,6 +84,7 @@ export default async function ContentProjectPage({
                 sourceVersionId={current.id}
                 currentBody={current.body ?? current.script ?? ''}
                 canCopy={project.status === 'READY'}
+                generationAvailable={isTextGenerationAvailable()}
                 canWrite={canWrite}
               />
             ) : null}

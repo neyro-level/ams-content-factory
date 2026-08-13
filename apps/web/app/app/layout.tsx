@@ -1,7 +1,8 @@
-import { getAuth } from '@ams-content-factory/core';
+import { getAuth, isTextGenerationAvailable } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { AppNavigation } from '../../components/app-navigation';
+import { resolveFeatureCatalog } from '../../lib/features';
 
 export default async function ProtectedAppLayout({
   children,
@@ -18,7 +19,11 @@ export default async function ProtectedAppLayout({
         </div>
         <div className="app-header__actions">
           <span className="badge">Доступ подтверждён</span>
-          <AppNavigation />
+          <AppNavigation
+            features={resolveFeatureCatalog({
+              textGenerationAvailable: isTextGenerationAvailable(),
+            })}
+          />
         </div>
       </header>
       {children}

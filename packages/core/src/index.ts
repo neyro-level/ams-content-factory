@@ -54,6 +54,7 @@ export {
   ContentGenerationInProgressError,
   createContentGenerationService,
   createProductionContentGenerationService,
+  isTextGenerationAvailable,
 } from './content-generation';
 export { getPrompt, promptKeys, PromptNotFoundError } from './prompts';
 export type { PromptDefinition, PromptKey } from './prompts';
