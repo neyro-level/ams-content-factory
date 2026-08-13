@@ -18,7 +18,7 @@
     "test": "vitest run --config tests/vitest.config.ts",
     "test:integration": "vitest run --config tests/vitest.integration.config.ts",
     "test:e2e": "playwright test --config tests/playwright.config.ts",
-    "test:e2e:critical": "playwright test --config tests/playwright.config.ts e2e/v01-editorial-flow.spec.ts && playwright test --config tests/playwright.config.ts e2e/v01-tenant-isolation.spec.ts",
+    "test:e2e:critical": "playwright test --config tests/playwright.config.ts e2e/v01-editorial-flow.spec.ts && playwright test --config tests/playwright.config.ts e2e/v01-tenant-isolation.spec.ts && playwright test --config tests/playwright.limited.config.ts e2e/v01-limited-capability.spec.ts",
     "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
     "db:up": "docker compose -f docker-compose.dev.yml up -d postgres",
     "db:down": "docker compose -f docker-compose.dev.yml down",
