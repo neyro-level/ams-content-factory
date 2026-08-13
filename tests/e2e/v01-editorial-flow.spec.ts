@@ -99,6 +99,8 @@ test('V0.1 editorial flow: context, knowledge, draft, review, READY and copy', a
   );
   await expect(page.getByRole('heading', { name: 'Версия 4' })).toBeVisible();
   await page.getByRole('button', { name: 'Запустить fact-check' }).click();
+  await expect(page.getByText('Нужна проверка')).toBeVisible();
+  await expect(page.getByText('UNVERIFIED', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Отправить на review' }).click();
   await page.getByRole('button', { name: 'Одобрить вручную' }).click();
   await page.getByRole('button', { name: 'Подготовить финальный текст' }).click();

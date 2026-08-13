@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-13 — V0.1 fact-check product language
+
+- Replaced raw claim verification enums in the editorial fact-check panel with Russian review labels. The claim
+  state machine, evidence logic and tenant scope are unchanged; a critical browser contract prevents raw
+  `UNVERIFIED` from returning to the owner-facing workflow.
+
 ## 2026-08-13 — V0.1 Knowledge product language
 
 - Replaced raw Knowledge document enums in the owner-facing list with Russian document-type and lifecycle labels.
