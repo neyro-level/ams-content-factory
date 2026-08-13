@@ -24,13 +24,17 @@ workflows:
                 set -euo pipefail
                 database_container=ams-content-factory-ci-postgres
                 docker rm -f "$database_container" >/dev/null 2>&1 || true
+                # A cold SourceCraft worker may need longer than 30 seconds to
+                # pull pgvector. Pull explicitly so the readiness timeout
+                # measures PostgreSQL startup rather than registry latency.
+                docker pull pgvector/pgvector:pg16
                 docker run --detach --name "$database_container" \
                   --env POSTGRES_DB=ams_content_factory \
                   --env POSTGRES_USER=ci \
                   --env POSTGRES_PASSWORD=ci \
                   --publish 5432:5432 \
                   pgvector/pgvector:pg16 >/dev/null
-                for attempt in $(seq 1 30); do
+                for attempt in $(seq 1 90); do
                   if docker exec "$database_container" pg_isready --username=ci --dbname=ams_content_factory >/dev/null 2>&1; then
                     break
                   fi
@@ -120,7 +124,27 @@ workflows:
                     pnpm config set store-dir /tmp/pnpm-store
                     pnpm build
                   '
-          - name: stop-postgres
+          - name: critical-e2e-quality-gate
             needs: [build-quality-gate]
+            script:
+              - |
+                set -euo pipefail
+                docker run --rm --network host --volume "$PWD:/workspace" --workdir /workspace \
+                  --env DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/ams_content_factory \
+                  --env NODE_ENV=development \
+                  --env APP_URL=https://ci.ams-content-factory.invalid \
+                  --env BETTER_AUTH_SECRET=ci-only-auth-secret-that-is-at-least-32-characters \
+                  --env TOKEN_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+                  docker.io/library/node:22 bash -lc '
+                    set -euo pipefail
+                    export PNPM_HOME=/tmp/pnpm
+                    export PATH="$PNPM_HOME:$PATH"
+                    npm install --global pnpm@11.5.1
+                    pnpm config set store-dir /tmp/pnpm-store
+                    pnpm exec playwright install --with-deps chromium
+                    CI=true pnpm test:e2e:critical
+                  '
+          - name: stop-postgres
+            needs: [critical-e2e-quality-gate]
             script:
               - docker rm -f ams-content-factory-ci-postgres >/dev/null 2>&1 || true

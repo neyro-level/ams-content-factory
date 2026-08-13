@@ -1,5 +1,26 @@
 # Worklog
 
+## 2026-08-13 — V0.1 user-testing workflow implemented locally
+
+- Added the executable `docs/V0_1_USER_TEST_PLAN.md` and linked it from the master plan, document index,
+  architecture, status and execution records. It makes the owner-facing V0.1 scope explicit: Brand Context →
+  Knowledge → Content → READY → Copy, with truthful `READY`, `LIMITED` and `PLANNED` product statuses.
+- Started the V0.1 integrity and editorial work: the migration adds a per-project generation idempotency key
+  and transactional version counter; the repository now claims one initial generation, persists the version,
+  execution and project state atomically, and records provider/persistence failures for safe retry.
+- Added brand-scoped Brand Context, knowledge snippets in the content context, immutable user brief/version
+  handling, safe APPROVED → READY without an active video production, grouped module navigation and safe
+  product-state pages for unfinished modules. SourceCraft `verify` now includes critical deterministic
+  Playwright with PostgreSQL + pgvector. Local verification passed Prisma validation/migration deploy, lint,
+  format, typecheck, 76 unit, 85 integration, two V0.1 E2E scenarios, production build and a clean-database
+  migration drill.
+- The strict verdict remains `NOT READY FOR V0.1 USER TESTING`: the sole V0.1 blocker is a safely configured
+  live `OPENAI_API_KEY` plus one owner smoke. The deterministic provider is test-only. No production deployment
+  was attempted.
+- SourceCraft PR CI initially stopped while the fresh runner started its pgvector container, before migration
+  or application checks. The bootstrap now explicitly pulls that image and separates registry latency from a
+  90-second PostgreSQL readiness window; the PR is being re-verified.
+
 ## 2026-08-13 — W19.6 non-destructive release smoke suite
 
 - Added `pnpm release:smoke`: it creates a disposable local pgvector database, applies all committed migrations and

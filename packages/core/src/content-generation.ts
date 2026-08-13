@@ -6,6 +6,7 @@ import {
 } from '@ams-content-factory/db';
 import {
   OpenAiTextGenerationProvider,
+  MockTextGenerationProvider,
   TextGenerationProviderUnavailableError,
   type TextGenerationProvider,
 } from '@ams-content-factory/providers';
@@ -19,6 +20,13 @@ export class ContentGenerationBlockedExternalError extends Error {
   constructor() {
     super('BLOCKED_EXTERNAL: text generation provider is not configured.');
     this.name = 'ContentGenerationBlockedExternalError';
+  }
+}
+
+export class ContentGenerationInProgressError extends Error {
+  constructor() {
+    super('Генерация этого проекта уже выполняется. Результат появится после завершения операции.');
+    this.name = 'ContentGenerationInProgressError';
   }
 }
 
@@ -45,28 +53,22 @@ export function createContentGenerationService(options: {
         brandId: actor.brandId,
         contentProjectId: input.contentProjectId,
       };
-      if (assembled.project.status === ContentProjectStatus.IDEA) {
-        const started = await content.transition({
-          ...scope,
-          id: input.contentProjectId,
-          from: ContentProjectStatus.IDEA,
-          to: ContentProjectStatus.RESEARCHING,
-        });
-        if (started.count !== 1) throw new Error('Content project generation could not start.');
-      } else if (assembled.project.status !== ContentProjectStatus.RESEARCHING) {
-        throw new AccessDeniedError('Content project is not ready for generation.');
-      }
       const prompt = getPrompt(input.promptKey);
-      const execution = await executions.create({
+      const claim = await executions.claimInitialGeneration({
         ...scope,
         provider: 'openai',
         model: input.model ?? 'gpt-5-mini',
         operation: input.promptKey,
+        idempotencyKey: `draft:${input.promptKey}`,
         promptKey: prompt.key,
         promptVersion: prompt.version,
       });
-      if (!execution)
+      if (claim.kind === 'missing')
         throw new AccessDeniedError('Content project is outside the active organization.');
+      if (claim.kind === 'completed' && claim.version)
+        return { executionId: claim.execution.id, version: claim.version };
+      if (claim.kind === 'in_progress') throw new ContentGenerationInProgressError();
+      const execution = claim.execution;
       if ((await executions.markRunning({ ...scope, id: execution.id })).count !== 1)
         throw new Error('AI execution could not start.');
       let result: Awaited<ReturnType<TextGenerationProvider['generate']>>;
@@ -78,58 +80,40 @@ export function createContentGenerationService(options: {
         });
       } catch (error) {
         const blocked = error instanceof TextGenerationProviderUnavailableError;
-        await executions.markFailed({
+        await executions.failGeneration({
           ...scope,
           id: execution.id,
           errorCode: blocked ? 'BLOCKED_EXTERNAL' : 'GENERATION_FAILED',
           errorMessage: error instanceof Error ? error.message : 'Unknown generation failure.',
         });
         if (blocked) throw new ContentGenerationBlockedExternalError();
-        await content.transition({
-          ...scope,
-          id: input.contentProjectId,
-          from: ContentProjectStatus.RESEARCHING,
-          to: ContentProjectStatus.FAILED,
-        });
         throw error;
       }
 
-      // From this point the provider has already succeeded. Do not reclassify a
-      // persistence failure as a provider failure: the running execution is the
-      // durable reconciliation signal until the integrity wave handles it.
-      const version = await content.appendVersion({
-        ...scope,
-        createdByType: ContentVersionAuthorType.AI,
-        aiExecutionId: execution.id,
-        body: result.text,
-      });
-      if (!version) throw new Error('Generated content version could not be persisted.');
-      if (
-        (
-          await executions.markSucceeded({
-            ...scope,
-            id: execution.id,
-            ...(result.usage?.inputTokens === undefined
-              ? {}
-              : { inputTokens: result.usage.inputTokens }),
-            ...(result.usage?.outputTokens === undefined
-              ? {}
-              : { outputTokens: result.usage.outputTokens }),
-          })
-        ).count !== 1
-      )
-        throw new Error('AI execution success could not be persisted.');
-      if (
-        (
-          await content.transition({
-            ...scope,
-            id: input.contentProjectId,
-            from: ContentProjectStatus.RESEARCHING,
-            to: ContentProjectStatus.DRAFT,
-          })
-        ).count !== 1
-      )
-        throw new Error('Generated content could not enter DRAFT.');
+      let version;
+      try {
+        version = await executions.completeGeneration({
+          ...scope,
+          id: execution.id,
+          body: result.text,
+          ...(result.usage?.inputTokens === undefined
+            ? {}
+            : { inputTokens: result.usage.inputTokens }),
+          ...(result.usage?.outputTokens === undefined
+            ? {}
+            : { outputTokens: result.usage.outputTokens }),
+        });
+        if (!version) throw new Error('Generated content version could not be persisted.');
+      } catch (error) {
+        await executions.failGeneration({
+          ...scope,
+          id: execution.id,
+          errorCode: 'GENERATION_PERSISTENCE_FAILED',
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown generation persistence failure.',
+        });
+        throw error;
+      }
       return { executionId: execution.id, version };
     },
     async rewriteDraft(
@@ -190,34 +174,58 @@ export function createContentGenerationService(options: {
         throw error;
       }
 
-      const version = await content.appendVersion({
-        ...scope,
-        createdByType: ContentVersionAuthorType.AI,
-        aiExecutionId: execution.id,
-        body: result.text,
-      });
-      if (!version) throw new Error('Rewritten content version could not be persisted.');
-      if (
-        (
-          await executions.markSucceeded({
-            ...scope,
-            id: execution.id,
-            ...(result.usage?.inputTokens === undefined
-              ? {}
-              : { inputTokens: result.usage.inputTokens }),
-            ...(result.usage?.outputTokens === undefined
-              ? {}
-              : { outputTokens: result.usage.outputTokens }),
-          })
-        ).count !== 1
-      )
-        throw new Error('AI rewrite success could not be persisted.');
-      return { executionId: execution.id, version };
+      try {
+        const version = await content.appendVersion({
+          ...scope,
+          createdByType: ContentVersionAuthorType.AI,
+          aiExecutionId: execution.id,
+          body: result.text,
+        });
+        if (!version) throw new Error('Rewritten content version could not be persisted.');
+        if (
+          (
+            await executions.markSucceeded({
+              ...scope,
+              id: execution.id,
+              ...(result.usage?.inputTokens === undefined
+                ? {}
+                : { inputTokens: result.usage.inputTokens }),
+              ...(result.usage?.outputTokens === undefined
+                ? {}
+                : { outputTokens: result.usage.outputTokens }),
+            })
+          ).count !== 1
+        )
+          throw new Error('AI rewrite success could not be persisted.');
+        return { executionId: execution.id, version };
+      } catch (error) {
+        await executions.markFailed({
+          ...scope,
+          id: execution.id,
+          errorCode: 'REWRITE_PERSISTENCE_FAILED',
+          errorMessage:
+            error instanceof Error ? error.message : 'Unknown rewrite persistence failure.',
+        });
+        throw error;
+      }
     },
   };
 }
 
 /** Production composition root kept in core so web entry points never import a provider directly. */
 export function createProductionContentGenerationService() {
+  // This double is deliberately reachable only from the local Playwright server.
+  // It is never selected by a production URL or by an absent provider credential.
+  if (
+    process.env.E2E_TEST_TEXT_GENERATION === '1' &&
+    process.env.APP_URL?.startsWith('http://127.0.0.1:')
+  ) {
+    return createContentGenerationService({
+      provider: new MockTextGenerationProvider({
+        text: 'Детерминированный тестовый черновик.',
+        model: 'e2e-deterministic-v1',
+      }),
+    });
+  }
   return createContentGenerationService({ provider: new OpenAiTextGenerationProvider() });
 }

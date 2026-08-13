@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { authClient } from '../lib/auth-client';
+import { featureCatalog, featureHref, featureStatusLabel } from '../lib/features';
 
 const navigationItems = [
   { href: '/app', label: 'Рабочее пространство', exact: true },
@@ -19,6 +20,18 @@ export function AppNavigation() {
   const router = useRouter();
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
+  const brandMatch = pathname.match(/^\/app\/organizations\/([^/]+)\/brands\/([^/]+)/);
+  const brandBase = brandMatch
+    ? `/app/organizations/${brandMatch[1]}/brands/${brandMatch[2]}`
+    : undefined;
+  const featureGroups = Array.from(
+    featureCatalog.reduce((groups, feature) => {
+      const entries = groups.get(feature.group) ?? [];
+      entries.push(feature);
+      groups.set(feature.group, entries);
+      return groups;
+    }, new Map<string, typeof featureCatalog>()),
+  );
 
   async function signOut() {
     setError(undefined);
@@ -55,6 +68,32 @@ export function AppNavigation() {
             </Link>
           );
         })}
+        {brandBase
+          ? featureGroups.map(([group, features]) => (
+              <div className="app-navigation__group" key={group}>
+                <p className="app-navigation__group-title">{group}</p>
+                {features.map((feature) => {
+                  const href = featureHref(brandBase, feature);
+                  const current = isCurrentPath(pathname, href, false);
+                  return (
+                    <Link
+                      key={feature.key}
+                      className={
+                        current
+                          ? 'app-navigation__link app-navigation__link--current'
+                          : 'app-navigation__link'
+                      }
+                      href={href}
+                      aria-current={current ? 'page' : undefined}
+                    >
+                      {feature.label}{' '}
+                      {feature.status === 'READY' ? '' : `(${featureStatusLabel[feature.status]})`}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))
+          : null}
       </nav>
       <div className="app-session-actions">
         <button

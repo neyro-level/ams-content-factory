@@ -3,8 +3,6 @@
 import { useActionState } from 'react';
 import {
   addResearchTextAction,
-  addResearchUrlAction,
-  searchResearchAction,
   type ResearchActionState,
 } from '../app/app/organizations/[organizationId]/brands/[brandId]/research/actions';
 
@@ -20,14 +18,6 @@ export function ResearchWorkspace({
   const route = { organizationId, brandId };
   const [textState, textAction, textPending] = useActionState(
     addResearchTextAction.bind(null, route),
-    initialState,
-  );
-  const [urlState, urlAction, urlPending] = useActionState(
-    addResearchUrlAction.bind(null, route),
-    initialState,
-  );
-  const [searchState, searchAction, searchPending] = useActionState(
-    searchResearchAction.bind(null, route),
     initialState,
   );
 
@@ -49,44 +39,25 @@ export function ResearchWorkspace({
           {textPending ? 'Добавляем…' : 'Добавить текст'}
         </button>
       </form>
-      <form className="organization-form" action={urlAction}>
+      <section className="organization-form" aria-labelledby="research-external-title">
         <h3>Страница по URL</h3>
-        <label>
-          Название
-          <input name="title" required maxLength={300} />
-        </label>
-        <label>
-          Адрес
-          <input name="sourceUrl" type="url" required inputMode="url" />
-        </label>
-        <Feedback state={urlState} />
-        <button className="button button-secondary" disabled={urlPending}>
-          {urlPending ? 'Извлекаем…' : 'Добавить URL'}
+        <p id="research-external-title" className="muted">
+          Внешнее извлечение будет доступно после подключения исследовательского провайдера.
+        </p>
+        <button className="button button-secondary" type="button" disabled>
+          Добавить URL
         </button>
-      </form>
-      <form className="organization-form" action={searchAction}>
+      </section>
+      <section className="organization-form" aria-labelledby="research-search-title">
         <h3>Найти источники</h3>
-        <label>
-          Запрос
-          <input name="query" type="search" required maxLength={500} />
-        </label>
-        <Feedback state={searchState} />
-        <button className="button button-secondary" disabled={searchPending}>
-          {searchPending ? 'Ищем…' : 'Найти источники'}
+        <p id="research-search-title" className="muted">
+          Поиск источников находится в ограниченном режиме и не запускается без подготовленного
+          подключения.
+        </p>
+        <button className="button button-secondary" type="button" disabled>
+          Найти источники
         </button>
-      </form>
-      {searchState.results?.length ? (
-        <ul className="research-results">
-          {searchState.results.map((result) => (
-            <li key={result.url}>
-              <a className="text-link" href={result.url} target="_blank" rel="noreferrer">
-                {result.title}
-              </a>
-              {result.snippet ? <p className="muted">{result.snippet}</p> : null}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      </section>
     </section>
   );
 }

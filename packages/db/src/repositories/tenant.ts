@@ -127,6 +127,26 @@ export function createTenantRepository(prisma: PrismaClient = getPrisma()) {
       });
     },
 
+    updateBrandDetails(input: {
+      organizationId: string;
+      brandId: string;
+      description?: string;
+      websiteUrl?: string | null;
+    }) {
+      return prisma.brand.updateMany({
+        where: {
+          id: input.brandId,
+          organizationId: input.organizationId,
+          status: BrandStatus.ACTIVE,
+          deletedAt: null,
+        },
+        data: {
+          ...(input.description === undefined ? {} : { description: input.description }),
+          ...(input.websiteUrl === undefined ? {} : { websiteUrl: input.websiteUrl }),
+        },
+      });
+    },
+
     findBrandAccess(input: { organizationId: string; brandId: string; userId: string }) {
       return prisma.brandAccess.findFirst({
         where: {

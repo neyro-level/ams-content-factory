@@ -14,7 +14,7 @@ const transitions: Record<ContentProjectStatus, ContentProjectStatus[]> = {
   DRAFT: ['FACT_CHECK', 'REJECTED', 'CANCELLED'],
   FACT_CHECK: ['REVIEW', 'DRAFT', 'FAILED'],
   REVIEW: ['APPROVED', 'DRAFT', 'REJECTED'],
-  APPROVED: ['PRODUCTION', 'CANCELLED'],
+  APPROVED: ['PRODUCTION', 'READY', 'CANCELLED'],
   PRODUCTION: ['QC', 'FAILED'],
   QC: ['READY', 'PRODUCTION', 'FAILED'],
   READY: ['SCHEDULED', 'ARCHIVED'],
@@ -54,6 +54,14 @@ export function createContentService(options: { prisma?: PrismaClient } = {}) {
         throw new AccessDeniedError('Content project is outside the active organization.');
       if (!transitions[project.status].includes(to))
         throw new Error(`Invalid content transition: ${project.status} -> ${to}`);
+      if (project.status === 'APPROVED' && to === 'READY') {
+        const production = await repository.hasActiveVideoProduction({
+          ...scope,
+          contentProjectId: id,
+        });
+        if (production)
+          throw new Error('Active video production must finish before content is READY.');
+      }
       const result = await repository.transition({ ...scope, id, from: project.status, to });
       if (result.count !== 1) throw new Error('Content transition was rejected.');
       return repository.findProject({ ...scope, id });

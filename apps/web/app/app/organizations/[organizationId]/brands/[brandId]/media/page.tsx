@@ -20,13 +20,14 @@ export default async function MediaPage({
   params: Promise<{ organizationId: string; brandId: string }>;
 }) {
   const { organizationId, brandId } = await params;
+  redirect(`/app/organizations/${organizationId}/brands/${brandId}/planned/media`);
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user)
     redirect(`/login?next=/app/organizations/${organizationId}/brands/${brandId}/media`);
 
   try {
     const assets = await createMediaWorkspaceService().list({
-      userId: session.user.id,
+      userId: session!.user.id,
       organizationId,
       brandId,
     });

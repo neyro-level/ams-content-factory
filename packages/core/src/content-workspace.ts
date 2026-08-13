@@ -40,9 +40,11 @@ export function createContentWorkspaceService(
       if (!project)
         throw new AccessDeniedError('Content project is outside the active organization.');
       const claims = await research.findContentClaims({ ...checkedScope, contentProjectId });
+      const versions = await content.listProjectVersions({ ...checkedScope, contentProjectId });
       return {
         project,
         claims,
+        versions,
         canWrite: context.permissions.has('content:write'),
         canReview: context.permissions.has('content:review'),
       };

@@ -7,6 +7,9 @@
 **Первый production-период:** обкатка на собственной организации и собственных аккаунтах
 **Стратегия deployment:** production deployment только после завершения основной разработки и прохождения release gate
 
+**Текущий исполнимый срез:** [`V0_1_USER_TEST_PLAN.md`](V0_1_USER_TEST_PLAN.md). Он вводит безопасный
+пользовательский editorial workflow поверх foundation, не отменяет этот master-plan и не авторизует production release.
+
 ---
 
 # 0. Назначение документа

@@ -98,35 +98,38 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
       script?: string;
       notes?: string;
     }) {
-      const project = await prisma.contentProject.findFirst({
-        where: {
-          id: input.contentProjectId,
-          organizationId: input.organizationId,
-          brandId: input.brandId,
-        },
-        select: { id: true },
-      });
-      if (!project) return null;
-      const latest = await prisma.contentVersion.aggregate({
-        where: { contentProjectId: input.contentProjectId },
-        _max: { version: true },
-      });
-      return prisma.contentVersion.create({
-        data: {
-          contentProjectId: input.contentProjectId,
-          createdByType: input.createdByType,
-          version: (latest._max.version ?? 0) + 1,
-          ...(input.createdByUserId !== undefined
-            ? { createdByUserId: input.createdByUserId }
-            : {}),
-          ...(input.aiExecutionId !== undefined ? { aiExecutionId: input.aiExecutionId } : {}),
-          ...(input.brief !== undefined ? { brief: input.brief } : {}),
-          ...(input.hook !== undefined ? { hook: input.hook } : {}),
-          ...(input.body !== undefined ? { body: input.body } : {}),
-          ...(input.cta !== undefined ? { cta: input.cta } : {}),
-          ...(input.script !== undefined ? { script: input.script } : {}),
-          ...(input.notes !== undefined ? { notes: input.notes } : {}),
-        },
+      return prisma.$transaction(async (tx) => {
+        const project = await tx.contentProject.updateMany({
+          where: {
+            id: input.contentProjectId,
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+          },
+          data: { nextVersion: { increment: 1 } },
+        });
+        if (project.count !== 1) return null;
+        const allocated = await tx.contentProject.findUnique({
+          where: { id: input.contentProjectId },
+          select: { nextVersion: true },
+        });
+        if (!allocated) return null;
+        return tx.contentVersion.create({
+          data: {
+            contentProjectId: input.contentProjectId,
+            createdByType: input.createdByType,
+            version: allocated.nextVersion - 1,
+            ...(input.createdByUserId !== undefined
+              ? { createdByUserId: input.createdByUserId }
+              : {}),
+            ...(input.aiExecutionId !== undefined ? { aiExecutionId: input.aiExecutionId } : {}),
+            ...(input.brief !== undefined ? { brief: input.brief } : {}),
+            ...(input.hook !== undefined ? { hook: input.hook } : {}),
+            ...(input.body !== undefined ? { body: input.body } : {}),
+            ...(input.cta !== undefined ? { cta: input.cta } : {}),
+            ...(input.script !== undefined ? { script: input.script } : {}),
+            ...(input.notes !== undefined ? { notes: input.notes } : {}),
+          },
+        });
       });
     },
     async addApproval(input: {
@@ -332,6 +335,20 @@ export function createContentRepository(prisma: PrismaClient = getPrisma()) {
             brandId: input.brandId,
           },
         },
+      });
+    },
+    hasActiveVideoProduction(input: {
+      organizationId: string;
+      brandId: string;
+      contentProjectId: string;
+    }) {
+      return prisma.videoProduction.findFirst({
+        where: {
+          contentProjectId: input.contentProjectId,
+          contentProject: { organizationId: input.organizationId, brandId: input.brandId },
+          status: { notIn: ['READY', 'FAILED', 'CANCELLED'] },
+        },
+        select: { id: true },
       });
     },
   };

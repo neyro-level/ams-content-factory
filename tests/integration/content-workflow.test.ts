@@ -1,5 +1,9 @@
 import 'dotenv/config';
-import { createContentService, resolveTenantContext } from '../../packages/core/src/index.js';
+import {
+  createContentService,
+  resolveTenantContext,
+  seedInitialVideoRecipes,
+} from '../../packages/core/src/index.js';
 import {
   createContentRepository,
   createPrismaClient,
@@ -193,5 +197,69 @@ describe('content workflow', () => {
         tenants,
       ),
     ).rejects.toThrow('Active organization membership is required');
+  });
+
+  it('permits APPROVED to READY only while no active video production exists', async () => {
+    const user = await prisma.user.create({
+      data: { name: `${slug}-ready`, email: `${slug}-ready@local` },
+    });
+    const organization = await tenants.createOrganizationWithOwner({
+      ownerUserId: user.id,
+      name: `${slug}-ready`,
+      slug: `${slug}-ready`,
+    });
+    const brand = await tenants.createBrand({
+      organizationId: organization.id,
+      name: 'Ready brand',
+      slug: 'ready-brand',
+    });
+    const context = await resolveTenantContext(
+      { userId: user.id, organizationId: organization.id, brandId: brand.id },
+      tenants,
+    );
+    const service = createContentService({ prisma });
+    const project = await service.create(context, {
+      title: 'Manual ready',
+      contentType: 'SOCIAL_POST',
+    });
+    await prisma.contentProject.update({
+      where: { id: project!.id },
+      data: { status: 'APPROVED' },
+    });
+    await expect(service.transition(context, project!.id, 'READY')).resolves.toEqual(
+      expect.objectContaining({ status: 'READY' }),
+    );
+
+    const withVideo = await service.create(context, { title: 'Video ready', contentType: 'REEL' });
+    const version = await service.appendVersion(context, withVideo!.id, {
+      createdByType: 'USER',
+      script: 'Approved script.',
+    });
+    const [recipe] = await seedInitialVideoRecipes(prisma);
+    const storyboard = await prisma.storyboard.create({
+      data: {
+        contentProjectId: withVideo!.id,
+        contentVersionId: version!.id,
+        videoRecipeId: recipe.id,
+        version: 1,
+        status: 'APPROVED',
+      },
+    });
+    await prisma.contentProject.update({
+      where: { id: withVideo!.id },
+      data: { status: 'APPROVED' },
+    });
+    await prisma.videoProduction.create({
+      data: {
+        contentProjectId: withVideo!.id,
+        storyboardId: storyboard.id,
+        videoRecipeId: recipe.id,
+        aspectRatio: '9:16',
+        status: 'PLANNED',
+      },
+    });
+    await expect(service.transition(context, withVideo!.id, 'READY')).rejects.toThrow(
+      'Active video production must finish',
+    );
   });
 });

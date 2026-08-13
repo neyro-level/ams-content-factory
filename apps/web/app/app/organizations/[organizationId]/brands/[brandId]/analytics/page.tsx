@@ -170,13 +170,14 @@ export default async function AnalyticsDashboardPage({
   params: Promise<{ organizationId: string; brandId: string }>;
 }) {
   const { organizationId, brandId } = await params;
+  redirect(`/app/organizations/${organizationId}/brands/${brandId}/planned/analytics`);
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user)
     redirect(`/login?next=/app/organizations/${organizationId}/brands/${brandId}/analytics`);
 
   try {
     const dashboard = await createAnalyticsDashboardService().get({
-      userId: session.user.id,
+      userId: session!.user.id,
       organizationId,
       brandId,
     });

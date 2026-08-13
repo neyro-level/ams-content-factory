@@ -41,6 +41,31 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
       ]);
       return { profile, voices, pillars };
     },
+    async upsertVoice(input: {
+      organizationId: string;
+      brandId: string;
+      language?: string;
+      toneSummary: string;
+      styleRules?: string[];
+      forbiddenWords?: string[];
+    }) {
+      const brand = await findBrand(input.organizationId, input.brandId);
+      if (!brand) return null;
+      const language = input.language ?? 'ru';
+      const current = await prisma.brandVoice.findFirst({
+        where: { brandId: input.brandId, language },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true },
+      });
+      const data = {
+        toneSummary: input.toneSummary,
+        ...(input.styleRules === undefined ? {} : { styleRules: input.styleRules }),
+        ...(input.forbiddenWords === undefined ? {} : { forbiddenWords: input.forbiddenWords }),
+      };
+      return current
+        ? prisma.brandVoice.update({ where: { id: current.id }, data })
+        : prisma.brandVoice.create({ data: { brandId: input.brandId, language, ...data } });
+    },
     async createOrGetDocument(input: {
       organizationId: string;
       brandId: string;
@@ -208,6 +233,25 @@ export function createKnowledgeRepository(prisma: PrismaClient = getPrisma()) {
         },
         orderBy: [{ documentId: 'asc' }, { ordinal: 'asc' }],
         take: input.take ?? 20,
+      });
+    },
+    listReadyChunksForGeneration(input: {
+      organizationId: string;
+      brandId: string;
+      take?: number;
+    }) {
+      return prisma.knowledgeChunk.findMany({
+        where: {
+          brandId: input.brandId,
+          document: {
+            organizationId: input.organizationId,
+            brandId: input.brandId,
+            status: KnowledgeDocumentStatus.READY,
+          },
+        },
+        select: { documentId: true, ordinal: true, content: true },
+        orderBy: [{ document: { updatedAt: 'desc' } }, { ordinal: 'asc' }],
+        take: Math.min(Math.max(input.take ?? 20, 1), 30),
       });
     },
     setChunkEmbedding(input: {

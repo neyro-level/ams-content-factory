@@ -44,6 +44,7 @@ export default async function PublicationCalendarPage({
   searchParams: Promise<{ view?: string; date?: string }>;
 }) {
   const { organizationId, brandId } = await params;
+  redirect(`/app/organizations/${organizationId}/brands/${brandId}/planned/calendar`);
   const search = await searchParams;
   const view = parseView(search.view);
   const anchor = parseAnchor(search.date);
@@ -53,7 +54,7 @@ export default async function PublicationCalendarPage({
 
   try {
     const calendar = await createPublicationCalendarService().get(
-      { userId: session.user.id, organizationId, brandId },
+      { userId: session!.user.id, organizationId, brandId },
       { view, anchor },
     );
     return (

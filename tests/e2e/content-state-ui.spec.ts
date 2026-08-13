@@ -16,7 +16,7 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
-test('creates a content project and exposes BLOCKED_EXTERNAL rather than a mock draft', async ({
+test('creates a content project and receives a deterministic test draft without a live provider', async ({
   page,
 }) => {
   const signUp = await page.request.post('/api/auth/sign-up/email', {
@@ -45,9 +45,8 @@ test('creates a content project and exposes BLOCKED_EXTERNAL rather than a mock 
   await page.getByRole('button', { name: 'Создать проект' }).click();
   await expect(page.getByRole('heading', { name: 'UI content project' })).toBeVisible();
   await page.getByRole('link', { name: 'Открыть' }).click();
-  await page.getByRole('button', { name: 'Начать исследование' }).click();
   await expect(page.getByRole('button', { name: 'Сгенерировать черновик' })).toBeVisible();
   await page.getByRole('button', { name: 'Сгенерировать черновик' }).click();
-  await expect(page.getByText(/^BLOCKED_EXTERNAL:/)).toBeVisible();
-  await expect(page.getByText('текущий статус: RESEARCHING')).toBeVisible();
+  await expect(page.getByText('Детерминированный тестовый черновик.')).toBeVisible();
+  await expect(page.getByText('текущий статус: Черновик')).toBeVisible();
 });

@@ -19,6 +19,7 @@ export default defineConfig({
       APP_URL: `http://127.0.0.1:${port}`,
       BETTER_AUTH_SECRET: 'e2e-only-auth-secret-that-is-at-least-32-characters',
       TOKEN_ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+      E2E_TEST_TEXT_GENERATION: '1',
     },
     reuseExistingServer: !process.env.CI,
   },

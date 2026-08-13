@@ -8,6 +8,7 @@ import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { editorialAction } from './actions';
 import { ContentStateControls } from '../../../../../../../../components/content-state-controls';
+import { ContentVersionControls } from '../../../../../../../../components/content-version-controls';
 
 export default async function ContentProjectPage({
   params,
@@ -21,10 +22,11 @@ export default async function ContentProjectPage({
       `/login?next=/app/organizations/${organizationId}/brands/${brandId}/content/${contentProjectId}`,
     );
   try {
-    const { project, claims, canReview, canWrite } = await createContentWorkspaceService().get(
-      { userId: session.user.id, organizationId, brandId },
-      contentProjectId,
-    );
+    const { project, claims, versions, canReview, canWrite } =
+      await createContentWorkspaceService().get(
+        { userId: session.user.id, organizationId, brandId },
+        contentProjectId,
+      );
     const current = project.versions[0];
     const editorial = editorialAction.bind(null, { organizationId, brandId, contentProjectId });
     return (
@@ -34,7 +36,8 @@ export default async function ContentProjectPage({
             <p className="eyebrow">Контент-проект</p>
             <h1 id="content-project-title">{project.title}</h1>
             <p className="muted">
-              {project.contentType} · текущий статус: {project.status}
+              {project.contentType} · текущий статус:{' '}
+              {statusLabel[project.status] ?? project.status}
             </p>
             <ContentStateControls
               organizationId={organizationId}
@@ -105,6 +108,35 @@ export default async function ContentProjectPage({
             <p className="muted">
               Версий: {project._count.versions} · согласований: {project._count.approvals}
             </p>
+            {current ? (
+              <ContentVersionControls
+                organizationId={organizationId}
+                brandId={brandId}
+                contentProjectId={contentProjectId}
+                sourceVersionId={current.id}
+                currentBody={current.body ?? current.script ?? ''}
+                canWrite={canWrite}
+              />
+            ) : null}
+          </section>
+          <section className="panel" aria-labelledby="version-history-title">
+            <h2 id="version-history-title">История версий</h2>
+            {versions.length ? (
+              <ol className="organization-list">
+                {versions.map((version) => (
+                  <li key={version.id}>
+                    <div>
+                      <h3>Версия {version.version}</h3>
+                      <p className="muted">
+                        {version.createdByType === 'AI' ? 'AI-версия' : 'Ручная версия'}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="empty-copy">История появится после первой версии.</p>
+            )}
           </section>
           <section className="panel" aria-labelledby="fact-check-title">
             <h2 id="fact-check-title">Fact-check и evidence</h2>
@@ -164,3 +196,16 @@ export default async function ContentProjectPage({
     throw error;
   }
 }
+
+const statusLabel: Record<string, string> = {
+  IDEA: 'Идея',
+  RESEARCHING: 'Подготовка генерации',
+  DRAFT: 'Черновик',
+  FACT_CHECK: 'Проверка фактов',
+  REVIEW: 'На согласовании',
+  APPROVED: 'Одобрено',
+  READY: 'Готово для ручной публикации',
+  FAILED: 'Требуется повторить',
+  REJECTED: 'Отклонено',
+  CANCELLED: 'Отменено',
+};

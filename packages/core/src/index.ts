@@ -1,6 +1,7 @@
 export { getAuth } from './auth';
 export { createOrganizationService, OrganizationInputError } from './organizations';
 export { createBrandService, BrandInputError } from './brands';
+export { createBrandContextService } from './brand-context';
 export { AccessDeniedError, requirePermission, resolveTenantContext } from './tenant-context';
 export type { Permission } from './tenant-context';
 export { createWorkflowEnqueuer, enqueueWorkflowRun } from './workflows';
@@ -50,6 +51,7 @@ export {
 export { createEditorialApprovalService } from './editorial-approval';
 export {
   ContentGenerationBlockedExternalError,
+  ContentGenerationInProgressError,
   createContentGenerationService,
   createProductionContentGenerationService,
 } from './content-generation';

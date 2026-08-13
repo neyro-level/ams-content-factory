@@ -8,6 +8,18 @@ import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { ContentProjectForm } from '../../../../../../../components/content-project-form';
 
+const contentStatusLabel: Record<string, string> = {
+  IDEA: 'Новая тема',
+  RESEARCHING: 'Подготовка генерации',
+  DRAFT: 'Черновик',
+  FACT_CHECK: 'Проверка фактов',
+  IN_REVIEW: 'На согласовании',
+  APPROVED: 'Одобрено',
+  READY: 'Готово к ручной публикации',
+  FAILED: 'Требуется повторить генерацию',
+  CANCELLED: 'Отменено',
+};
+
 export default async function ContentProjectsPage({
   params,
 }: {
@@ -55,7 +67,9 @@ export default async function ContentProjectsPage({
                     </p>
                   </div>
                   <div className="organization-item-actions">
-                    <span className="badge">{project.status}</span>
+                    <span className="badge">
+                      {contentStatusLabel[project.status] ?? 'Статус обновляется'}
+                    </span>
                     <Link
                       className="text-link"
                       href={`/app/organizations/${organizationId}/brands/${brandId}/content/${project.id}`}

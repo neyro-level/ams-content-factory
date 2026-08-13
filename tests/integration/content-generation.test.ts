@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { createContentGenerationService } from '../../packages/core/src/index.js';
 import {
   createContentRepository,
+  createAiExecutionRepository,
   createPrismaClient,
   createTenantRepository,
 } from '../../packages/db/src/index.js';
@@ -9,7 +10,7 @@ import {
   MockTextGenerationProvider,
   OpenAiTextGenerationProvider,
 } from '../../packages/providers/src/index.js';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
 const prisma = createPrismaClient();
 const tenants = createTenantRepository(prisma);
@@ -75,6 +76,117 @@ describe('content generation', () => {
     ).resolves.toEqual(
       expect.objectContaining({ status: 'FAILED', errorCode: 'BLOCKED_EXTERNAL' }),
     );
+  });
+
+  it.each([2, 10])(
+    'allows exactly one provider call across %i concurrent generation requests',
+    async (count) => {
+      const setup = await createProject(`concurrent-${count}`);
+      let release: (() => void) | undefined;
+      const provider = {
+        requests: 0,
+        async generate() {
+          this.requests += 1;
+          await new Promise<void>((resolve) => {
+            release = resolve;
+          });
+          return { text: 'One durable draft.', provider: 'test', model: 'test' };
+        },
+      };
+      const service = createContentGenerationService({ provider });
+      const first = service.generateDraft(setup.actor, {
+        contentProjectId: setup.project.id,
+        promptKey: 'social-post',
+      });
+      await vi.waitFor(() => expect(provider.requests).toBe(1));
+      const others = Array.from({ length: count - 1 }, () =>
+        service.generateDraft(setup.actor, {
+          contentProjectId: setup.project.id,
+          promptKey: 'social-post',
+        }),
+      );
+      const pending = await Promise.allSettled(others);
+      expect(pending.every((result) => result.status === 'rejected')).toBe(true);
+      release?.();
+      await first;
+      expect(provider.requests).toBe(1);
+      await expect(
+        prisma.contentVersion.count({ where: { contentProjectId: setup.project.id } }),
+      ).resolves.toBe(1);
+    },
+  );
+
+  it('marks the execution and project failed when provider success cannot be persisted', async () => {
+    const setup = await createProject('persistence-failure');
+    const executions = createAiExecutionRepository(prisma);
+    vi.spyOn(executions, 'completeGeneration').mockRejectedValueOnce(
+      new Error('database write failed'),
+    );
+    const service = createContentGenerationService({
+      provider: new MockTextGenerationProvider({ text: 'Provider success.', model: 'mock' }),
+      executionRepository: executions,
+    });
+
+    await expect(
+      service.generateDraft(setup.actor, {
+        contentProjectId: setup.project.id,
+        promptKey: 'social-post',
+      }),
+    ).rejects.toThrow('database write failed');
+    await expect(
+      prisma.aiExecution.findFirst({ where: { contentProjectId: setup.project.id } }),
+    ).resolves.toEqual(
+      expect.objectContaining({ status: 'FAILED', errorCode: 'GENERATION_PERSISTENCE_FAILED' }),
+    );
+    await expect(
+      prisma.contentProject.findUnique({ where: { id: setup.project.id } }),
+    ).resolves.toEqual(expect.objectContaining({ status: 'FAILED' }));
+  });
+
+  it('reuses the same failed execution deterministically on retry', async () => {
+    const setup = await createProject('retry');
+    const provider = new MockTextGenerationProvider({ text: 'Recovered draft.', model: 'mock' });
+    const executions = createAiExecutionRepository(prisma);
+    vi.spyOn(executions, 'completeGeneration').mockRejectedValueOnce(
+      new Error('temporary persistence failure'),
+    );
+    const service = createContentGenerationService({ provider, executionRepository: executions });
+    await expect(
+      service.generateDraft(setup.actor, {
+        contentProjectId: setup.project.id,
+        promptKey: 'social-post',
+      }),
+    ).rejects.toThrow('temporary persistence failure');
+    const firstExecution = await prisma.aiExecution.findFirstOrThrow({
+      where: { contentProjectId: setup.project.id },
+    });
+    const result = await service.generateDraft(setup.actor, {
+      contentProjectId: setup.project.id,
+      promptKey: 'social-post',
+    });
+    expect(result.executionId).toBe(firstExecution.id);
+    expect(provider.requests).toHaveLength(2);
+    await expect(
+      prisma.aiExecution.count({ where: { contentProjectId: setup.project.id } }),
+    ).resolves.toBe(1);
+  });
+
+  it('allocates user versions without collisions under parallel writes', async () => {
+    const setup = await createProject('version-allocation');
+    const versions = await Promise.all(
+      Array.from({ length: 10 }, (_, index) =>
+        content.appendVersion({
+          organizationId: setup.actor.organizationId,
+          brandId: setup.actor.brandId,
+          contentProjectId: setup.project.id,
+          createdByType: 'USER',
+          body: `Version ${index + 1}`,
+        }),
+      ),
+    );
+    expect(versions.map((version) => version?.version).sort((a, b) => a! - b!)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    ]);
   });
 
   it('rewrites a DRAFT as a new immutable AI version', async () => {

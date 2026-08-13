@@ -46,12 +46,13 @@ export function createContentContextAssembler(
       if (!project)
         throw new AccessDeniedError('Content project is outside the active organization.');
 
-      const [brand, evidence] = await Promise.all([
+      const [brand, evidence, knowledgeDocuments] = await Promise.all([
         knowledge.findBrandGenerationContext(scope),
         research.findRecentEvidence({
           ...scope,
           ...(input.evidenceTake === undefined ? {} : { take: input.evidenceTake }),
         }),
+        knowledge.listReadyChunksForGeneration(scope),
       ]);
       if (!brand) throw new AccessDeniedError('Brand is outside the active organization.');
 
@@ -70,7 +71,7 @@ export function createContentContextAssembler(
           })
         : [];
 
-      return { project, brand, evidence, knowledgeHits };
+      return { project, brand, evidence, knowledgeDocuments, knowledgeHits };
     },
   };
 }

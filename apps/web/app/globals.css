@@ -207,7 +207,30 @@ h2 {
   gap: 12px;
 }
 .app-navigation {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.app-navigation__group {
+  display: flex;
+  align-items: center;
   gap: 4px;
+}
+.app-navigation__group-title {
+  margin: 0 2px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+@media (max-width: 760px) {
+  .app-navigation__group {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+  }
+  .app-navigation__group-title {
+    flex-basis: 100%;
+  }
 }
 .app-navigation__link {
   padding: 8px 10px;

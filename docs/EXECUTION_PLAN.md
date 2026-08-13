@@ -18,6 +18,11 @@
 > five critical browser flows and three worker contracts pass while unavailable provider paths explicitly remain
 > `BLOCKED_EXTERNAL`. The Release Gate remains `BLOCKED_EXTERNAL`; no production deployment is authorized.
 
+> Current product slice: [`V0_1_USER_TEST_PLAN.md`](V0_1_USER_TEST_PLAN.md) is `IMPLEMENTED` locally with
+> migration, full code gate and critical deterministic E2E. It deliberately narrows user-facing V0.1 to
+> Brand Context → Knowledge → Content → READY → Copy; a real AI-provider owner smoke remains the sole
+> user-test blocker and it does not change the production boundary.
+
 ## Protocol
 
 Каждая task содержит цель, области изменения, зависимости, ожидаемый результат, проверки, DoD и

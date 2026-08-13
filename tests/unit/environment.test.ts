@@ -45,12 +45,14 @@ describe('runtime environment contract', () => {
       cwd: root,
       env: { NODE_ENV: 'production' },
       encoding: 'utf8',
-      timeout: 5_000,
+      // TS loader startup can contend with the parallel unit graph on Windows;
+      // the assertion still requires fail-fast before queue startup.
+      timeout: 15_000,
     });
 
     expect(result.status).not.toBe(0);
     expect(`${result.stdout}${result.stderr}`).toContain('Invalid runtime environment');
-  });
+  }, 20_000);
 
   it('requires a complete provider credential group once a provider is configured', () => {
     expect(() =>

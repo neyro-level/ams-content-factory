@@ -611,6 +611,7 @@ model ContentProject {
   audience         String?
   contentType      ContentType
   status           ContentProjectStatus @default(IDEA)
+  nextVersion      Int                  @default(1)
   priority         Int                  @default(0)
   recipeId         String?
   targetPublishAt  DateTime?
@@ -842,6 +843,7 @@ model AiExecution {
   provider         String
   model            String
   operation        String
+  idempotencyKey   String               @default(uuid())
   promptKey        String
   promptVersion    Int
   status           AiExecutionStatus @default(PENDING)
@@ -861,6 +863,7 @@ model AiExecution {
 
   @@index([organizationId, brandId, status, createdAt])
   @@index([contentProjectId, status, createdAt])
+  @@unique([contentProjectId, idempotencyKey])
   @@map("ai_execution")
 }
 

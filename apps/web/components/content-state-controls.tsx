@@ -22,12 +22,13 @@ export function ContentStateControls({
 }) {
   const action = contentWorkflowAction.bind(null, { organizationId, brandId, contentProjectId });
   const [state, formAction, pending] = useActionState(action, initialState);
-  if (!canWrite || !['IDEA', 'RESEARCHING', 'DRAFT'].includes(status)) return null;
+  if (!canWrite || !['IDEA', 'RESEARCHING', 'FAILED', 'DRAFT', 'APPROVED'].includes(status))
+    return null;
   const config =
-    status === 'IDEA'
-      ? ['start-research', 'Начать исследование']
-      : status === 'RESEARCHING'
-        ? ['generate-draft', 'Сгенерировать черновик']
+    status === 'IDEA' || status === 'RESEARCHING' || status === 'FAILED'
+      ? ['generate-draft', 'Сгенерировать черновик']
+      : status === 'APPROVED'
+        ? ['mark-ready', 'Подготовить финальный текст']
         : ['fact-check', 'Запустить fact-check'];
   return (
     <form action={formAction} className="editorial-actions">

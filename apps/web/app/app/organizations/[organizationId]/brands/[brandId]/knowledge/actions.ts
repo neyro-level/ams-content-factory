@@ -120,7 +120,10 @@ export async function searchKnowledgeAction(
     return { hits };
   } catch (error) {
     if (error instanceof KnowledgeRetrievalBlockedExternalError)
-      return { error: error.message, blockedExternal: true };
+      return {
+        error: 'Поиск по базе знаний будет доступен после подключения AI-индекса.',
+        blockedExternal: true,
+      };
     return { error: 'Не удалось выполнить поиск. Проверьте доступ к бренду и повторите попытку.' };
   }
 }
@@ -149,7 +152,8 @@ export async function indexKnowledgeDocumentAction(
     );
     return { success: `В поисковый индекс добавлено фрагментов: ${chunks}.` };
   } catch (error) {
-    if (error instanceof KnowledgeRetrievalBlockedExternalError) return { error: error.message };
+    if (error instanceof KnowledgeRetrievalBlockedExternalError)
+      return { error: 'Индексация будет доступна после подключения AI-индекса.' };
     return { error: genericError };
   }
 }

@@ -30,6 +30,22 @@ export function ContentProjectForm({
           <option value="ARTICLE">Статья</option>
         </select>
       </label>
+      <label>
+        Цель
+        <input name="goal" maxLength={500} placeholder="Например: объяснить услугу" />
+      </label>
+      <label>
+        Аудитория
+        <input name="audience" maxLength={500} placeholder="Для кого создаётся материал" />
+      </label>
+      <label>
+        Brief
+        <textarea
+          name="brief"
+          maxLength={10_000}
+          placeholder="Тема, факты, пожелания к материалу"
+        />
+      </label>
       {state.error ? (
         <p className="form-error" role="alert">
           {state.error}
