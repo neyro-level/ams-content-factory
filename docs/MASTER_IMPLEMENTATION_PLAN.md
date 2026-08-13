@@ -15,7 +15,7 @@
 
 **Product-language уточнение V0.1:** пользовательские экраны показывают русские продуктовые подписи, а не сырые
 Prisma enum-значения; enum остаются внутренним контрактом state machine. Это относится и к результатам проверки
-claims в редакторском flow.
+claims в редакторском flow. Content list/detail use a shared label catalog, preventing stale display-only states.
 
 ---
 

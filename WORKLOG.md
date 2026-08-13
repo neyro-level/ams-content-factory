@@ -1,5 +1,11 @@
 # Worklog
 
+## 2026-08-13 — V0.1 unified content product labels
+
+- Added one web-only catalog for content-type and lifecycle labels, used by both Content list and project detail.
+  This removes raw `ContentType` output and corrects the presentation-only obsolete `IN_REVIEW` key to the actual
+  `REVIEW` state. Critical E2E now covers the list and detail labels.
+
 ## 2026-08-13 — V0.1 fact-check product language
 
 - Replaced raw claim verification enums in the editorial fact-check panel with Russian review labels. The claim
