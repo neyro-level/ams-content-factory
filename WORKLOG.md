@@ -1,5 +1,15 @@
 # Worklog
 
+## 2026-08-13 — W19.1 final portable Compose audit
+
+- Confirmed that the portable Compose package has exactly three long-lived services: private `web`, private `worker`
+  and the only public `nginx` proxy. PostgreSQL/pgvector and S3 remain external Timeweb/provider boundaries; migration,
+  seed, backup and restore are explicit one-shot maintenance-profile clients.
+- Replaced the worker's process-only health check with its real loopback readiness endpoint, which is available only
+  after configuration, PostgreSQL/pg-boss reachability and handler bootstrap. The Compose boundary is recorded in
+  `docs/PRODUCTION_COMPOSE.md`; it does not alter the AMS Server host-Nginx/systemd deployment canon.
+- Next: W19.2 clean-database migration drill. Production deployment remains prohibited.
+
 ## 2026-08-13 — W18.6 security headers
 
 - Added an application-level response policy so direct Next responses remain protected even if a reverse proxy is

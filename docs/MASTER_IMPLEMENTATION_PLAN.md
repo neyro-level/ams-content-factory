@@ -504,7 +504,8 @@ parallel request
 | PR 18.4  | `FOUNDATION`       | Root and immutable-release Docker images use multi-stage builds, a dedicated non-root runtime user and `pnpm prune --prod`; Git metadata, env files and Next build cache are excluded from runtime payloads.  |
 | PR 18.5  | `FOUNDATION`       | Dependency graph, production and full lockfile audits are clean; unused `auth` and stale internal exports were removed, and workspace-wide esbuild override resolves only the patched 0.28.1 version.         |
 | PR 18.6  | `FOUNDATION`       | Web and both Nginx profiles apply `nosniff`, DENY frame policy, strict referrer/permissions policy and a same-origin CSP; application-level contracts cover the response policy without relying on the proxy. |
-| Next     | `W19.1`            | Audit the final portable production Compose topology and retain only the necessary application, proxy and external-service boundaries.                                                                        |
+| PR 19.1  | `FOUNDATION`       | Portable Compose retains only web, worker and proxy as long-lived services; PostgreSQL/pgvector and S3 are external, maintenance clients require an explicit profile, and worker health uses real readiness.  |
+| Next     | `W19.2`            | Perform a reproducible clean-database migration, seed and application readiness drill without touching Timeweb production data.                                                                               |
 
 ### W6.4 — hybrid retrieval
 

@@ -70,10 +70,17 @@ services:
     env_file: .env
     command: ['pnpm', '--filter', '@ams-content-factory/worker', 'start']
     healthcheck:
-      test: ['CMD-SHELL', 'kill -0 1']
-      interval: 30s
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3205/health/ready').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 15s
       timeout: 5s
-      retries: 3
+      retries: 10
+      start_period: 20s
     networks: [internal]
 
   nginx:

@@ -3,12 +3,12 @@
 ## Current verified checkpoint
 
 - **Current plan:** `docs/MASTER_IMPLEMENTATION_PLAN.md`.
-- **Current task:** W18.6 security headers are `FOUNDATION`: direct web responses and both Nginx profiles enforce
-  a tested same-origin CSP plus `nosniff`, anti-frame, referrer and permissions policies. Next: W19.1 final
-  production Compose audit.
-- **Last verification:** 2026-08-13: application header contracts and portable Nginx syntax passed. The preceding
-  full application gate passed lint, formatting, workspace typecheck, 72 unit tests, 77 PostgreSQL integration
-  contracts, production web/worker builds and production/full dependency audits with zero vulnerabilities.
+- **Current task:** W19.1 final portable Compose audit is `FOUNDATION`: only web, worker and Nginx are long-lived;
+  managed PostgreSQL/pgvector and S3 remain external, and worker health now uses its real readiness endpoint. Next:
+  W19.2 clean-database migration drill.
+- **Last verification:** 2026-08-13: portable Compose renders with the secured environment, its normal and
+  maintenance service boundaries are explicit, and the preceding application gate passed lint, formatting, workspace
+  typecheck, 75 unit tests, 77 PostgreSQL integration contracts and production web/worker builds.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a
