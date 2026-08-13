@@ -133,6 +133,20 @@ export const featureCatalog: Feature[] = [
   },
 ];
 
+export function resolveFeatureCatalog(input: { textGenerationAvailable: boolean }): Feature[] {
+  return featureCatalog.map((feature) =>
+    feature.key === 'content' && !input.textGenerationAvailable
+      ? {
+          ...feature,
+          status: 'LIMITED',
+          description:
+            'Создание, версии и редакционное согласование текста доступны; AI-генерация требует подключения модели.',
+          planned: ['AI-генерация и rewrite после безопасного подключения модели.'],
+        }
+      : feature,
+  );
+}
+
 export const featureStatusLabel: Record<FeatureStatus, string> = {
   READY: 'Доступно',
   LIMITED: 'Ограниченный режим',

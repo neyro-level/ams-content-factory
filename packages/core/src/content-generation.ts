@@ -29,6 +29,18 @@ export class ContentGenerationInProgressError extends Error {
   }
 }
 
+/**
+ * Product capability only: it reveals whether generation can be offered, never a credential or provider detail.
+ * The deterministic provider remains restricted to the isolated local E2E runtime.
+ */
+export function isTextGenerationAvailable() {
+  return (
+    Boolean(process.env.OPENAI_API_KEY?.trim()) ||
+    (process.env.E2E_TEST_TEXT_GENERATION === '1' &&
+      Boolean(process.env.APP_URL?.startsWith('http://127.0.0.1:')))
+  );
+}
+
 export function createContentGenerationService(options: {
   provider: TextGenerationProvider;
   contextAssembler?: ReturnType<typeof createContentContextAssembler>;

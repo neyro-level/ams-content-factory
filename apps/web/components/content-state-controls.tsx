@@ -12,12 +12,14 @@ export function ContentStateControls({
   brandId,
   contentProjectId,
   status,
+  generationAvailable,
   canWrite,
 }: {
   organizationId: string;
   brandId: string;
   contentProjectId: string;
   status: string;
+  generationAvailable: boolean;
   canWrite: boolean;
 }) {
   const action = contentWorkflowAction.bind(null, { organizationId, brandId, contentProjectId });
@@ -30,6 +32,7 @@ export function ContentStateControls({
       : status === 'APPROVED'
         ? ['mark-ready', 'Подготовить финальный текст']
         : ['fact-check', 'Запустить fact-check'];
+  const requiresGeneration = config[0] === 'generate-draft';
   return (
     <form action={formAction} className="editorial-actions">
       <button
@@ -37,10 +40,13 @@ export function ContentStateControls({
         type="submit"
         name="contentAction"
         value={config[0]}
-        disabled={pending}
+        disabled={pending || (requiresGeneration && !generationAvailable)}
       >
         {pending ? 'Выполняем…' : config[1]}
       </button>
+      {requiresGeneration && !generationAvailable ? (
+        <p className="muted">AI-генерация будет доступна после безопасного подключения модели.</p>
+      ) : null}
       {state.error ? (
         <p className="form-error" role="alert">
           {state.error}

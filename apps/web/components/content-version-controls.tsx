@@ -15,6 +15,7 @@ export function ContentVersionControls({
   sourceVersionId,
   currentBody,
   canCopy,
+  generationAvailable,
   canWrite,
 }: {
   organizationId: string;
@@ -23,6 +24,7 @@ export function ContentVersionControls({
   sourceVersionId?: string;
   currentBody: string;
   canCopy: boolean;
+  generationAvailable: boolean;
   canWrite: boolean;
 }) {
   const action = contentVersionAction.bind(null, { organizationId, brandId, contentProjectId });
@@ -64,10 +66,13 @@ export function ContentVersionControls({
             type="submit"
             name="versionAction"
             value="rewrite"
-            disabled={pending}
+            disabled={pending || !generationAvailable}
           >
             Создать следующую версию
           </button>
+          {!generationAvailable ? (
+            <p className="muted">AI-rewrite будет доступен после безопасного подключения модели.</p>
+          ) : null}
         </form>
       ) : null}
       {canCopy ? (

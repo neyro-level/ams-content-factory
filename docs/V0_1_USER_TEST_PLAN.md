@@ -48,8 +48,9 @@ The V0.1 code gate requires Prisma validation and migration verification, lint, 
 unit, integration, build and deterministic Playwright happy-path plus tenant-isolation smoke.
 
 Real user-facing AI generation additionally requires a securely configured `OPENAI_API_KEY`. Until it
-exists, Content is rendered as a product-level limited capability without exposing technical provider
-details. This does not authorize production: Timeweb `vector`, TLS/vhost, runtime secrets and explicit
+exists, Content is rendered as a product-level limited capability: editing, review and manual finalisation remain
+available, while generation and rewrite controls are disabled with a product explanation. The capability is resolved
+only on the server and does not expose credential details. This does not authorize production: Timeweb `vector`, TLS/vhost, runtime secrets and explicit
 owner deployment confirmation remain independent release blockers.
 
 ## Implementation record — 2026-08-13
@@ -80,6 +81,9 @@ owner deployment confirmation remain independent release blockers.
   drafts remain editable but cannot be presented as final output.
 - Editorial UX follow-up: request-review, approval, return, rejection and comment actions return safe Russian
   confirmation or error feedback at the entry point; raw service errors are not exposed to the owner.
+- Runtime-capability follow-up: the dashboard, navigation and content controls present Content as `LIMITED` when
+  no real text-generation credential exists. The test-only deterministic provider is recognised only inside the
+  isolated local Playwright runtime.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.
