@@ -7,7 +7,7 @@
   Knowledge → Content → READY → Copy workflow, generation integrity and critical E2E CI gate are present.
   Local verification passed Prisma validation/migration deploy, clean-database migration drill, lint, format,
   typecheck, 76 unit tests, 86 integration tests, two V0.1 browser smokes and build. SourceCraft `verify` is green
-  both on the implementation PR and on canonical `main` (`b9a094b`), including PostgreSQL + pgvector and critical
+  both on implementation PRs and on canonical `main` (`355dabf`), including PostgreSQL + pgvector and critical
   E2E. The final user-test verdict is `NOT READY` only because a securely configured `OPENAI_API_KEY` is required
   for one real owner smoke; deterministic E2E is not a substitute. User-facing module labels remain only `READY`,
   `LIMITED` and `PLANNED`.
