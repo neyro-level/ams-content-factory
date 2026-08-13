@@ -8,23 +8,22 @@ containers and volume. It does not read `.env`, connect to Timeweb, send a publi
 
 ## Covered flow
 
-| Required release step  | Evidence                                                           | Result scope                      |
-| ---------------------- | ------------------------------------------------------------------ | --------------------------------- |
-| Login                  | authenticated browser flow                                         | `FOUNDATION`                      |
-| Organization and brand | owner creates both through `/app`                                  | `FOUNDATION`                      |
-| Knowledge              | text intake and scoped knowledge page                              | `FOUNDATION`                      |
-| Research               | workspace request with no Firecrawl credential                     | expected `BLOCKED_EXTERNAL`       |
-| Generate content       | request with no OpenAI credential                                  | expected `BLOCKED_EXTERNAL`       |
-| Approve                | manual fact-check/review approval flow                             | `FOUNDATION`                      |
-| Schedule               | protected calendar scheduling flow                                 | `FOUNDATION`                      |
-| Worker                 | real pg-boss/readiness bootstrap                                   | `FOUNDATION`                      |
-| Publication sandbox    | durable dispatch contract with an explicitly named mock provider   | sandbox only; not live publishing |
-| Analytics sandbox      | durable collection contract with an explicitly named mock provider | sandbox only; not live analytics  |
+| Required release step       | Evidence                                                             | Result scope                      |
+| --------------------------- | -------------------------------------------------------------------- | --------------------------------- |
+| Login                       | authenticated browser flow                                           | `FOUNDATION`                      |
+| Organization and brand      | owner creates both through `/app`                                    | `FOUNDATION`                      |
+| Brand Context and Knowledge | V0.1 editorial browser flow                                          | `READY` user-test path            |
+| Content                     | V0.1 deterministic generation, edit, review, manual `READY` and copy | `READY` test path                 |
+| Content without live AI     | separate browser run with the deterministic provider disabled        | `LIMITED` product path            |
+| Tenant isolation            | tenant B receives 404 for tenant A Knowledge and Content routes      | security contract                 |
+| Worker                      | real pg-boss/readiness bootstrap                                     | `FOUNDATION`                      |
+| Publication sandbox         | durable dispatch contract with an explicitly named mock provider     | sandbox only; not live publishing |
+| Analytics sandbox           | durable collection contract with an explicitly named mock provider   | sandbox only; not live analytics  |
 
-The command deliberately removes all provider credentials from its child environment. A missing Firecrawl/OpenAI
-credential must lead to the visible `BLOCKED_EXTERNAL` path; it must not be replaced with a mock success. The two
-sandbox entries prove transaction, scope and worker behavior only. They do not satisfy live social-provider, OAuth or
-analytics readiness.
+The command deliberately removes all provider credentials from its child environment. The V0.1 limited-mode browser
+contract requires a truthful disabled AI-generation state, never a mock success. The editorial browser contract uses
+the explicitly test-only deterministic text provider on a loopback server. The two sandbox entries prove transaction,
+scope and worker behavior only. They do not satisfy live social-provider, OAuth or analytics readiness.
 
 ## Run
 

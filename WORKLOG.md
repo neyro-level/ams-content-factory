@@ -136,6 +136,18 @@
 - The critical contracts now explicitly allow a cold Next.js start and first route compilation (90-second test and
   120-second web-server bounds). Assertion timeouts remain 15 seconds, so product regressions are not masked.
 
+## 2026-08-14 — W19.6 V0.1 release-smoke alignment
+
+- A clean rerun of `pnpm release:smoke` correctly identified that its historical Calendar and Analytics browser
+  assertions contradicted the approved V0.1 module catalog, where both modules are intentionally `PLANNED` and show
+  a safe product-state page. This was a stale smoke contract, not an authorization to reactivate unfinished modules.
+- The suite now executes the approved V0.1 editorial flow, cross-tenant Content/Knowledge denial and a distinct
+  no-credential limited-mode browser flow; it retains the real pg-boss/readiness, publication-dispatch and analytics
+  collection worker contracts. The deterministic text provider is used only in the designated loopback test run.
+- The isolated release-smoke environment pins both browser configurations to its own loopback port, preventing an
+  accidental reuse of a developer server. The renewed full smoke passed: 25 migrations, seed data, four V0.1 browser
+  contracts and three worker contracts completed successfully, then the disposable containers and volume were removed.
+
 ## 2026-08-13 — W19.6 non-destructive release smoke suite
 
 - Added `pnpm release:smoke`: it creates a disposable local pgvector database, applies all committed migrations and

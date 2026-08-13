@@ -16,7 +16,10 @@
 > backup drill and W19.4 restore/application-smoke drill are `FOUNDATION`. W19.5 TLS/domain is
 > `BLOCKED_EXTERNAL` after read-only verification. W19.6 release smoke is `FOUNDATION`: disposable pgvector,
 > five critical browser flows and three worker contracts pass while unavailable provider paths explicitly remain
-> `BLOCKED_EXTERNAL`. The Release Gate remains `BLOCKED_EXTERNAL`; no production deployment is authorized.
+> `BLOCKED_EXTERNAL`. The historical five-browser W19.6 selection was retired after the approved V0.1 product
+> boundary marked Calendar and Analytics `PLANNED`; the current four-browser V0.1 selection (organization/brand,
+> editorial, tenant-isolation and no-credential limited mode) passed with three worker contracts on 2026-08-14. The
+> Release Gate remains `BLOCKED_EXTERNAL`; no production deployment is authorized.
 
 > Current product slice: [`V0_1_USER_TEST_PLAN.md`](V0_1_USER_TEST_PLAN.md) is `IMPLEMENTED` on canonical
 > SourceCraft `main` (`26ff991`), with a full code gate and critical deterministic E2E. It deliberately narrows

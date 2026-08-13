@@ -55,6 +55,7 @@ function runtimeEnvironment() {
     NODE_ENV: 'development',
     APP_URL: `http://127.0.0.1:${e2ePort}`,
     E2E_PORT: e2ePort,
+    E2E_LIMITED_PORT: e2ePort,
     BETTER_AUTH_SECRET: 'release-smoke-only-auth-secret-with-at-least-32-characters',
     TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 23).toString('base64'),
   };
@@ -96,10 +97,20 @@ async function main() {
         '--config',
         'tests/playwright.config.ts',
         'tests/e2e/account-organization-brand-flow.spec.ts',
-        'tests/e2e/content-state-ui.spec.ts',
-        'tests/e2e/editorial-workflow.spec.ts',
-        'tests/e2e/publication-calendar.spec.ts',
-        'tests/e2e/analytics-dashboard.spec.ts',
+        'tests/e2e/v01-editorial-flow.spec.ts',
+        'tests/e2e/v01-tenant-isolation.spec.ts',
+      ],
+      environment,
+    );
+    await run(
+      pnpmCommand,
+      [
+        'exec',
+        'playwright',
+        'test',
+        '--config',
+        'tests/playwright.limited.config.ts',
+        'tests/e2e/v01-limited-capability.spec.ts',
       ],
       environment,
     );
@@ -118,7 +129,7 @@ async function main() {
       environment,
     );
     process.stdout.write(
-      'Release smoke succeeded: local authenticated flow, manual approval, schedule, worker and sandbox contracts passed. External providers were intentionally absent and their BLOCKED_EXTERNAL paths were required.\n',
+      'Release smoke succeeded: local V0.1 editorial, tenant-isolation, limited-capability, worker and sandbox contracts passed. External providers were intentionally absent and their limited-mode paths were required.\n',
     );
   } finally {
     await run('docker', [...compose, 'down', '--volumes', '--remove-orphans'], composeEnvironment);
