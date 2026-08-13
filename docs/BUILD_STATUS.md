@@ -28,13 +28,17 @@
   product-level guidance. The direct Content route shows the same state, not only the dashboard/navigation. The
   credential value never reaches the browser. A dedicated browser contract starts without the deterministic
   provider and asserts this limited state end-to-end.
-- **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, five critical browser flows
-  and three worker contracts passed. The Release Gate remains `BLOCKED_EXTERNAL`: DNS/ports resolve, but the public
+- **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, four V0.1 browser flows
+  (organization/brand, editorial, cross-tenant isolation and no-credential limited mode) plus three worker contracts
+  passed on 2026-08-14. Its historical Calendar/Analytics browser selection was retired because those modules are
+  intentionally `PLANNED` in the approved V0.1 catalog. The Release Gate remains `BLOCKED_EXTERNAL`: DNS/ports resolve, but the public
   hostname still serves generic Nginx and trusted project TLS/vhost, Timeweb `vector`, live providers and owner
   authorization are unavailable. No certificate, vhost or deployment was changed.
-- **Last verification:** 2026-08-13: `pnpm release:smoke` applied 24 migrations and seed data to a disposable
-  pgvector database, passed five browser and three worker contracts, and removed its containers/volume. Its external
-  provider environment was intentionally empty and the research/text-generation paths required `BLOCKED_EXTERNAL`.
+- **Last verification:** 2026-08-14: `pnpm release:smoke` applied all 25 committed migrations and seed data to a
+  disposable pgvector database, passed four V0.1 browser and three worker contracts, and removed its
+  containers/volume. Its provider environment was intentionally empty: the deterministic provider was enabled only
+  for the explicit loopback editorial test, while the separate limited-mode browser test proved generation remains
+  disabled without an AI credential.
 - **FOUNDATION:** multi-tenant model, repositories, services, provider contracts, worker/queue base,
   health endpoints, CI, immutable artifact/runbook templates, fail-closed QC persistence, suspended-
   organization denial, server-bound n8n webhook credentials, scoped tenant-owned write APIs and a
