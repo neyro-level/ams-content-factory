@@ -1,5 +1,11 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { requirePermission, type McpAuthContext, type Permission } from '@ams-content-factory/core';
+import {
+  createRateLimitService,
+  rateLimitPolicies,
+  requirePermission,
+  type McpAuthContext,
+  type Permission,
+} from '@ams-content-factory/core';
 import { z } from 'zod';
 
 export type McpToolResult = { text: string };
@@ -43,6 +49,7 @@ export type McpApplicationHandlers = {
 export type McpBrandAuthorizer = {
   assertBrand(context: McpAuthContext, brandId: string): Promise<void>;
 };
+export type McpToolRateLimiter = Pick<ReturnType<typeof createRateLimitService>, 'consume'>;
 
 const response = (result: McpToolResult) => ({
   content: [{ type: 'text' as const, text: result.text }],
@@ -69,14 +76,19 @@ export function createMcpServer(
   context: McpAuthContext,
   handlers: McpApplicationHandlers,
   brandAuthorizer: McpBrandAuthorizer,
+  options: { rateLimiter?: McpToolRateLimiter } = {},
 ) {
   const server = new McpServer({ name: 'ams-content-factory', version: '0.1.0' });
+  const rateLimiter = options.rateLimiter ?? createRateLimitService();
+  const limitTool = () =>
+    rateLimiter.consume(rateLimitPolicies.mcp, `${context.organizationId}:${context.apiKeyId}`);
   const withBrand = async <T extends { brandId: string }>(
     input: T,
     requiredPermission: Permission,
     handler: (input: T) => Promise<McpToolResult>,
-  ) =>
-    response(
+  ) => {
+    await limitTool();
+    return response(
       await executeMcpBrandTool({
         context,
         requiredPermission,
@@ -85,10 +97,12 @@ export function createMcpServer(
         handler: (_context, toolInput) => handler(toolInput),
       }),
     );
+  };
   server.registerTool(
     'list_brands',
     { description: 'List brands visible to the authenticated organization.' },
     async () => {
+      await limitTool();
       requirePermission(context, 'brand:read');
       return response(await handlers.listBrands(context));
     },

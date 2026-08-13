@@ -3,8 +3,10 @@
 import {
   createKnowledgeWorkspaceService,
   getAuth,
+  limitActor,
   KnowledgeIngestionError,
   KnowledgeRetrievalBlockedExternalError,
+  rateLimitPolicies,
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
@@ -25,11 +27,15 @@ export async function createKnowledgeTextAction(
   _previous: KnowledgeIntakeState,
   formData: FormData,
 ): Promise<KnowledgeIntakeState> {
-  return ingest(route, async (service, actor) =>
-    service.ingestText(actor, {
-      title: String(formData.get('title') ?? ''),
-      text: String(formData.get('text') ?? ''),
-    }),
+  return ingest(
+    route,
+    async (service, actor) =>
+      service.ingestText(actor, {
+        title: String(formData.get('title') ?? ''),
+        text: String(formData.get('text') ?? ''),
+      }),
+    undefined,
+    false,
   );
 }
 
@@ -38,11 +44,15 @@ export async function createKnowledgeUrlAction(
   _previous: KnowledgeIntakeState,
   formData: FormData,
 ): Promise<KnowledgeIntakeState> {
-  return ingest(route, async (service, actor) =>
-    service.ingestUrl(actor, {
-      title: String(formData.get('title') ?? ''),
-      sourceUrl: String(formData.get('sourceUrl') ?? ''),
-    }),
+  return ingest(
+    route,
+    async (service, actor) =>
+      service.ingestUrl(actor, {
+        title: String(formData.get('title') ?? ''),
+        sourceUrl: String(formData.get('sourceUrl') ?? ''),
+      }),
+    undefined,
+    true,
   );
 }
 
@@ -54,13 +64,17 @@ export async function createKnowledgeFileAction(
   const file = formData.get('file');
   if (!(file instanceof File) || !file.name) return { error: 'Выберите текстовый файл.' };
 
-  return ingest(route, async (service, actor) =>
-    service.ingestFile(actor, {
-      title: String(formData.get('title') ?? file.name),
-      fileName: file.name,
-      ...(file.type ? { contentType: file.type } : {}),
-      bytes: new Uint8Array(await file.arrayBuffer()),
-    }),
+  return ingest(
+    route,
+    async (service, actor) =>
+      service.ingestFile(actor, {
+        title: String(formData.get('title') ?? file.name),
+        fileName: file.name,
+        ...(file.type ? { contentType: file.type } : {}),
+        bytes: new Uint8Array(await file.arrayBuffer()),
+      }),
+    undefined,
+    false,
   );
 }
 
@@ -74,6 +88,7 @@ export async function retryKnowledgeDocumentAction(
     route,
     async (service, actor) => service.retry(actor, documentId),
     (document) => `Документ «${document.title}» повторно обработан.`,
+    true,
   );
 }
 
@@ -90,6 +105,10 @@ export async function searchKnowledgeAction(
     return { error: 'Введите поисковый запрос длиной до 500 символов.' };
 
   try {
+    await limitActor(rateLimitPolicies.externalProvider, {
+      userId: session.user.id,
+      organizationId: route.organizationId,
+    });
     const hits = await createKnowledgeWorkspaceService().search(
       {
         userId: session.user.id,
@@ -116,6 +135,10 @@ export async function indexKnowledgeDocumentAction(
   if (!session?.user) return { error: 'Сессия истекла. Войдите снова.' };
 
   try {
+    await limitActor(rateLimitPolicies.externalProvider, {
+      userId: session.user.id,
+      organizationId: route.organizationId,
+    });
     const chunks = await createKnowledgeWorkspaceService().indexDocument(
       {
         userId: session.user.id,
@@ -139,11 +162,18 @@ async function ingest(
   ) => Promise<{ title: string }>,
   successMessage: (document: { title: string }) => string = (document) =>
     `Документ «${document.title}» добавлен в базу знаний.`,
+  limitExternalProvider = false,
 ): Promise<KnowledgeIntakeState> {
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return { error: 'Сессия истекла. Войдите снова.' };
 
   try {
+    if (limitExternalProvider) {
+      await limitActor(rateLimitPolicies.externalProvider, {
+        userId: session.user.id,
+        organizationId: route.organizationId,
+      });
+    }
     const document = await operation(createKnowledgeWorkspaceService(), {
       userId: session.user.id,
       organizationId: route.organizationId,

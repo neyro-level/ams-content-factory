@@ -16,10 +16,12 @@ describe('MCP stdio runtime', () => {
     const connect = vi.fn().mockResolvedValue(undefined);
     const transport = {};
     const createServer = vi.fn().mockReturnValue({ connect });
+    const consume = vi.fn().mockResolvedValue(undefined);
 
     const result = await startMcpRuntime({
       apiKey: 'amscf_1234567890123456789012345678901234567890123',
       resolver: { resolve },
+      rateLimiter: { consume },
       transport,
       createServer,
     });
@@ -28,6 +30,7 @@ describe('MCP stdio runtime', () => {
       authorization: 'Bearer amscf_1234567890123456789012345678901234567890123',
       requiredScope: 'READ',
     });
+    expect(consume).toHaveBeenCalledTimes(1);
     expect(createServer).toHaveBeenCalledWith(context);
     expect(connect).toHaveBeenCalledWith(transport);
     expect(result.context).toBe(context);
@@ -45,11 +48,13 @@ describe('MCP stdio runtime', () => {
   it('does not construct a server when authentication fails', async () => {
     const createServer = vi.fn();
     const resolve = vi.fn().mockRejectedValue(new Error('Authentication failed'));
+    const consume = vi.fn().mockResolvedValue(undefined);
 
     await expect(
       startMcpRuntime({
         apiKey: 'amscf_1234567890123456789012345678901234567890123',
         resolver: { resolve },
+        rateLimiter: { consume },
         createServer,
       }),
     ).rejects.toThrow('Authentication failed');

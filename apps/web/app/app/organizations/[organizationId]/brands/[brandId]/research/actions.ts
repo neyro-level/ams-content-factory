@@ -3,6 +3,8 @@
 import {
   createResearchWorkspaceService,
   getAuth,
+  limitActor,
+  rateLimitPolicies,
   ResearchWorkspaceBlockedExternalError,
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
@@ -24,11 +26,14 @@ export async function addResearchTextAction(
   _previous: ResearchActionState,
   formData: FormData,
 ): Promise<ResearchActionState> {
-  return ingest(route, (service, actor) =>
-    service.ingestText(actor, {
-      title: String(formData.get('title') ?? ''),
-      content: String(formData.get('content') ?? ''),
-    }),
+  return ingest(
+    route,
+    (service, actor) =>
+      service.ingestText(actor, {
+        title: String(formData.get('title') ?? ''),
+        content: String(formData.get('content') ?? ''),
+      }),
+    false,
   );
 }
 
@@ -37,11 +42,14 @@ export async function addResearchUrlAction(
   _previous: ResearchActionState,
   formData: FormData,
 ): Promise<ResearchActionState> {
-  return ingest(route, (service, actor) =>
-    service.ingestUrl(actor, {
-      title: String(formData.get('title') ?? ''),
-      sourceUrl: String(formData.get('sourceUrl') ?? ''),
-    }),
+  return ingest(
+    route,
+    (service, actor) =>
+      service.ingestUrl(actor, {
+        title: String(formData.get('title') ?? ''),
+        sourceUrl: String(formData.get('sourceUrl') ?? ''),
+      }),
+    true,
   );
 }
 
@@ -56,6 +64,10 @@ export async function searchResearchAction(
   if (!query || query.length > 500) return { error: 'Введите запрос длиной до 500 символов.' };
 
   try {
+    await limitActor(rateLimitPolicies.externalProvider, {
+      userId: session.user.id,
+      organizationId: route.organizationId,
+    });
     const results = await createResearchWorkspaceService().search(
       { userId: session.user.id, organizationId: route.organizationId, brandId: route.brandId },
       query,
@@ -74,10 +86,17 @@ async function ingest(
     service: ReturnType<typeof createResearchWorkspaceService>,
     actor: { userId: string; organizationId: string; brandId: string },
   ) => Promise<{ title: string }>,
+  limitExternalProvider = false,
 ): Promise<ResearchActionState> {
   const session = await getAuth().api.getSession({ headers: await headers() });
   if (!session?.user) return { error: 'Сессия истекла. Войдите снова.' };
   try {
+    if (limitExternalProvider) {
+      await limitActor(rateLimitPolicies.externalProvider, {
+        userId: session.user.id,
+        organizationId: route.organizationId,
+      });
+    }
     const item = await operation(createResearchWorkspaceService(), {
       userId: session.user.id,
       organizationId: route.organizationId,

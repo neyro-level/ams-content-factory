@@ -1,9 +1,14 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import type { McpAuthContext } from '@ams-content-factory/core';
+import {
+  createRateLimitService,
+  rateLimitPolicies,
+  type McpAuthContext,
+} from '@ams-content-factory/core';
 
 import { createMcpAuthContextResolver } from './auth-context.js';
 
 export type McpRuntimeResolver = Pick<ReturnType<typeof createMcpAuthContextResolver>, 'resolve'>;
+export type McpRuntimeRateLimiter = Pick<ReturnType<typeof createRateLimitService>, 'consume'>;
 
 export type StartableMcpServer = {
   connect(transport: unknown): Promise<void>;
@@ -30,9 +35,12 @@ export async function startMcpRuntime(input: {
   createServer: (context: McpAuthContext) => StartableMcpServer;
   apiKey?: string;
   resolver?: McpRuntimeResolver;
+  rateLimiter?: McpRuntimeRateLimiter;
   transport?: unknown;
 }) {
   const apiKey = runtimeApiKey(input.apiKey ?? process.env.MCP_API_KEY);
+  const rateLimiter = input.rateLimiter ?? createRateLimitService();
+  await rateLimiter.consume(rateLimitPolicies.mcp, apiKey);
   const resolver = input.resolver ?? createMcpAuthContextResolver();
   const context = await resolver.resolve({
     authorization: `Bearer ${apiKey}`,

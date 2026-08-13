@@ -10,6 +10,8 @@ import {
   createProductionContentGenerationService,
   createPublicationCalendarService,
   createResearchWorkspaceService,
+  limitActor,
+  rateLimitPolicies,
   type McpAuthContext,
 } from '@ams-content-factory/core';
 import type { ContentType } from '@ams-content-factory/db';
@@ -128,6 +130,7 @@ export function createMcpApplicationHandlers(
       );
     },
     async generateContentDraft(context, input) {
+      await limitActor(rateLimitPolicies.aiGeneration, actor(context, input.brandId));
       return result(
         await generation.generateDraft(actor(context, input.brandId), {
           contentProjectId: input.contentProjectId,

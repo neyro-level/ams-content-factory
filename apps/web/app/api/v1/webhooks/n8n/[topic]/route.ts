@@ -2,6 +2,9 @@ import {
   createInboundWebhookService,
   createTokenEncryptor,
   InboundWebhookError,
+  createRateLimitService,
+  RateLimitExceededError,
+  rateLimitPolicies,
 } from '@ams-content-factory/core';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -16,6 +19,22 @@ export async function POST(request: Request, context: { params: Promise<{ topic:
   }
   const topic = topicSchema.safeParse((await context.params).topic);
   if (!topic.success) return NextResponse.json({ error: 'unknown webhook topic' }, { status: 404 });
+  try {
+    await createRateLimitService().consume(
+      rateLimitPolicies.inboundWebhook,
+      request.headers.get('x-ams-key-id') ??
+        request.headers.get('x-real-ip') ??
+        'unattributed-webhook',
+    );
+  } catch (error) {
+    if (error instanceof RateLimitExceededError) {
+      return NextResponse.json(
+        { error: 'too many webhook requests' },
+        { status: 429, headers: { 'retry-after': String(error.retryAfterSeconds) } },
+      );
+    }
+    throw error;
+  }
   const payload = await request.text();
   let parsed: unknown;
   try {

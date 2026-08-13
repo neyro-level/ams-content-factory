@@ -1347,3 +1347,15 @@ model AuditLog {
   @@index([entityType, entityId])
   @@map("audit_log")
 }
+
+model RateLimitEntry {
+  scope           String
+  subjectHash     String
+  windowStartedAt DateTime
+  count           Int
+  updatedAt       DateTime @updatedAt
+
+  @@id([scope, subjectHash])
+  @@index([windowStartedAt])
+  @@map("rate_limit_entry")
+}

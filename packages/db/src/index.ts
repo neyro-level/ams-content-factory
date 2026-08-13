@@ -20,4 +20,5 @@ export { createMcpRepository } from './repositories/mcp';
 export { createInboundWebhookRepository } from './repositories/inbound-webhook';
 export { createEvaluationsRepository } from './repositories/evaluations';
 export { createHealthRepository, type HealthRepository } from './repositories/health';
+export { createRateLimitRepository, type RateLimitRepository } from './repositories/rate-limit';
 export * from './generated/prisma/client';

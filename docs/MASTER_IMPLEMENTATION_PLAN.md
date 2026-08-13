@@ -499,7 +499,8 @@ parallel request
 | PR 17.3  | `FOUNDATION`       | ContentProject detail loads bound versions/approvals/comments and expose tenant-scoped cursor methods for each history.                                                       |
 | PR 17.4  | `FOUNDATION`       | Query audit added only indexes for proven project-list and due-publication queue predicates/sorts.                                                                            |
 | PR 18.1  | `FOUNDATION`       | Web readiness fails closed for invalid runtime config or unavailable PostgreSQL; worker opens a loopback readiness probe only after config, DB/pg-boss and handler bootstrap. |
-| Next     | `W18.2`            | Add bounded fail-closed rate limiting for the approved expensive and external entry points.                                                                                   |
+| PR 18.2  | `FOUNDATION`       | PostgreSQL atomic rate limits protect auth, inbound n8n, MCP tools, AI generation and external search/extraction/indexing without storing raw request subjects.               |
+| Next     | `W18.3`            | Apply the existing SSRF-safe URL policy to configurable outbound webhook endpoints.                                                                                           |
 
 ### W6.4 — hybrid retrieval
 

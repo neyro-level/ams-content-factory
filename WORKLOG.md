@@ -1,5 +1,16 @@
 # Worklog
 
+## 2026-08-13 — W18.2 bounded PostgreSQL rate limiting
+
+- Added an atomic PostgreSQL window limiter that stores only SHA-256 subject hashes. It protects authentication POST,
+  inbound n8n delivery, each MCP tool invocation, AI draft generation and external URL/search/indexing entry points;
+  local text/file intake remains outside the external-provider bucket.
+- The limit repository uses one conflict-safe UPSERT, so simultaneous calls cannot exceed the accepted count. Nginx
+  forwards `X-Real-IP` in both the AMS Server and portable Compose profiles; public runtime remains proxy-only.
+- Full local gate passed: Prisma migration/generation, lint, formatting, workspace typecheck, 69 unit tests, 77
+  PostgreSQL integration contracts and production web/worker builds. The parallel repository contract accepts three
+  and rejects three of six simultaneous calls without storing the raw subject. Next: W18.3 outbound webhook SSRF.
+
 ## 2026-08-13 — W18.1 real web and worker readiness
 
 - Web `/api/health/ready` now fails closed when either runtime configuration or PostgreSQL is unavailable; it remains

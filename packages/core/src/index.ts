@@ -65,6 +65,13 @@ export {
 } from './storyboard-generation';
 export { checkApplicationReadiness } from './health';
 export {
+  createRateLimitService,
+  limitActor,
+  RateLimitExceededError,
+  rateLimitPolicies,
+} from './rate-limit';
+export type { RateLimitPolicy } from './rate-limit';
+export {
   createMediaService,
   createVideoProductionService,
   createVideoProductionWorkflowService,

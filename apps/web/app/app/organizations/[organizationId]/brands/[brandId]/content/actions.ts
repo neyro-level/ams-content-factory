@@ -6,6 +6,8 @@ import {
   createContentService,
   createFactCheckService,
   getAuth,
+  limitActor,
+  rateLimitPolicies,
   resolveTenantContext,
 } from '@ams-content-factory/core';
 import { headers } from 'next/headers';
@@ -64,6 +66,7 @@ export async function contentWorkflowAction(
       const context = await resolveTenantContext(actor);
       await createContentService().transition(context, route.contentProjectId, 'RESEARCHING');
     } else if (action === 'generate-draft') {
+      await limitActor(rateLimitPolicies.aiGeneration, actor);
       await createProductionContentGenerationService().generateDraft(actor, {
         contentProjectId: route.contentProjectId,
         promptKey: 'social-post',
