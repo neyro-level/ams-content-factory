@@ -6,8 +6,8 @@
 - **Current V0.1 slice:** `docs/V0_1_USER_TEST_PLAN.md` is `IMPLEMENTED`: the owner-facing Brand Context →
   Knowledge → Content → READY → Copy workflow, generation integrity and critical E2E CI gate are present.
   Local verification passed Prisma validation/migration deploy, clean-database migration drill, lint, format,
-  typecheck, 80 unit tests, 86 integration tests, three V0.1 browser smokes and build. SourceCraft `verify #184` is
-  green on canonical `main` (`1681e50`), including PostgreSQL + pgvector and critical E2E. The final user-test
+  typecheck, 80 unit tests, 86 integration tests, three V0.1 browser smokes and build. SourceCraft `verify #188` is
+  green on canonical `main` (`26ff991`), including PostgreSQL + pgvector and critical E2E. The final user-test
   verdict is `NOT READY` only because a securely configured `OPENAI_API_KEY` is required
   for one real owner smoke; deterministic E2E is not a substitute. User-facing module labels remain only `READY`,
   `LIMITED` and `PLANNED`.

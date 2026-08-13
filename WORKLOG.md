@@ -1,5 +1,13 @@
 # Worklog
 
+## 2026-08-14 — V0.1 dual-capability verification evidence
+
+- SourceCraft `verify #188` completed successfully on canonical `main` commit `26ff991`, including PostgreSQL +
+  pgvector, migrations, static quality, unit/integration suites, production build and all three critical
+  Playwright contracts: editorial workflow, tenant isolation and ordinary no-credential Content mode.
+- Both product capability paths are now covered in CI. A securely configured real `OPENAI_API_KEY` and one owner
+  smoke remain the only missing user-test proof; no test provider is treated as a live provider.
+
 ## 2026-08-14 — V0.1 no-credential capability browser contract
 
 - Added a separate critical Playwright runtime without the deterministic text provider. It proves that Content is
@@ -33,7 +41,7 @@
 - Reconciled README, implementation report and execution/status records with the actual V0.1 owner flow. They now
   distinguish `READY` core editorial work, `LIMITED` provider-dependent Research/AI and `PLANNED` future modules,
   while preserving the independent production `BLOCKED_EXTERNAL` boundary.
-- Recorded canonical SourceCraft `main` evidence through `1681e50`; the remaining V0.1 user-test blocker is exactly
+- Recorded canonical SourceCraft `main` evidence through `26ff991`; the remaining V0.1 user-test blocker is exactly
   one secure live `OPENAI_API_KEY` plus an owner smoke, not the deterministic test provider.
 
 ## 2026-08-13 — V0.1 editorial action feedback

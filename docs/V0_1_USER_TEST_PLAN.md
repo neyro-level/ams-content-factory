@@ -61,8 +61,9 @@ owner deployment confirmation remain independent release blockers.
 - Verified locally: Prisma validation and migration deploy, clean-database migration drill, lint, formatting,
   typecheck, 80 unit tests, 86 integration tests, deterministic browser smoke covering initial generation, manual
   version and rewrite, tenant isolation, and production build.
-- SourceCraft `verify #184` passed on canonical `main` (`1681e50`), including
-  PostgreSQL + pgvector, migrations, unit/integration tests, build and both deterministic browser contracts.
+- SourceCraft `verify #188` passed on canonical `main` (`26ff991`), including
+  PostgreSQL + pgvector, migrations, unit/integration tests, build and three browser contracts: deterministic
+  editorial workflow, tenant isolation and ordinary no-credential Content mode.
 - Editorial integrity follow-up: manual brief and text versions now retain their creating user, and AI rewrite
   finalisation creates the immutable version and marks its execution successful in one database transaction. A
   persistence failure records `REWRITE_PERSISTENCE_FAILED` without leaving a partial version or a running execution.
