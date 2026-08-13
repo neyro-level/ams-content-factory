@@ -14,9 +14,10 @@
   Playwright with PostgreSQL + pgvector. Local verification passed Prisma validation/migration deploy, lint,
   format, typecheck, 76 unit, 85 integration, two V0.1 E2E scenarios, production build and a clean-database
   migration drill.
-- The strict verdict remains `NOT READY FOR V0.1 USER TESTING`: the canonical SourceCraft critical E2E check must
-  first be green, then a safely configured live `OPENAI_API_KEY` plus one owner smoke are required. The deterministic
-  provider is test-only. No production deployment was attempted.
+- SourceCraft `verify` passed on the implementation PR and canonical `main` (`b9a094b`): PostgreSQL + pgvector,
+  migrations, static checks, unit/integration suites, build and both critical browser contracts are green. The strict
+  verdict remains `NOT READY FOR V0.1 USER TESTING` only until a safely configured live `OPENAI_API_KEY` plus one
+  owner smoke are provided. The deterministic provider is test-only. No production deployment was attempted.
 - SourceCraft PR CI initially stopped while the fresh runner started its pgvector container, before migration
   or application checks. The bootstrap now explicitly pulls that image and separates registry latency from a
   90-second PostgreSQL readiness window; the PR is being re-verified.

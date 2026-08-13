@@ -56,6 +56,8 @@ owner deployment confirmation remain independent release blockers.
   contracts, deterministic critical Playwright workflow and SourceCraft critical-E2E gate.
 - Verified locally: Prisma validation and migration deploy, clean-database migration drill, lint, formatting,
   typecheck, 76 unit tests, 85 integration tests, two V0.1 browser smokes and production build.
+- SourceCraft `verify` passed on the implementation PR and again on canonical `main` (`b9a094b`), including
+  PostgreSQL + pgvector, migrations, unit/integration tests, build and both deterministic browser contracts.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
   `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
   provider is test-only and never substitutes this proof.
