@@ -33,6 +33,8 @@
   start without both `OPENAI_API_KEY` and `CONFIRM_LIVE_AI_SMOKE=run`; with them it creates a disposable pgvector
   database and proves one browser generation persists `DRAFT`, an AI version and a succeeded execution. The command
   is deliberately excluded from CI and ordinary release smoke, because neither may receive a live provider key.
+  Doppler `ams-content-factory/prd` is the canonical runtime-secret target and exists, but no `OPENAI_API_KEY` has
+  been provisioned there; the empty container is not a substitute for the required live proof.
 - **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, four V0.1 browser flows
   (organization/brand, editorial, cross-tenant isolation and no-credential limited mode) plus three worker contracts
   passed on 2026-08-14. Its historical Calendar/Analytics browser selection was retired because those modules are

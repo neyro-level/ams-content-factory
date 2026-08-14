@@ -66,6 +66,10 @@ test proof, not a production deploy. The browser spec is explicitly skipped in o
 both inputs exist; this does not weaken the owner command, which rejects missing inputs before starting its isolated
 environment.
 
+The canonical owner-controlled secret target is Doppler `ams-content-factory/prd`. It exists as of 2026-08-14,
+but remains intentionally empty until the owner provisions `OPENAI_API_KEY`; its creation is not evidence of a
+live provider result.
+
 ## Implementation record — 2026-08-13
 
 - The V0.1 code scope is implemented and protected by a Prisma migration, tenant/recovery integration

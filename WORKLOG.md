@@ -10,6 +10,8 @@
   that one missing value.
 - This changes no application code, database, CI secret or production runtime. The V0.1 verdict remains
   `NOT READY FOR V0.1 USER TESTING` until the value is provisioned and the explicit live smoke succeeds.
+- Documentation PR `#95` passed SourceCraft `verify #198`, was merged to canonical `main` as `2ae7933`, and its
+  post-merge `verify #199` passed. GitHub's non-canonical mirror was synchronized only after that gate.
 
 ## 2026-08-14 — V0.1 dual-capability verification evidence
 
