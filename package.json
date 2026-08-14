@@ -31,7 +31,8 @@
     "db:migration-drill": "node scripts/migration-drill.mjs",
     "db:backup-drill": "node scripts/backup-drill.mjs",
     "db:restore-drill": "node scripts/restore-drill.mjs",
-    "release:smoke": "node scripts/release-smoke.mjs"
+    "release:smoke": "node scripts/release-smoke.mjs",
+    "live:ai-owner-smoke": "node scripts/live-ai-owner-smoke.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

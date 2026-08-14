@@ -6,8 +6,8 @@
 - **Current V0.1 slice:** `docs/V0_1_USER_TEST_PLAN.md` is `IMPLEMENTED`: the owner-facing Brand Context →
   Knowledge → Content → READY → Copy workflow, generation integrity and critical E2E CI gate are present.
   Local verification passed Prisma validation/migration deploy, clean-database migration drill, lint, format,
-  typecheck, 80 unit tests, 86 integration tests, three V0.1 browser smokes and build. SourceCraft `verify #188` is
-  green on canonical `main` (`26ff991`), including PostgreSQL + pgvector and critical E2E. The final user-test
+  typecheck, 80 unit tests, 86 integration tests, three V0.1 browser smokes and build. SourceCraft `verify #192` is
+  green on canonical `main` (`f1476d0`), including PostgreSQL + pgvector and critical E2E. The final user-test
   verdict is `NOT READY` only because a securely configured `OPENAI_API_KEY` is required
   for one real owner smoke; deterministic E2E is not a substitute. User-facing module labels remain only `READY`,
   `LIMITED` and `PLANNED`.
@@ -28,6 +28,10 @@
   product-level guidance. The direct Content route shows the same state, not only the dashboard/navigation. The
   credential value never reaches the browser. A dedicated browser contract starts without the deterministic
   provider and asserts this limited state end-to-end.
+- **V0.1 live-provider proof:** `pnpm live:ai-owner-smoke` is an explicit, fail-closed owner command. It refuses to
+  start without both `OPENAI_API_KEY` and `CONFIRM_LIVE_AI_SMOKE=run`; with them it creates a disposable pgvector
+  database and proves one browser generation persists `DRAFT`, an AI version and a succeeded execution. The command
+  is deliberately excluded from CI and ordinary release smoke, because neither may receive a live provider key.
 - **Current task:** W19.6 release smoke is `FOUNDATION`: its isolated pgvector database, four V0.1 browser flows
   (organization/brand, editorial, cross-tenant isolation and no-credential limited mode) plus three worker contracts
   passed on 2026-08-14. Its historical Calendar/Analytics browser selection was retired because those modules are

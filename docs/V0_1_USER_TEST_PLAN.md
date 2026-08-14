@@ -54,6 +54,18 @@ available, while generation and rewrite controls are disabled with a product exp
 only on the server and does not expose credential details. This does not authorize production: Timeweb `vector`, TLS/vhost, runtime secrets and explicit
 owner deployment confirmation remain independent release blockers.
 
+### Live-provider owner smoke
+
+`pnpm live:ai-owner-smoke` is the only V0.1 command allowed to call the real text provider. It is fail-closed:
+it requires a non-empty server-side `OPENAI_API_KEY` and exact `CONFIRM_LIVE_AI_SMOKE=run`; otherwise it exits
+before Docker, database or provider work begins. With both values present it creates a disposable local pgvector
+database, applies committed migrations and executes one browser generation through the normal application entry
+point. The contract proves `DRAFT`, one persisted AI ContentVersion and `AiExecution=SUCCEEDED`; the user and
+database are removed afterwards. The key, generated text and request payload are never printed. This is an owner
+test proof, not a production deploy. The browser spec is explicitly skipped in ordinary `pnpm test:e2e` runs unless
+both inputs exist; this does not weaken the owner command, which rejects missing inputs before starting its isolated
+environment.
+
 ## Implementation record — 2026-08-13
 
 - The V0.1 code scope is implemented and protected by a Prisma migration, tenant/recovery integration
@@ -61,9 +73,10 @@ owner deployment confirmation remain independent release blockers.
 - Verified locally: Prisma validation and migration deploy, clean-database migration drill, lint, formatting,
   typecheck, 80 unit tests, 86 integration tests, deterministic browser smoke covering initial generation, manual
   version and rewrite, tenant isolation, and production build.
-- SourceCraft `verify #188` passed on canonical `main` (`26ff991`), including
-  PostgreSQL + pgvector, migrations, unit/integration tests, build and three browser contracts: deterministic
-  editorial workflow, tenant isolation and ordinary no-credential Content mode.
+- SourceCraft `verify #192` passed on canonical `main` (`f1476d0`), including PostgreSQL + pgvector,
+  migrations, unit/integration tests, build and the three critical browser contracts: deterministic editorial
+  workflow, tenant isolation and ordinary no-credential Content mode. A separate W19.6 local release smoke confirms
+  the same V0.1 scope with a disposable database and worker contracts.
 - Editorial integrity follow-up: manual brief and text versions now retain their creating user, and AI rewrite
   finalisation creates the immutable version and marks its execution successful in one database transaction. A
   persistence failure records `REWRITE_PERSISTENCE_FAILED` without leaving a partial version or a running execution.
@@ -92,5 +105,5 @@ owner deployment confirmation remain independent release blockers.
   provider and proves the navigation marker, direct Content notice and disabled generation control. This is not a
   substitute for the required live provider smoke.
 - **Verdict:** `NOT READY FOR V0.1 USER TESTING` until one external input is supplied: a securely configured
-  `OPENAI_API_KEY` and one real owner smoke through the editorial generation flow. The deterministic test
-  provider is test-only and never substitutes this proof.
+  `OPENAI_API_KEY` and one explicit `pnpm live:ai-owner-smoke` run through the editorial generation flow. The
+  deterministic test provider is test-only and never substitutes this proof.
