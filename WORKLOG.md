@@ -1343,3 +1343,14 @@ deploy`, runs the idempotent seed, builds and starts the production web process,
 - Восстановлен Docker Desktop через установку WSL 2, PostgreSQL 16 + pgvector поднята и прошла readiness check.
 - Wave 0 quality gate green: lint, formatting, typecheck, unit, integration, E2E и production build.
 - Создан local checkpoint `0319e32` (`wave-00: establish engineering foundation`).
+
+## 2026-08-14 — V0.1 explicit live AI owner-smoke contract
+
+- Reconciled V0.1 evidence with the current canonical `main`: SourceCraft `verify #192` is green on `f1476d0` after
+  the W19.6 release-smoke alignment; older `#188` references are historical evidence, not the latest gate.
+- Added `pnpm live:ai-owner-smoke`, a fail-closed live-provider proof that requires both a secure
+  `OPENAI_API_KEY` and `CONFIRM_LIVE_AI_SMOKE=run` before it can make one real browser generation. It uses a
+  disposable local pgvector database and verifies scoped `DRAFT`, AI version and succeeded `AiExecution`; it does
+  not deploy, touch Timeweb or print secrets/generated text.
+- The current environment contains neither input, so the command was intentionally verified only through its
+  no-side-effect refusal path. The remaining V0.1 blocker is now reproducible rather than procedural.
