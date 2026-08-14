@@ -17,6 +17,23 @@ SourceCraft CI, Markdown, браузерный bundle или логи.
 секреты генерируются и передаются через утверждённое secret storage/серверное окружение, а не через
 issue, PR description или чат.
 
+## Каноническое хранилище runtime-секретов
+
+Для AMS Content Factory создан отдельный Doppler project `ams-content-factory`; production runtime config —
+`prd`. Реальные значения, включая `OPENAI_API_KEY`, добавляются владельцем только в этот config и никогда не
+копируются в Git, SourceCraft `verify`, PR, Markdown или чат. На 2026-08-14 ключ ещё не provisioned: пустой
+secret container является подготовкой безопасного пути, а не заменой ключа.
+
+После безопасного добавления ключа owner smoke запускается через Doppler без показа значения:
+
+```powershell
+$env:CONFIRM_LIVE_AI_SMOKE = 'run'
+$nodeDir = 'C:\Users\Юлия Скрицкая\AppData\Roaming\fnm\node-versions\v22.13.0\installation'
+doppler run --project ams-content-factory --config prd -- "$nodeDir\corepack.cmd" pnpm live:ai-owner-smoke
+```
+
+Команда создаёт только disposable local pgvector database; она не меняет Timeweb, SourceCraft CI или production.
+
 ## Explicit live AI owner smoke
 
 `pnpm live:ai-owner-smoke` is an isolated proof command, not a normal development or CI task. It may make exactly

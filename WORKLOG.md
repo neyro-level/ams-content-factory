@@ -1,5 +1,16 @@
 # Worklog
 
+## 2026-08-14 — V0.1 Doppler runtime-secret foundation
+
+- Created the dedicated Doppler project `ams-content-factory` with its standard root environments, including
+  production config `prd`; no secret values were created, read into logs or committed.
+- The live-provider owner smoke was checked against local environment, project files and the global
+  `ams-research/prd` secret scope. None contains `OPENAI_API_KEY`, so the command fails closed before Docker,
+  database or OpenAI work. `ams-content-factory/prd` is now the canonical secure target for the owner to provision
+  that one missing value.
+- This changes no application code, database, CI secret or production runtime. The V0.1 verdict remains
+  `NOT READY FOR V0.1 USER TESTING` until the value is provisioned and the explicit live smoke succeeds.
+
 ## 2026-08-14 — V0.1 dual-capability verification evidence
 
 - SourceCraft `verify #188` completed successfully on canonical `main` commit `26ff991`, including PostgreSQL +
