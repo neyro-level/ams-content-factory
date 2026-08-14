@@ -1346,8 +1346,9 @@ deploy`, runs the idempotent seed, builds and starts the production web process,
 
 ## 2026-08-14 — V0.1 explicit live AI owner-smoke contract
 
-- Reconciled V0.1 evidence with the current canonical `main`: SourceCraft `verify #192` is green on `f1476d0` after
-  the W19.6 release-smoke alignment; older `#188` references are historical evidence, not the latest gate.
+- Reconciled V0.1 evidence with the current canonical `main`: `verify #192` on `f1476d0` remains historical
+  W19.6 evidence. The latest V0.1 owner-smoke PR gate is SourceCraft `verify #194`, and post-merge `verify #195`
+  is green on canonical `main` `6b2b7d5`; GitHub's non-canonical mirror was synchronized to that same commit.
 - Added `pnpm live:ai-owner-smoke`, a fail-closed live-provider proof that requires both a secure
   `OPENAI_API_KEY` and `CONFIRM_LIVE_AI_SMOKE=run` before it can make one real browser generation. It uses a
   disposable local pgvector database and verifies scoped `DRAFT`, AI version and succeeded `AiExecution`; it does
@@ -1358,3 +1359,6 @@ deploy`, runs the idempotent seed, builds and starts the production web process,
   its exact cause is confirmed, it is not interpreted as a provider, credential or deployment result. The static
   contract explicitly preserves the intended CI boundary: `verify` does not invoke the live command, set the
   confirmation flag or pass an `OPENAI_API_KEY` process environment value.
+- The next full `verify #194` passed all gates and the post-merge `verify #195` passed the same clean pgvector,
+  migration, static quality, unit/integration, build and critical-E2E sequence. The earlier isolated `#193` failure
+  did not reproduce and has no inferred root cause.

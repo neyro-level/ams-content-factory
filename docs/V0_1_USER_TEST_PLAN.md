@@ -71,12 +71,13 @@ environment.
 - The V0.1 code scope is implemented and protected by a Prisma migration, tenant/recovery integration
   contracts, deterministic critical Playwright workflow and SourceCraft critical-E2E gate.
 - Verified locally: Prisma validation and migration deploy, clean-database migration drill, lint, formatting,
-  typecheck, 80 unit tests, 86 integration tests, deterministic browser smoke covering initial generation, manual
+  typecheck, 81 unit tests, 86 integration tests, deterministic browser smoke covering initial generation, manual
   version and rewrite, tenant isolation, and production build.
-- SourceCraft `verify #192` passed on canonical `main` (`f1476d0`), including PostgreSQL + pgvector,
-  migrations, unit/integration tests, build and the three critical browser contracts: deterministic editorial
-  workflow, tenant isolation and ordinary no-credential Content mode. A separate W19.6 local release smoke confirms
-  the same V0.1 scope with a disposable database and worker contracts.
+- SourceCraft `verify #194` passed for the live-owner-smoke PR, and post-merge `verify #195` passed on canonical
+  `main` (`6b2b7d5`). Both gates covered PostgreSQL + pgvector, migrations, unit/integration tests, build and the
+  three critical browser contracts: deterministic editorial workflow, tenant isolation and ordinary no-credential
+  Content mode. A separate W19.6 local release smoke confirms the same V0.1 scope with a disposable database and
+  worker contracts. The non-canonical private GitHub mirror was synchronized to the same commit after `#195`.
 - Editorial integrity follow-up: manual brief and text versions now retain their creating user, and AI rewrite
   finalisation creates the immutable version and marks its execution successful in one database transaction. A
   persistence failure records `REWRITE_PERSISTENCE_FAILED` without leaving a partial version or a running execution.
