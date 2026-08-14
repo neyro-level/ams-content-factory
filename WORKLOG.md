@@ -1354,3 +1354,7 @@ deploy`, runs the idempotent seed, builds and starts the production web process,
   not deploy, touch Timeweb or print secrets/generated text.
 - The current environment contains neither input, so the command was intentionally verified only through its
   no-side-effect refusal path. The remaining V0.1 blocker is now reproducible rather than procedural.
+- SourceCraft `verify #193` failed in the test stage before merge. The failure is being reproduced locally; until
+  its exact cause is confirmed, it is not interpreted as a provider, credential or deployment result. The static
+  contract explicitly preserves the intended CI boundary: `verify` does not invoke the live command, set the
+  confirmation flag or pass an `OPENAI_API_KEY` process environment value.
